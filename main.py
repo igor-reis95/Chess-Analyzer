@@ -1,6 +1,7 @@
 # main.py
 from src.api import get_games
 from src.data_processing import save_games_to_json
+from src import app
 
 def main():
     username = "IgorSReis"  # Exemplo de nome de usuário
@@ -14,4 +15,4 @@ def main():
     save_games_to_json(games_list, username)
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
