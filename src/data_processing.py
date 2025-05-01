@@ -10,6 +10,13 @@ def save_games_to_json(games_list, username, folder="data"):
         json.dump(games_list, f, indent=2, ensure_ascii=False)
     print(f"Saved games to {filepath}")
 
+def save_df_to_csv(df, username, folder="data"):
+    """Save the processed games DataFrame as a CSV file."""
+    os.makedirs(folder, exist_ok=True)
+    filepath = os.path.join(folder, f"{username}_games.csv")
+    df.to_csv(filepath, index=False)
+    print(f"Saved processed games to {filepath}")
+
 def _safe_get(d, *keys):
     """Safely get nested values in a dict."""
     for key in keys:
@@ -47,7 +54,7 @@ def extract_division_features(game):
         "division_end": _safe_get(game, "division", "end")
     }
 
-def extract_features_from_games(games_list):
+def flatten_game_data(games_list):
     """Convert list of game dicts into a flat, usable DataFrame."""
     extracted = []
     for game in games_list:
