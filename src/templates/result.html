@@ -1,3 +1,37 @@
-<h2>Jogos de {{ username }} salvos!</h2>
-<p>Total de partidas baixadas: {{ count }}</p>
-<a href="/">Voltar</a>
+<!-- result.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games Results for {{ username }}</title>
+</head>
+<body>
+    <h1>Results for {{ username }}</h1>
+    <p>Total Games: {{ count }}</p>
+    
+    <h2>Game Details</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Game ID</th>
+                <th>White Player</th>
+                <th>Black Player</th>
+                <th>Result</th>
+                <th>Time Control</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for game in games %}
+                <tr>
+                    <td>{{ game['id'] }}</td>
+                    <td>{{ game['players']['white']['user']['name'] }}</td>
+                    <td>{{ game['players']['black']['user']['name'] }}</td>
+                    <td>{{ game['status'] }}</td>
+                    <td>{{ game['clock']['initial'] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
