@@ -1,7 +1,7 @@
 from flask import request, render_template
 from src import app
 from src.api import get_games
-from src.data_processing import save_games_to_json
+from src.data_processing import save_games_to_json, save_df_to_csv, flatten_game_data
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -14,8 +14,14 @@ def index():
         try:
             # Fetching the games based on user input
             games = get_games(username, max_games, perf_type, color)
+
             # Save the games to a JSON file
             save_games_to_json(games, username)
+
+            # Save the games to a CSV file
+            df = flatten_game_data(games)
+            save_df_to_csv(df, username)
+            
             # Pass the games data to the results page
             return render_template("result.html", username=username, count=len(games), games=games)
         except Exception as e:
