@@ -1,4 +1,3 @@
-# src/api.py
 import os
 import json
 import requests
