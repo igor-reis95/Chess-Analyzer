@@ -1,7 +1,7 @@
 from flask import request, render_template
-from src import app
+from src.webapp import app
 from src.api.api import get_games
-from src.data.data_processing import save_games_to_json, save_df_to_csv, flatten_game_data
+from src.data_scripts.data_processing import save_games_to_json, save_df_to_csv, flatten_game_data
 
 @app.route("/", methods=["GET", "POST"])
 def index():
