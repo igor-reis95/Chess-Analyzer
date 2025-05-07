@@ -54,15 +54,23 @@ def extract_division_features(game):
         "division_end": _safe_get(game, "division", "end")
     }
 
+def extract_flattened_features(game):
+    return {
+        **extract_player_features(game, "white"),
+        **extract_player_features(game, "black"),
+        **extract_clock_features(game),
+        **extract_division_features(game)
+    }
+
 def flatten_game_data(games_list):
-    """Convert list of game dicts into a flat, usable DataFrame."""
-    extracted = []
-    for game in games_list:
-        row = {
-            **extract_player_features(game, "white"),
-            **extract_player_features(game, "black"),
-            **extract_clock_features(game),
-            **extract_division_features(game)
-        }
-        extracted.append(row)
-    return pd.DataFrame(extracted)
+    """Return a DataFrame with both original and flattened game data."""
+    flattened_rows = [extract_flattened_features(game) for game in games_list]
+    df_flattened = pd.DataFrame(flattened_rows)
+    df_original = pd.DataFrame(games_list)
+
+    # Drop nested fields to avoid duplication
+    cols_to_drop = [col for col in ['players', 'clock', 'division'] if col in df_original.columns]
+    df_original_cleaned = df_original.drop(columns=cols_to_drop)
+
+    df_combined = pd.concat([df_original_cleaned.reset_index(drop=True), df_flattened.reset_index(drop=True)], axis=1)
+    return df_combined
