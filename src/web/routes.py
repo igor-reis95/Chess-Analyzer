@@ -1,7 +1,6 @@
 from flask import request, render_template
-from src.webapp import app
-from src.api.api import get_games
-from src.data_scripts.data_processing import save_games_to_json, save_df_to_csv, flatten_game_data
+from ..webapp import app
+from src.services.game_processor import GameProcessor
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -12,18 +11,17 @@ def index():
         color = request.form.get("color", None)  # Default is None
 
         try:
-            # Fetching the games based on user input
-            games = get_games(username, max_games, perf_type, color)
+            # Create the GameProcessor instance
+            processor = GameProcessor(username, max_games, perf_type, color)
 
-            # Save the games to a JSON file
-            save_games_to_json(games, username)
+            # Run the processing steps
+            processor.run_all()
 
-            # Save the games to a CSV file
-            df = flatten_game_data(games)
-            save_df_to_csv(df, username)
-            
-            # Pass the games data to the results page
-            return render_template("result.html", username=username, count=len(games), games=games)
+            # Pass the results to the results page
+            return render_template("result.html", 
+                                   username=username, 
+                                   count=len(processor.games), 
+                                   summary=processor.get_summary_stats())
         except Exception as e:
             # Handle any error that happens during fetching the games
             return f"An error occurred: {str(e)}"
