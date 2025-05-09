@@ -19,7 +19,8 @@ def get_games(username, max, perfType, color=None):
         "color": color,
         "rated": True,
         "accuracy": True,
-        "division": True
+        "division": True,
+        "opening": True
     }
     url = f"https://lichess.org/api/games/user/{username}"
     response = requests.get(url, headers=headers, params=params, stream=True)
