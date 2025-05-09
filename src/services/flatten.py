@@ -2,21 +2,6 @@ import json
 import os
 import pandas as pd
 
-def save_games_to_json(games_list, username, folder="data/raw"):
-    """Save the raw games list as a JSON file."""
-    os.makedirs(folder, exist_ok=True)
-    filepath = os.path.join(folder, f"{username}_games.json")
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(games_list, f, indent=2, ensure_ascii=False)
-    print(f"Saved games to {filepath}")
-
-def save_df_to_csv(df, username, folder="data/processed"):
-    """Save the processed games DataFrame as a CSV file."""
-    os.makedirs(folder, exist_ok=True)
-    filepath = os.path.join(folder, f"{username}_games.csv")
-    df.to_csv(filepath, index=False)
-    print(f"Saved processed games to {filepath}")
-
 def _safe_get(d, *keys):
     """Safely get nested values in a dict."""
     for key in keys:
@@ -48,10 +33,18 @@ def extract_clock_features(game):
     }
 
 def extract_division_features(game):
-    """Extract tournament division information"""
+    """Extract division information"""
     return {
         "division_middle": _safe_get(game, "division", "middle"),
         "division_end": _safe_get(game, "division", "end")
+    }
+
+def extract_opening_features(game):
+    """Extract opening information"""
+    return {
+        "opening_middle": _safe_get(game, "opening", "opening_eco"),
+        "opening_end": _safe_get(game, "opening", "opening_name"),
+        "opening_end": _safe_get(game, "opening", "opening_ply")
     }
 
 def extract_flattened_features(game):
