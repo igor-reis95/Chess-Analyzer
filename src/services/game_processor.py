@@ -24,7 +24,6 @@ class GameProcessor:
         save_df_to_csv(self.df_flat, self.username)
 
     def build_winner_column(self):
-        """Adiciona coluna com o nome do vencedor da partida"""
         self.df_flat["winner_username"] = self.df_flat.apply(self._extract_winner_username, axis=1)
 
     def _extract_winner_username(self, row):
@@ -33,27 +32,11 @@ class GameProcessor:
         elif row["winner"] == "black":
             return row["black_name"]
         return None
-
-    def get_user_winrate(self):
-        """Calcula a taxa de vitórias do usuário"""
-        user_games = self.df_flat[
-            (self.df_flat["white_name"] == self.username) | (self.df_flat["black_name"] == self.username)
-        ]
-        wins = (user_games["winner_username"] == self.username).sum()
-        total = len(user_games)
-        return {"wins": wins, "total": total, "winrate": round(wins / total, 2) if total else 0}
-
-    def get_summary_stats(self):
-        # Retorna outros dados para exibição na interface
-        return {
-            "game_count": len(self.df_flat),
-            "winrate": self.get_user_winrate(),
-            "perf_type": self.perf_type,
-            "color_filter": self.color
-        }
+    
+    def get_dataframe(self):
+        return self.df_flat
 
     def run_all(self):
-        """Executa todo o pipeline"""
         self.fetch_games()
         self.save_raw_data()
         self.flatten_games()
