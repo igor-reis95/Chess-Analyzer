@@ -33,7 +33,7 @@ def extract_clock_features(game):
     }
 
 def extract_division_features(game):
-    """Extract division information"""
+    """Extract division of game stage information"""
     return {
         "division_middle": _safe_get(game, "division", "middle"),
         "division_end": _safe_get(game, "division", "end")
@@ -42,9 +42,9 @@ def extract_division_features(game):
 def extract_opening_features(game):
     """Extract opening information"""
     return {
-        "opening_middle": _safe_get(game, "opening", "opening_eco"),
-        "opening_end": _safe_get(game, "opening", "opening_name"),
-        "opening_end": _safe_get(game, "opening", "opening_ply")
+        "opening_eco": _safe_get(game, "opening", "eco"),
+        "opening_name": _safe_get(game, "opening", "name"),
+        "opening_ply": _safe_get(game, "opening", "ply")
     }
 
 def extract_flattened_features(game):
@@ -52,7 +52,8 @@ def extract_flattened_features(game):
         **extract_player_features(game, "white"),
         **extract_player_features(game, "black"),
         **extract_clock_features(game),
-        **extract_division_features(game)
+        **extract_division_features(game),
+        **extract_opening_features(game)
     }
 
 def flatten_game_data(games_list):
@@ -62,7 +63,7 @@ def flatten_game_data(games_list):
     df_original = pd.DataFrame(games_list)
 
     # Drop nested fields to avoid duplication
-    cols_to_drop = [col for col in ['players', 'clock', 'division'] if col in df_original.columns]
+    cols_to_drop = [col for col in ['players', 'clock', 'division', 'opening'] if col in df_original.columns]
     df_original_cleaned = df_original.drop(columns=cols_to_drop)
 
     df_combined = pd.concat([df_original_cleaned.reset_index(drop=True), df_flattened.reset_index(drop=True)], axis=1)
