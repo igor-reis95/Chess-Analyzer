@@ -1,0 +1,6 @@
+*.ipynb
+/chess-data-coach
+.env
+data/
+**/__pycache__/
+*.pgn
