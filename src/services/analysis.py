@@ -14,8 +14,9 @@ def get_rating_range(df, color):
 
 def count_results(df, color):
     wins = len(df[df['winner'] == color])
-    losses = len(df[df['winner'] != color & df['winner'].notna()])
-    draws = len(df[df['winner'].insa().sum()])
+    losses = len(df[(df['winner'] != color) & df['winner'].notna()])
+    draws = len(df[df['winner'].isna()])
+
     return wins, losses, draws
 
 def get_common_opponents(df, username):
@@ -37,17 +38,16 @@ def get_accuracy_stats(df,color):
     }
 
 def analysis_per_color(df, username, color):
-    opponent_color = 'white' if color == 'black' else 'black'
     filtered_df = df[df[f'{color}_name'].str.lower() == username.lower()]
     
     results = {
         "rating_diff": get_rating_diff(filtered_df, color),
         "opening_counts": get_opening_counts(filtered_df),
         "opening_wins": get_opening_counts_by_result(filtered_df, color),
-        "opening_losses": get_opening_counts_by_result(filtered_df, opponent_color),
+        "opening_losses": get_opening_counts_by_result(filtered_df),
         "rating_range": get_rating_range(filtered_df, color),
-        "results": count_results(filtered_df, color, opponent_color),
-        "common_opponents": get_common_opponents(filtered_df, opponent_color),
+        "results": count_results(filtered_df, color),
+        "common_opponents": get_common_opponents(filtered_df),
         "accuracy": get_accuracy_stats(filtered_df, color),
     }
     
