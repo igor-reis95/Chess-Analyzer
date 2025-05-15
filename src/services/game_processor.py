@@ -1,4 +1,3 @@
-import pandas as pd
 from src.api.api import get_games
 from src.services.data_io import save_games_to_json, save_df_to_csv
 from src.services.flatten import flatten_game_data
@@ -32,7 +31,7 @@ class GameProcessor:
         elif row["winner"] == "black":
             return row["black_name"]
         return None
-    
+
     def get_dataframe(self):
         return self.df_flat
 
