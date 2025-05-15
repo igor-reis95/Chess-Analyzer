@@ -1,15 +1,15 @@
 <form method="POST" action="/">
     <label for="username">Usuário Lichess:</label>
-    <input type="text" name="username" required>
+    <input type="text" name="username" value="Totallyweakplayer39" required>
   
     <label for="max_games">Número máximo de jogos:</label>
-    <input type="number" name="max_games" value="50" min="1" max="300">
+    <input type="number" name="max_games" value="30" min="1" max="300">
   
     <label for="perf_type">Tipo de jogo:</label>
     <select name="perf_type">
       <option value="bullet">Bullet</option>
       <option value="blitz">Blitz</option>
-      <option value="rapid">Rapid</option>
+      <option value="rapid" selected>Rapid</option>
       <option value="classical">Classical</option>
     </select>
   

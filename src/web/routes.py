@@ -1,6 +1,10 @@
-from flask import request, render_template
-from ..webapp import app
+from flask import render_template, request
+from src.services.analysis import analysis_per_color
+from src.services.data_viz import status_distribution
 from src.services.game_processor import GameProcessor
+from ..webapp import app
+import traceback
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -16,14 +20,26 @@ def index():
 
             # Run the processing steps
             processor.run_all()
+            df = processor.get_dataframe()
+
+            # Run the data analysis
+            analysis_for_white = analysis_per_color(df, username, 'white')
+            analysis_for_black = analysis_per_color(df, username, 'black')
+
+            # Generate graphs
+            status_distribution_graph = status_distribution(df)
 
             # Pass the results to the results page
-            return render_template("result.html", 
-                                   username=username, 
-                                   count=len(processor.games), 
-                                   summary=processor.get_summary_stats())
+            return render_template("result.html",
+                                   username=username,
+                                   count=len(processor.games),
+                                   games = processor.games,
+                                   analysis_for_white = analysis_for_white,
+                                   analysis_for_black = analysis_for_black,
+                                   status_distribution_graph=status_distribution_graph)
         except Exception as e:
             # Handle any error that happens during fetching the games
-            return f"An error occurred: {str(e)}"
+            tb = traceback.format_exc()
+            return f"<pre>An error occurred:\n{str(e)}\n\n{tb}</pre>"
 
     return render_template("form.html")

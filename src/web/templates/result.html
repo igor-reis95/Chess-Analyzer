@@ -17,7 +17,7 @@
                 <th>White Player</th>
                 <th>Black Player</th>
                 <th>Result</th>
-                <th>Time Control</th>
+                <th>Time Control (s)</th>
             </tr>
         </thead>
         <tbody>
@@ -32,5 +32,39 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <h2>Analysis for White</h2>
+    <p>Rating Difference: {{ analysis_for_white.rating_diff }}</p>
+    <p>Opening Counts: </p>
+    <ul>
+        {% for opening, count in analysis_for_white.opening_counts.items() %}
+            <li>{{ opening }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+    <p>Accuracy:</p>
+    <ul>
+        <li>Overall: {{ analysis_for_white.accuracy.overall }}</li>
+        <li>Wins: {{ analysis_for_white.accuracy.wins }}</li>
+        <li>Losses: {{ analysis_for_white.accuracy.losses }}</li>
+        <li>Draws: {{ analysis_for_white.accuracy.draws }}</li>
+    </ul>
+
+    <h2>Analysis for Black</h2>
+    <p>Rating Difference: {{ analysis_for_black.rating_diff }}</p>
+    <p>Opening Counts: </p>
+    <ul>
+        {% for opening, count in analysis_for_black.opening_counts.items() %}
+            <li>{{ opening }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+    <p>Accuracy:</p>
+    <ul>
+        <li>Overall: {{ analysis_for_black.accuracy.overall }}</li>
+        <li>Wins: {{ analysis_for_black.accuracy.wins }}</li>
+        <li>Losses: {{ analysis_for_black.accuracy.losses }}</li>
+        <li>Draws: {{ analysis_for_black.accuracy.draws }}</li>
+    </ul>
+    <h2>Game Status Distribution</h2>
+    <img src="data:image/png;base64,{{ status_distribution_graph }}" alt="Game Status Distribution">
 </body>
 </html>
