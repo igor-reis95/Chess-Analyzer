@@ -3,7 +3,7 @@
 from src.api.api import get_games
 from src.services.data_io import save_games_to_json, save_df_to_csv
 from src.services.flatten import flatten_game_data
-from src.services.normalize_perspective import post_process
+from src.services.post_process import post_process
 
 class GameProcessor:
     def __init__(self, username, max_games=50, perf_type="blitz", color=None):
