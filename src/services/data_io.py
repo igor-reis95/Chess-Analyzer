@@ -1,6 +1,7 @@
+# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+
 import os
 import json
-import pandas as pd
 
 def save_games_to_json(games_list, username, folder="data/raw"):
     """Save the raw games list as a JSON file."""

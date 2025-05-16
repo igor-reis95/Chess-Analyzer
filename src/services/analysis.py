@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+
 import pandas as pd
 
 def get_rating_diff(df, username, color):

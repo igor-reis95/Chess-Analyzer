@@ -1,26 +1,27 @@
+# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+
 import io
 import base64
 import matplotlib.pyplot as plt
-import pandas as pd
 
 def count_game_outcomes(df, username):
     username = username.lower()
-    
+
     is_white = df['white_name'].str.lower() == username
     is_black = df['black_name'].str.lower() == username
-    
+
     win_as_white = is_white & (df['winner'] == 'white')
     win_as_black = is_black & (df['winner'] == 'black')
-    
+
     loss_as_white = is_white & (df['winner'] == 'black')
     loss_as_black = is_black & (df['winner'] == 'white')
 
     draws = (is_white | is_black) & df['winner'].isna()
-    
+
     num_wins = (win_as_white | win_as_black).sum()
     num_losses = (loss_as_white | loss_as_black).sum()
     num_draws = draws.sum()
-    
+
     return num_wins, num_losses, num_draws
 
 def status_distribution(df):
@@ -44,7 +45,13 @@ def status_distribution(df):
     # Set the aspect ratio to be equal for the pie chart to be circular
     ax.axis('equal')
     plt.title("Game Status Distribution")
-    ax.legend(wedges, status_counts.index, title="Status", loc="center left", bbox_to_anchor=(1, 0.5))
+    ax.legend(
+        wedges,
+        status_counts.index,
+        title="Status",
+        loc="center left",
+        bbox_to_anchor=(1, 0.5)
+    )
 
     # Adjust layout
     plt.tight_layout()
@@ -53,7 +60,7 @@ def status_distribution(df):
     img_stream = io.BytesIO()
     plt.savefig(img_stream, format='png')
     img_stream.seek(0)
-    
+
     # Encode the image in base64
     img_base64 = base64.b64encode(img_stream.read()).decode('utf-8')
 
