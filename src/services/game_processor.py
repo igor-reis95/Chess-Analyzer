@@ -1,6 +1,9 @@
+# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+
 from src.api.api import get_games
 from src.services.data_io import save_games_to_json, save_df_to_csv
 from src.services.flatten import flatten_game_data
+from src.services.normalize_perspective import post_process
 
 class GameProcessor:
     def __init__(self, username, max_games=50, perf_type="blitz", color=None):
@@ -22,15 +25,8 @@ class GameProcessor:
         self.df_flat = flatten_game_data(self.games)
         save_df_to_csv(self.df_flat, self.username)
 
-    def build_winner_column(self):
-        self.df_flat["winner_username"] = self.df_flat.apply(self._extract_winner_username, axis=1)
-
-    def _extract_winner_username(self, row):
-        if row["winner"] == "white":
-            return row["white_name"]
-        elif row["winner"] == "black":
-            return row["black_name"]
-        return None
+    def post_process_games(self):
+        self.df_flat = post_process(self.df_flat, self.username)
 
     def get_dataframe(self):
         return self.df_flat
@@ -39,4 +35,4 @@ class GameProcessor:
         self.fetch_games()
         self.save_raw_data()
         self.flatten_games()
-        self.build_winner_column()
+        self.post_process_games()
