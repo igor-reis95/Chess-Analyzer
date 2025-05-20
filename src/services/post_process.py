@@ -7,8 +7,8 @@ def extract_perspective(df, username, color):
     perspective = df.copy()
     perspective = perspective[df[f'{color}_name'].str.lower() == username.lower()]
 
-    perspective['player'] = perspective[f'{color}_name']
-    perspective['opponent'] = perspective[f'{opp_color}_name']
+    perspective['player_name'] = perspective[f'{color}_name']
+    perspective['opponent_name'] = perspective[f'{opp_color}_name']
     perspective['player_color'] = color
 
     # Ratings
@@ -47,7 +47,7 @@ def post_process(df, username):
     df['time_spent_playing'] = df['last_move_at'] - df['created_at']
 
     keep_cols = [
-        'id', 'player_color', 'player', 'opponent', 'result', 'status',
+        'id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
         'player_rating', 'opponent_rating', 'rating_difference',
         'variant', 'speed', 'perf', 'clock_time_control', 'clock_increment',
         'source', 'tournament', 'division_middle', 'division_end',
@@ -58,5 +58,5 @@ def post_process(df, username):
         'opponent_rating_diff', 'opponent_inaccuracy', 'opponent_mistake',
         'opponent_blunder', 'opponent_accuracy', 'moves'
     ]
-
-    return df[keep_cols]
+    existing_cols = [col for col in keep_cols if col in df.columns]
+    return df[existing_cols]
