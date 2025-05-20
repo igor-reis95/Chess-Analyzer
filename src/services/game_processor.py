@@ -6,14 +6,14 @@ from src.services.flatten import flatten_game_data
 from src.services.post_process import post_process
 
 class GameProcessor:
-    def __init__(self, username, max_games=50, perf_type="blitz", color=None):
+    def __init__(self, username, max_games=50, perf_type=None, color=None):
         self.username = username
         self.max_games = max_games
         self.perf_type = perf_type
         self.color = color
         self.games = None
-        self.df_raw = None
         self.df_flat = None
+        self.df_processed = None
 
     def fetch_games(self):
         self.games = get_games(self.username, self.max_games, self.perf_type, self.color)
@@ -23,13 +23,13 @@ class GameProcessor:
 
     def flatten_games(self):
         self.df_flat = flatten_game_data(self.games)
-        save_df_to_csv(self.df_flat, self.username)
 
     def post_process_games(self):
-        self.df_flat = post_process(self.df_flat, self.username)
+        self.df_processed = post_process(self.df_flat, self.username)
+        save_df_to_csv(self.df_processed, self.username)
 
     def get_dataframe(self):
-        return self.df_flat
+        return self.df_processed
 
     def run_all(self):
         self.fetch_games()
