@@ -11,11 +11,15 @@ headers = {
     "Accept": "application/x-ndjson"
 }
 
-def get_games(username, max, perfType, color=None):
+def get_games(username, max_games, perf_type, color):
     """Função para buscar jogos da API do Lichess"""
+    if perf_type == 'All':
+        perf_type = None
+    if color == 'Both':
+        color = None
     params = {
-        "max": max,
-        "perfType": perfType,
+        "max": max_games,
+        "perf_type": perf_type,
         "color": color,
         "rated": True,
         "accuracy": True,
@@ -23,7 +27,7 @@ def get_games(username, max, perfType, color=None):
         "opening": True
     }
     url = f"https://lichess.org/api/games/user/{username}"
-    response = requests.get(url, headers=headers, params=params, stream=True)
+    response = requests.get(url, headers=headers, params=params, stream=True, timeout = 30)
 
     games_list = []
     for line in response.iter_lines():
