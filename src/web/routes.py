@@ -1,16 +1,17 @@
+# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+import traceback
 from flask import render_template, request
 from src.services.analysis import analysis_per_color
 from src.services.data_viz import status_distribution
 from src.services.game_processor import GameProcessor
 from ..webapp import app
-import traceback
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         username = request.form["username"]
-        max_games = int(request.form.get("max_games", 50))  # Default is 50
+        max_games = int(request.form.get("max_games", 30))  # Default is 50
         perf_type = request.form.get("perf_type", "blitz")  # Default is "blitz"
         color = request.form.get("color", None)  # Default is None
 
@@ -23,8 +24,8 @@ def index():
             df = processor.get_dataframe()
 
             # Run the data analysis
-            analysis_for_white = analysis_per_color(df, username, 'white')
-            analysis_for_black = analysis_per_color(df, username, 'black')
+            analysis_for_white = analysis_per_color(df, 'white')
+            analysis_for_black = analysis_per_color(df, 'black')
 
             # Generate graphs
             status_distribution_graph = status_distribution(df)
