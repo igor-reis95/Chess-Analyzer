@@ -1,25 +1,30 @@
 <form method="POST" action="/">
-    <label for="username">Usuário Lichess:</label>
+    <label for="username">Lichess User:</label>
     <input type="text" name="username" value="Totallyweakplayer39" required>
   
-    <label for="max_games">Número máximo de jogos:</label>
+    <label for="max_games">Number of games:</label>
     <input type="number" name="max_games" value="30" min="1" max="300">
   
-    <label for="perf_type">Tipo de jogo:</label>
+    <label for="perf_type">Time Control:</label>
     <select name="perf_type">
+      <option value="all">All</option>
       <option value="bullet">Bullet</option>
       <option value="blitz">Blitz</option>
       <option value="rapid" selected>Rapid</option>
       <option value="classical">Classical</option>
     </select>
   
-    <label for="color">Cor jogada:</label>
+    <label for="color">Color played:</label>
     <select name="color">
-      <option value="">Ambas</option>
-      <option value="white">Brancas</option>
-      <option value="black">Pretas</option>
+      <option value="">Both</option>
+      <option value="white">White</option>
+      <option value="black">Black</option>
     </select>
   
-    <button type="submit">Enviar</button>
+    <button type="submit">Send</button>
+
+    <p style="font-size: 0.9em; color: #555;">
+    The lichess API has a limit of 30 games per second. The more games you request the more time it will take. Limit of last 900 games was implemented
+    </p>
   </form>
   
