@@ -18,6 +18,7 @@
                 <th>Black Player</th>
                 <th>Result</th>
                 <th>Time Control (s)</th>
+                <th>Link to the game</th>
             </tr>
         </thead>
         <tbody>
@@ -28,6 +29,7 @@
                     <td>{{ game['players']['black']['user']['name'] }}</td>
                     <td>{{ game['status'] }}</td>
                     <td>{{ game['clock']['initial'] }}</td>
+                    <td><a href="https://lichess.org/{{game['id']}}" target="_blank"> Link</a></td>
                 </tr>
             {% endfor %}
         </tbody>
