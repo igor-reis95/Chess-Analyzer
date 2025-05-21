@@ -1,5 +1,6 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
 import pandas as pd
+import math
 
 def extract_perspective(df, username, color):
     opp_color = 'white' if color == 'black' else 'black'
@@ -42,6 +43,8 @@ def normalize_perspective(df, username):
 def post_process(df, username):
     df = normalize_perspective(df, username)
     df['rating_difference'] = df['player_rating'] - df['opponent_rating']
+    df['half_moves'] = df['moves'].apply(lambda x: len(x.split()))
+    df['full_moves'] = df['half_moves'].apply(lambda x: math.ceil(x / 2))
     df['created_at'] = pd.to_datetime(df['createdAt'], unit='ms')
     df['last_move_at'] = pd.to_datetime(df['lastMoveAt'], unit='ms')
     df['time_spent_playing'] = (df['last_move_at'] - df['created_at']).dt.total_seconds()
