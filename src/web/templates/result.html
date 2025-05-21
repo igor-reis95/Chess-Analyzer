@@ -13,10 +13,11 @@
     <table border="1">
         <thead>
             <tr>
-                <th>Game ID</th>
-                <th>White Player</th>
-                <th>Black Player</th>
+                <th>Player name</th>
+                <th>Player color</th>
+                <th>Opponent name</th>
                 <th>Result</th>
+                <th>Ending</th>
                 <th>Time Control (s)</th>
                 <th>Link to the game</th>
             </tr>
@@ -24,11 +25,12 @@
         <tbody>
             {% for game in games %}
                 <tr>
-                    <td>{{ game['id'] }}</td>
-                    <td>{{ game['players']['white']['user']['name'] }}</td>
-                    <td>{{ game['players']['black']['user']['name'] }}</td>
+                    <td>{{ game['player_name'] }}</td>
+                    <td>{{ game['player_color'] }}</td>
+                    <td>{{ game['opponent_name'] }}</td>
+                    <td>{{ game['result'] }}</td>
                     <td>{{ game['status'] }}</td>
-                    <td>{{ game['clock']['initial'] }}</td>
+                    <td>{{ game['clock_time_control'] }}</td>
                     <td><a href="https://lichess.org/{{game['id']}}" target="_blank"> Link</a></td>
                 </tr>
             {% endfor %}
