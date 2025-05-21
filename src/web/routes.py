@@ -22,6 +22,7 @@ def index():
             # Run the processing steps
             processor.run_all()
             df = processor.get_dataframe()
+            game_records = df.to_dict(orient='records')
 
             # Run the data analysis
             analysis_for_white = analysis_per_color(df, 'white')
@@ -33,8 +34,8 @@ def index():
             # Pass the results to the results page
             return render_template("result.html",
                                    username=username,
-                                   count=len(processor.games),
-                                   games = processor.games,
+                                   count=len(game_records),
+                                   games = game_records,
                                    analysis_for_white = analysis_for_white,
                                    analysis_for_black = analysis_for_black,
                                    status_distribution_graph=status_distribution_graph)
