@@ -11,9 +11,9 @@ from ..webapp import app
 def index():
     if request.method == "POST":
         username = request.form["username"]
-        max_games = int(request.form.get("max_games", 30))  # Default is 50
-        perf_type = request.form.get("perf_type", "blitz")  # Default is "blitz"
-        color = request.form.get("color", None)  # Default is None
+        max_games = int(request.form.get("max_games"))
+        perf_type = request.form.get("perf_type")
+        color = request.form.get("color")
 
         try:
             # Create the GameProcessor instance
