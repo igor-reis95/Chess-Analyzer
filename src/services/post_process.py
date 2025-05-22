@@ -48,6 +48,7 @@ def post_process(df, username):
     df['created_at'] = pd.to_datetime(df['createdAt'], unit='ms')
     df['last_move_at'] = pd.to_datetime(df['lastMoveAt'], unit='ms')
     df['time_spent_playing'] = (df['last_move_at'] - df['created_at']).dt.total_seconds()
+    df['created_at'] = df['created_at'].dt.strftime('%d/%m/%y %H:%M')
     df.sort_values(by=['created_at'], ascending = False, inplace = True)
 
     keep_cols = [
