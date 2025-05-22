@@ -6,7 +6,7 @@ from src.services.flatten import flatten_game_data
 from src.services.post_process import post_process
 
 class GameProcessor:
-    def __init__(self, username, max_games=50, perf_type=None, color=None):
+    def __init__(self, username, max_games, perf_type, color):
         self.username = username
         self.max_games = max_games
         self.perf_type = perf_type
