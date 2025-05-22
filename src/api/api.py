@@ -19,7 +19,7 @@ def get_games(username, max_games, perf_type, color):
         color = None
     params = {
         "max": max_games,
-        "perf_type": perf_type,
+        "perfType": perf_type,
         "color": color,
         "rated": True,
         "accuracy": True,
