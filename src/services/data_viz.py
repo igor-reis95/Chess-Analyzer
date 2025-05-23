@@ -65,6 +65,7 @@ def status_distribution(df):
     img_base64 = base64.b64encode(img_stream.read()).decode('utf-8')
 
     # Return the base64 string
+    plt.close()
     return img_base64
 
 
