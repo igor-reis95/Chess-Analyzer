@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-def filter_by_color(df, color):
+def filter_by_color(df, color=None):
     return df if color is None else df[df['player_color'] == color]
 
 def get_rating_diff(df):
@@ -11,7 +11,9 @@ def get_rating_diff(df):
 def get_top_openings(df):
     return df['opening_eco'].value_counts(dropna=False).head()
 
-def get_top_openings_by_result(df, color):
+def get_top_openings_by_result(df, color=None):
+    df = filter_by_color(df, color)
+
     # Filter games by result and color first
     wins = df[(df['result'] == 'win') & (df['player_color'] == color)]
     losses = df[(df['result'] == 'loss') & (df['player_color'] == color)]
@@ -37,18 +39,18 @@ def get_common_opponents(df):
     return df['opponent_name'].value_counts().head()
 
 def get_accuracy_stats(df):
-    all_games = df['player_accuracy'].mean()
-    wins = df[df['result'] == 'win']['player_accuracy'].mean()
-    losses = df[df['result'] == 'loss']['player_accuracy'].mean()
-    draws = df[df['result'] == 'draw']['player_accuracy'].mean()
+    overall = round(df['player_accuracy'].mean(), 2)
+    wins = round(df[df['result'] == 'win']['player_accuracy'].mean(), 2)
+    losses = round(df[df['result'] == 'loss']['player_accuracy'].mean(), 2)
+    draws = round(df[df['result'] == 'draw']['player_accuracy'].mean(), 2)
     return {
-        'overall': all_games,
+        'overall': overall,
         'wins': wins,
         'losses': losses,
         'draws': draws
     }
 
-def analysis_per_color(df, color):
+def basic_analysis(df, color=None):
     df = filter_by_color(df, color)
     opening_by_result = get_top_openings_by_result(df, color)
     wins, losses, draws = count_results(df)
@@ -59,7 +61,7 @@ def analysis_per_color(df, color):
         "opening_losses": opening_by_result[1],
         "opening_draws": opening_by_result[2],
         "rating_range": get_rating_range(df),
-        "results": {"win": wins, "loss": losses, "draw": draws},
+        "results": {"wins": wins, "losses": losses, "draws": draws},
         "common_opponents": get_common_opponents(df),
         "accuracy": get_accuracy_stats(df)
     }
