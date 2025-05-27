@@ -13,6 +13,7 @@
         <p>Total Games Analyzed: {{ count }}</p>
         
         <h2>Game Details</h2>
+        <p>Only the last 30 games are shown here</p>
         <!-- Pure Bootstrap Toggle Button -->
         <button 
             class="btn btn-primary mb-3"
@@ -43,7 +44,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for game in games %}
+                        {% for game in games_table %}
                             <tr>
                                 <td>{{ game['created_at'] }}</td>
                                 <td>{{ game['player_name'] }}</td>
@@ -60,37 +61,285 @@
             </div>
         </div>
 
-    <h2>Analysis for White</h2>
-    <p>Rating Difference: {{ analysis_for_white.rating_diff }}</p>
-    <p>Opening Counts: </p>
-    <ul>
-        {% for opening, count in analysis_for_white.opening_counts.items() %}
-            <li>{{ opening }}: {{ count }}</li>
-        {% endfor %}
-    </ul>
-    <p>Accuracy:</p>
-    <ul>
-        <li>Overall: {{ analysis_for_white.accuracy.overall }}</li>
-        <li>Wins: {{ analysis_for_white.accuracy.wins }}</li>
-        <li>Losses: {{ analysis_for_white.accuracy.losses }}</li>
-        <li>Draws: {{ analysis_for_white.accuracy.draws }}</li>
-    </ul>
+    <div class="row mt-4">
+        <div class="card mb-4 bg-light">
+            <div class="card-header">
+                <h3>Overall Performance</h3>
+            </div>
+            <h5>Rating Difference: {{ overall_analysis.rating_diff }}</h5>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-3">
+                        <h6>Results</h6>
+                        <table class="table table-striped table-sm">
+                            <tbody>
+                                <tr>
+                                    <th>Wins</th>
+                                    <td>{{ overall_analysis.results.wins }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Draws</th>
+                                    <td>{{ overall_analysis.results.draws }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Losses</th>
+                                    <td>{{ overall_analysis.results.losses }}</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-active">  <!-- Highlight the footer row -->
+                                    <th>Total Games</th>
+                                    <td>{{ overall_analysis.results.wins + overall_analysis.results.draws + overall_analysis.results.losses }}</td>
+                                </tr>
+                        </tfoot>
+                        </table>
+                    </div>
+                    <div class="col-3">
+                        <h6>Most Played Openings</h6>
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Opening</th>
+                                    <th>Count</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for opening, count in overall_analysis.opening_counts.items() %}
+                                <tr>
+                                    <td>{{ opening }}</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <h6>
+                            <a href="https://www.365chess.com/eco.php" 
+                            class="text-decoration-none text-primary bg-primary bg-opacity-10 px-2 rounded">
+                                List of opening ecos
+                            </a>
+                        </h6>
+                    </div>
+                    <div class="col-3">
+                        <h6>Accuracy</h6>
+                        <table class="table table-striped table-sm">
+                            <tbody>
+                                <tr>
+                                    <th>Overall</th>
+                                    <td>{{ overall_analysis.accuracy.overall }}%</td>
+                                </tr>
+                                <tr>
+                                    <th>Wins</th>
+                                    <td>{{ overall_analysis.accuracy.wins }}%</td>
+                                </tr>
+                                <tr>
+                                    <th>Draws</th>
+                                    <td>{{ overall_analysis.accuracy.draws }}%</td>
+                                </tr>
+                                <tr>
+                                    <th>Losses</th>
+                                    <td>{{ overall_analysis.accuracy.losses }}%</td>
+                                </tr>
+                            </tbody>
+                            
+                        </table>
+                    </div>
+                    <div class="col-3">
+                        <h6>Common Opponents</h6>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Opponent</th>
+                                    <th>Games</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for opponent, count in overall_analysis.common_opponents.items() %}
+                                <tr>
+                                    <td>{{ opponent }}</td>
+                                    <td>{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- White Analysis -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h3>White Games Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Rating Difference: {{ analysis_for_white.rating_diff }}</h5>
+                    <div class="row">
+                        <div class="col-4">
+                            <h6>Results</h6>
+                            <table class="table table-striped table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Wins</th>
+                                        <td>{{ analysis_for_white.results.wins }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Draws</th>
+                                        <td>{{ analysis_for_white.results.draws }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Losses</th>
+                                        <td>{{ analysis_for_white.results.losses }}</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">  <!-- Highlight the footer row -->
+                                        <th>Total Games</th>
+                                        <td>{{ analysis_for_white.results.wins + analysis_for_white.results.draws + analysis_for_white.results.losses }}</td>
+                                    </tr>
+                            </tfoot>
+                            </table>
+                        </div>
+                        <div class="col-4">
+                            <h6>Most Played Openings</h6>
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Opening</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for opening, count in analysis_for_white.opening_counts.items() %}
+                                    <tr>
+                                        <td>{{ opening }}</td>
+                                        <td>{{ count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <h6>
+                                <a href="https://www.365chess.com/eco.php" 
+                                class="text-decoration-none text-primary bg-primary bg-opacity-10 px-2 rounded">
+                                    List of opening ecos
+                                </a>
+                            </h6>
+                        </div>
+                        <div class="col-4">
+                            <h6>Accuracy</h6>
+                            <table class="table table-striped table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Overall</th>
+                                        <td>{{ analysis_for_white.accuracy.overall }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Wins</th>
+                                        <td>{{ analysis_for_white.accuracy.wins }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Draws</th>
+                                        <td>{{ analysis_for_white.accuracy.draws }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Losses</th>
+                                        <td>{{ analysis_for_white.accuracy.losses }}%</td>
+                                    </tr>
+                                </tbody>
+                                
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <h2>Analysis for Black</h2>
-    <p>Rating Difference: {{ analysis_for_black.rating_diff }}</p>
-    <p>Opening Counts: </p>
-    <ul>
-        {% for opening, count in analysis_for_black.opening_counts.items() %}
-            <li>{{ opening }}: {{ count }}</li>
-        {% endfor %}
-    </ul>
-    <p>Accuracy:</p>
-    <ul>
-        <li>Overall: {{ analysis_for_black.accuracy.overall }}</li>
-        <li>Wins: {{ analysis_for_black.accuracy.wins }}</li>
-        <li>Losses: {{ analysis_for_black.accuracy.losses }}</li>
-        <li>Draws: {{ analysis_for_black.accuracy.draws }}</li>
-    </ul>
+        <!-- Black Analysis -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h3>Black Games Analysis</h3>
+                </div>
+                <div class="card-body">
+                    <h5>Rating Difference: {{ analysis_for_black.rating_diff }}</h5>
+                    <div class="row">
+                        <div class="col-4">
+                            <h6>Results</h6>
+                            <table class="table table-striped table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Wins</th>
+                                        <td>{{ analysis_for_black.results.wins }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Draws</th>
+                                        <td>{{ analysis_for_black.results.draws }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Losses</th>
+                                        <td>{{ analysis_for_black.results.losses }}</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">  <!-- Highlight the footer row -->
+                                        <th>Total Games</th>
+                                        <td>{{ analysis_for_black.results.wins + analysis_for_black.results.draws + analysis_for_black.results.losses }}</td>
+                                    </tr>
+                            </tfoot>
+                            </table>
+                        </div>
+                        <div class="col-4">
+                            <h6>Most Played Openings</h6>
+                            <table class="table table-striped table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Opening</th>
+                                        <th>Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for opening, count in analysis_for_black.opening_counts.items() %}
+                                    <tr>
+                                        <td>{{ opening }}</td>
+                                        <td>{{ count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <h6>
+                                <a href="https://www.365chess.com/eco.php" 
+                                class="text-decoration-none text-primary bg-primary bg-opacity-10 px-2 rounded">
+                                    List of opening ecos
+                                </a>
+                            </h6>
+                        </div>
+                        <div class="col-4">
+                            <h6>Accuracy</h6>
+                            <table class="table table-striped table-sm">
+                                <tbody>
+                                    <tr>
+                                        <th>Overall</th>
+                                        <td>{{ analysis_for_black.accuracy.overall }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Wins</th>
+                                        <td>{{ analysis_for_black.accuracy.wins }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Draws</th>
+                                        <td>{{ analysis_for_black.accuracy.draws }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Losses</th>
+                                        <td>{{ analysis_for_black.accuracy.losses }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <h2>Game Status Distribution</h2>
     <img src="data:image/png;base64,{{ status_distribution_graph }}" alt="Game Status Distribution">
     <!-- Bootstrap JS (for modals, dropdowns, etc.) -->
