@@ -2,6 +2,8 @@
 
 import io
 import base64
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 def count_game_outcomes(df, username):
