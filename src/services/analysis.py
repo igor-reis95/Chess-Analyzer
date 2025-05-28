@@ -66,3 +66,20 @@ def basic_analysis(df, color=None):
         "accuracy": get_accuracy_stats(df)
     }
     return results
+
+def prepare_winrate_data(df):
+    results = ['win', 'draw', 'loss']
+
+    def get_percentages(subset):
+        counts = subset['result'].value_counts(normalize=True) * 100
+        return {r: round(counts.get(r, 0), 2) for r in results}
+
+    total = get_percentages(df)
+    white = get_percentages(df[df['player_color'] == 'white'])
+    black = get_percentages(df[df['player_color'] == 'black'])
+
+    return {
+        'White': white,
+        'Black': black,
+        'Both': total
+    }
