@@ -1,8 +1,8 @@
 # pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
 import traceback
 from flask import render_template, request
-from src.services.analysis import basic_analysis
-from src.services.data_viz import status_distribution
+from src.services.analysis import basic_analysis, prepare_winrate_data
+from src.services.data_viz import plot_game_status_distribution, winrate_bar_graph
 from src.services.game_processor import GameProcessor
 from ..webapp import app
 
@@ -36,7 +36,8 @@ def index():
             )
 
             # Generate graphs
-            status_distribution_graph = status_distribution(df)
+            status_distribution_graph = plot_game_status_distribution(df)
+            winrate_graph = winrate_bar_graph(prepare_winrate_data(df))
 
             # Pass the results to the results page
             return render_template("result.html",
@@ -47,7 +48,8 @@ def index():
                                    analysis_for_white = analysis_for_white,
                                    analysis_for_black = analysis_for_black,
                                    common_opponents = common_opponents_html,
-                                   status_distribution_graph=status_distribution_graph)
+                                   status_distribution_graph=status_distribution_graph,
+                                   winrate_graph = winrate_graph)
         except Exception as e:
             # Handle any error that happens during fetching the games
             tb = traceback.format_exc()
