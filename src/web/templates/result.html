@@ -342,9 +342,9 @@
     </div>
     <h2>Game Status Distribution</h2>
     <img src="data:image/png;base64,{{ status_distribution_graph }}" alt="Game Status Distribution">
-    <!-- Bootstrap JS (for modals, dropdowns, etc.) -->
+    <h2>Winrate</h2>
+    <img src="data:image/png;base64,{{ winrate_graph }}" alt="Winrate Bar Graph">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Your custom JS -->
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
