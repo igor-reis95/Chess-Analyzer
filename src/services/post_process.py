@@ -49,19 +49,22 @@ def post_process(df, username):
     df['last_move_at'] = pd.to_datetime(df['lastMoveAt'], unit='ms')
     df['time_spent_playing'] = (df['last_move_at'] - df['created_at']).dt.total_seconds()
     df['created_at'] = df['created_at'].dt.strftime('%d/%m/%y %H:%M')
+    df['time_control_with_increment'] = (
+        (df['clock_time_control'] // 60).astype(str) + '+' + df['clock_increment'].astype(str)
+    )
     df.sort_values(by=['created_at'], ascending = False, inplace = True)
 
     keep_cols = [
         'id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
         'player_rating', 'opponent_rating', 'rating_difference',
         'variant', 'speed', 'perf', 'clock_time_control', 'clock_increment',
-        'source', 'tournament', 'division_middle', 'division_end',
+        'time_control_with_increment', 'source', 'tournament', 'division_middle', 'division_end',
         'created_at', 'last_move_at', 'time_spent_playing',
         'opening_eco', 'opening_name', 'opening_ply',
         'player_rating_diff', 'player_inaccuracy', 'player_mistake',
         'player_blunder', 'player_accuracy',
         'opponent_rating_diff', 'opponent_inaccuracy', 'opponent_mistake',
-        'opponent_blunder', 'opponent_accuracy', 'moves'
+        'opponent_blunder', 'opponent_accuracy', 'half_moves', 'full_moves', 'moves'
     ]
     existing_cols = [col for col in keep_cols if col in df.columns]
     return df[existing_cols]
