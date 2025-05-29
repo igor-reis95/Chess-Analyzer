@@ -16,13 +16,14 @@ def winrate_bar_graph(data):
     x = np.arange(len(labels))  # [0, 1, 2]
     bar_width = 0.5
 
-    fig, ax = plt.subplots()
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
 
     # Stack the bars
-    p1 = ax.bar(x, wins, bar_width, label='win', color='#92b76f')
-    p2 = ax.bar(x, draws, bar_width, bottom=wins, label='draw', color='#d59c4d')
-    p3 = ax.bar(x, losses, bar_width,
-                bottom=[i + j for i, j in zip(wins, draws)], label='loss', color='#db6f72')
+    ax.bar(x, wins, bar_width, label='win', color='#92b76f')
+    ax.bar(x, draws, bar_width, bottom=wins, label='draw', color='#d59c4d')
+    ax.bar(x, losses, bar_width,
+        bottom=[i + j for i, j in zip(wins, draws)], label='loss', color='#db6f72')
 
     # Labels
     ax.set_ylabel('Percentage')
@@ -68,7 +69,7 @@ def plot_game_status_distribution(df):
             custom_colors.append('#6c757d')
 
     fig, ax = plt.subplots()
-    wedges, texts, autotexts = ax.pie(
+    wedges, _, _ = ax.pie(
         status_counts,
         labels=status_counts.index,
         autopct='%1.1f%%',
