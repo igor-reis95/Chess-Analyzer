@@ -13,8 +13,8 @@ headers = {
 
 def get_games(username, max_games, perf_type, color):
     """Função para buscar jogos da API do Lichess"""
-    if perf_type == 'All':
-        perf_type = None
+    if perf_type == 'all':
+        perf_type = 'ultraBullet,bullet,blitz,rapid,classical'
     if color == 'Both':
         color = None
     params = {
