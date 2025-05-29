@@ -22,6 +22,7 @@ def index():
             # Run the processing steps
             processor.run_all()
             df = processor.get_dataframe()
+            df = df.head(max_games) # return only the amount of rows requested by the user
             game_records = df.to_dict(orient='records')
             game_records_for_table = df.head(30).to_dict(orient='records')
 
@@ -31,7 +32,7 @@ def index():
             analysis_for_black = basic_analysis(df, 'black')
             common_opponents_html = overall_analysis['common_opponents'].to_frame().to_html(
                 classes="table table-striped",  # Bootstrap classes (optional)
-                header=True, 
+                header=True,
                 index=False
             )
 
