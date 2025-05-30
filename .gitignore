@@ -6,3 +6,4 @@ data/
 *.pgn
 .vscode/settings.json
 *.xlsx
+app.log

@@ -5,7 +5,8 @@ It imports the Flask `app` instance from the web application module
 and enables debug mode and auto-reloading for development purposes.
 """
 
-from src.webapp import app
+from src.webapp import app, setup_logging
 
 if __name__ == "__main__":
+    setup_logging()
     app.run(debug=True, use_reloader=True,)
