@@ -1,31 +1,62 @@
-# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+"""
+This module provides utility functions to generate base64-encoded visualizations 
+from chess match data.
+
+Functions:
+- winrate_bar_graph: Generates a stacked bar chart of win/draw/loss percentages by color.
+- plot_game_status_distribution: Generates a donut chart showing game outcome distributions.
+
+These functions are designed for integration in data pipelines or web apps where
+image output needs to be embedded or transmitted via text (e.g., HTML or JSON).
+"""
 
 import io
 import base64
+import logging
+from typing import Dict
+import pandas as pd
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # pylint: disable=wrong-import-position
 
-def winrate_bar_graph(data):
+# Create logger
+logger = logging.getLogger(__name__)
+
+def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
+    """
+    Generate a base64-encoded stacked bar chart for win/draw/loss percentages by color.
+
+    Args:
+        data (Dict[str, Dict[str, float]]): Nested dictionary with win, draw, and loss
+                                            percentages for each color ("White", "Black", "Both").
+
+    Returns:
+        str: Base64-encoded PNG image of the generated chart.
+    """
+    logger.debug("Generating winrate bar graph for data: %s", data)
+
     labels = list(data.keys())
     wins = [data[color]['win'] for color in labels]
     draws = [data[color]['draw'] for color in labels]
     losses = [data[color]['loss'] for color in labels]
 
-    x = np.arange(len(labels))  # [0, 1, 2]
+    x = np.arange(len(labels))
     bar_width = 0.5
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+    _, ax = plt.subplots()
 
-    # Stack the bars
     ax.bar(x, wins, bar_width, label='win', color='#92b76f')
     ax.bar(x, draws, bar_width, bottom=wins, label='draw', color='#d59c4d')
-    ax.bar(x, losses, bar_width,
-        bottom=[i + j for i, j in zip(wins, draws)], label='loss', color='#db6f72')
+    ax.bar(
+        x,
+        losses,
+        bar_width,
+        bottom=[i + j for i, j in zip(wins, draws)],
+        label='loss',
+        color='#db6f72'
+    )
 
-    # Labels
     ax.set_ylabel('Percentage')
     ax.set_title('Win Rates by Color')
     ax.set_xticks(x)
@@ -33,26 +64,35 @@ def winrate_bar_graph(data):
     ax.set_ylim(0, 100)
     ax.legend()
 
-    # Optional: Add percentage labels on top
     for idx, (w, d, l) in enumerate(zip(wins, draws, losses)):
         ax.text(idx, w / 2, f'{w:.0f}%', ha='center', va='center', color='white')
         ax.text(idx, w + d / 2, f'{d:.0f}%', ha='center', va='center', color='black')
         ax.text(idx, w + d + l / 2, f'{l:.0f}%', ha='center', va='center', color='white')
 
     plt.tight_layout()
-    # Save the plot to a BytesIO object
+
     img_stream = io.BytesIO()
     plt.savefig(img_stream, format='png')
     img_stream.seek(0)
-
-    # Encode the image in base64
     img_base64 = base64.b64encode(img_stream.read()).decode('utf-8')
-
-    # Return the base64 string
     plt.close()
+
+    logger.debug("Winrate bar graph successfully generated.")
     return img_base64
 
-def plot_game_status_distribution(df):
+
+def plot_game_status_distribution(df: pd.DataFrame) -> str:
+    """
+    Generate a base64-encoded donut chart for game status distribution.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing a 'status' column.
+
+    Returns:
+        str: Base64-encoded PNG image of the chart.
+    """
+    logger.debug("Generating game status distribution chart.")
+
     status_counts = df['status'].value_counts()
 
     custom_colors = []
@@ -98,4 +138,6 @@ def plot_game_status_distribution(df):
     img_stream.seek(0)
     img_base64 = base64.b64encode(img_stream.read()).decode('utf-8')
     plt.close()
+
+    logger.debug("Game status distribution chart successfully generated.")
     return img_base64
