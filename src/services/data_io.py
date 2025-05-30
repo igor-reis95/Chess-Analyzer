@@ -1,4 +1,11 @@
-# pylint: disable=missing-module-docstring, missing-class-docstring, missing-function-docstring
+"""Utilities for saving chess game data to disk.
+
+This module provides functions to persist raw and processed game data:
+- `save_games_to_json`: saves a list of raw games to a JSON file.
+- `save_df_to_csv`: saves a DataFrame of processed games to a CSV file.
+
+Files are stored under configurable folders (default: data/raw and data/processed).
+"""
 
 import os
 import json
