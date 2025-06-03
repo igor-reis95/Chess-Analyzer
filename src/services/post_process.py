@@ -190,8 +190,8 @@ def format_columns(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame with formatted 'created_at' string column and sorted by creation date descending.
     """
-    df['created_at'] = df['created_at'].dt.strftime('%d/%m/%y %H:%M')
     df.sort_values(by=['created_at'], ascending=False, inplace=True)
+    df['created_at'] = df['created_at'].dt.strftime('%d/%m/%y %H:%M')
     return df
 
 
