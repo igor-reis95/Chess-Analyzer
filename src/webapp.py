@@ -9,6 +9,17 @@ app = Flask(
 )
 
 def setup_logging():
+    """
+    Configure logging for the application.
+
+    Sets up a console handler for INFO-level logs and a file handler for WARNING and above.
+    Prevents duplicate handlers if logging is already configured.
+    Adjusts the Werkzeug logger to match the desired log level without adding extra handlers.
+
+    Logs:
+        - Console: INFO and above
+        - File (app.log): WARNING and above
+    """
     if len(logging.root.handlers) > 0:
         return
 
