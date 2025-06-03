@@ -1,7 +1,9 @@
 """Game Data Processing Module
 
-This module provides utilities for processing and flattening chess game data from Lichess API responses.
-It extracts nested game information into a flat structure suitable for analysis and DataFrame operations.
+This module provides utilities for processing and flattening chess game data from
+Lichess API responses.
+It extracts nested game information into a flat structure suitable for analysis and
+DataFrame operations.
 
 Key Features:
 - Safely extracts nested dictionary data with graceful handling of missing keys
@@ -144,8 +146,14 @@ def flatten_game_data(games_list):
     df_original = pd.DataFrame(games_list)
 
     # Drop nested fields to avoid duplication
-    cols_to_drop = [col for col in ['players', 'clock', 'division', 'opening'] if col in df_original.columns]
+    cols_to_drop = [
+        col for col in ['players', 'clock', 'division', 'opening']
+        if col in df_original.columns
+    ]
     df_original_cleaned = df_original.drop(columns=cols_to_drop)
 
-    df_combined = pd.concat([df_original_cleaned.reset_index(drop=True), df_flattened.reset_index(drop=True)], axis=1)
+    df_combined = pd.concat([
+            df_original_cleaned.reset_index(drop=True),
+            df_flattened.reset_index(drop=True)
+        ], axis=1)
     return df_combined

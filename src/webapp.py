@@ -42,4 +42,6 @@ def setup_logging():
     werkzeug_logger.setLevel(logging.INFO)
 
 # Import routes after creating app to avoid circular imports
+# pylint: disable=wrong-import-position
+# pylint: disable=unused-import
 from src.web import routes
