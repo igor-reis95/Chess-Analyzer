@@ -9,4 +9,4 @@ from src.webapp import app, setup_logging
 
 if __name__ == "__main__":
     setup_logging()
-    app.run(debug=True, use_reloader = False)
+    app.run(debug=True, use_reloader = True)
