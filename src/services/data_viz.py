@@ -93,25 +93,38 @@ def plot_game_status_distribution(df: pd.DataFrame) -> str:
     """
     logger.debug("Generating game status distribution chart.")
 
+    # Count and compute relative frequency
     status_counts = df['status'].value_counts()
+    total = status_counts.sum()
+    status_percent = status_counts / total
 
-    custom_colors = []
-    for status in status_counts.index:
-        if status == 'resign':
-            custom_colors.append('#93b674')
-        elif status == 'mate':
-            custom_colors.append('#da6f73')
-        elif status == 'draw':
-            custom_colors.append('#d49b54')
-        elif status == 'outoftime':
-            custom_colors.append('#3288d1')
-        else:
-            custom_colors.append('#6c757d')
+    # Group small categories into 'other'
+    threshold = 0.10
+    major_statuses = status_percent[status_percent >= threshold]
+    other_count = status_counts[status_percent < threshold].sum() / 100
 
+    # Final data
+    final_counts = major_statuses.copy()
+    if other_count > 0:
+        final_counts['other'] = other_count
+
+    # Define color mapping
+    color_map = {
+        'resign': '#93b674',
+        'mate': '#da6f73',
+        'draw': '#d49b54',
+        'outoftime': '#3288d1',
+        'other': '#6c757d'
+    }
+
+    # Assign colors based on final labels
+    custom_colors = [color_map.get(status, '#6c757d') for status in final_counts.index]
+
+    # Plot
     fig, ax = plt.subplots()
     wedges, _, _ = ax.pie(
-        status_counts,
-        labels=status_counts.index,
+        final_counts,
+        labels=final_counts.index,
         autopct='%1.1f%%',
         startangle=90,
         wedgeprops={'width': 0.4},
@@ -125,7 +138,7 @@ def plot_game_status_distribution(df: pd.DataFrame) -> str:
     plt.title("Game Status Distribution")
     ax.legend(
         wedges,
-        status_counts.index,
+        final_counts.index,
         title="Status",
         loc="center left",
         bbox_to_anchor=(1, 0.5)
