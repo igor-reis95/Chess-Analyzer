@@ -8,8 +8,10 @@ and renders visualizations of the analysis results.
 import traceback
 import re
 import logging
+import io
+import csv
 from typing import Any
-from flask import render_template, request, Response
+from flask import render_template, request, Response, make_response
 from src.services.analysis import basic_analysis, prepare_winrate_data
 from src.services.data_viz import plot_game_status_distribution, winrate_bar_graph
 from src.services.game_processor import GameProcessor
@@ -99,6 +101,7 @@ def _generate_template_context(params: dict, df) -> dict:
         **params,
         "count": len(df),
         "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient='records'),
+        "form_data": params,
         **_get_analysis_data(df),
         **_get_visualizations(df)
     }
@@ -130,3 +133,35 @@ def _render_error(message: str, status_code: int = 500) -> str:
     """Render error message with traceback."""
     tb = traceback.format_exc()
     return Response(f"<pre>{message}\n\n{tb}</pre>", status=status_code, mimetype="text/html")
+
+@app.route("/download_csv", methods=["POST"])
+def download_csv():
+    """Handle CSV download requests."""
+    try:
+        # Get the form data again to reconstruct the dataframe
+        form_data = request.form
+        params = _validate_inputs(form_data)
+        df = _fetch_and_prepare_data(params)
+
+        # Create CSV in memory
+        output = io.StringIO()
+        writer = csv.writer(output)
+
+        # Write header
+        writer.writerow(df.columns)
+
+        # Write data
+        for row in df.itertuples(index=False):
+            writer.writerow(row)
+
+        # Prepare response
+        output.seek(0)
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = "attachment; filename=chess_games_analysis.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+
+    except Exception as e:
+        logger.exception("Error generating CSV download")
+        return _render_error(f"Could not generate CSV: {str(e)}")
+    
