@@ -9,9 +9,11 @@ import traceback
 import re
 import logging
 import io
+from io import BytesIO
 import csv
 from typing import Any
-from flask import render_template, request, Response, make_response
+from weasyprint import HTML
+from flask import render_template, request, Response, make_response, send_file
 from src.services.analysis import basic_analysis, prepare_winrate_data
 from src.services.data_viz import plot_game_status_distribution, winrate_bar_graph
 from src.services.game_processor import GameProcessor
@@ -139,8 +141,7 @@ def download_csv():
     """Handle CSV download requests."""
     try:
         # Get the form data again to reconstruct the dataframe
-        form_data = request.form
-        params = _validate_inputs(form_data)
+        params = _validate_inputs(request.form)
         df = _fetch_and_prepare_data(params)
 
         # Create CSV in memory
@@ -164,4 +165,34 @@ def download_csv():
     except Exception as e:
         logger.exception("Error generating CSV download")
         return _render_error(f"Could not generate CSV: {str(e)}")
-    
+
+@app.route("/download_pdf", methods=["POST"])
+def download_pdf():
+    """Handle PDF download requests."""
+    try:
+        # Step 1: Reuse existing input validation and data fetching
+        params = _validate_inputs(request.form)
+        df = _fetch_and_prepare_data(params)
+
+        # Step 2: Render the HTML template with context
+        rendered = render_template(
+            "result.html",
+            **_generate_template_context(params, df)
+        )
+
+        # Step 3: Convert HTML to PDF in memory
+        pdf_io = BytesIO()
+        HTML(string=rendered).write_pdf(target=pdf_io)
+        pdf_io.seek(0)
+
+        # Step 4: Send the PDF file as response
+        return send_file(
+            pdf_io,
+            as_attachment=True,
+            download_name="chess_games_analysis.pdf",
+            mimetype="application/pdf"
+        )
+
+    except Exception as e:
+        logger.exception("Error generating PDF download")
+        return _render_error(f"Could not generate PDF: {str(e)}")
