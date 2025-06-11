@@ -13,7 +13,7 @@ import logging
 from typing import Optional
 from pandas import DataFrame
 from src.api.api import get_games
-from src.services.data_io import save_games_to_json, save_df_to_csv
+from src.services.data_io import save_games_to_json, save_df_to_csv, save_processed_game_data
 from src.services.flatten import flatten_game_data
 from src.services.post_process import post_process
 
@@ -88,13 +88,14 @@ class GameProcessor:
 
     def post_process_games(self) -> None:
         """
-        Post-process the flattened DataFrame and save it as CSV.
+        Post-process the flattened DataFrame and save it as CSV and to the postgres database.
         """
         if self.df_flat is None:
             logger.warning("No flattened data to process for user '%s'", self.username)
             return
         self.df_processed = post_process(self.df_flat, self.username)
         save_df_to_csv(self.df_processed, self.username)
+        save_processed_game_data(self.df_processed)
         logger.info("Post-processed and saved CSV for user '%s'", self.username)
 
     def get_dataframe(self) -> Optional[DataFrame]:
