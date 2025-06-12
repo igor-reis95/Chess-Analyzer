@@ -11,6 +11,7 @@ import os
 import json
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,19 +33,22 @@ def save_df_to_csv(df, username, folder="data/processed"):
     df.to_csv(filepath, index=False)
     print(f"Saved processed games to {filepath}")
 
-def save_processed_game_data(df, table = 'games_processed_data'):
-    """Save processed data from games into a postgreSQL database managed by Render"""
-    # Create SQLAlchemy engine
+def save_processed_game_data(df, table='games_processed_data'):
+    """Save processed data from games into a postgreSQL database"""
     try:
         engine = create_engine(DATABASE_URL)
 
-        # Get existing IDs from database
+        # Try connecting
+        with engine.connect() as conn:
+            conn.execute("SELECT 1")
+
+        # Try reading existing IDs
         existing_ids = pd.read_sql("SELECT id FROM games_processed_data", engine)['id'].tolist()
 
-        # Filter DataFrame to exclude existing IDs
+        # Filter DataFrame
         df_to_insert = df[~df['id'].isin(existing_ids)]
 
-        # Write to SQL table in the public schema
+        # Save filtered data
         df_to_insert.to_sql(
             name=table,
             con=engine,
@@ -52,5 +56,8 @@ def save_processed_game_data(df, table = 'games_processed_data'):
             if_exists='replace',
             index=False
         )
-    except:
-        print("Database not found. Running in no-db mode.")
+
+    except SQLAlchemyError as e:
+        print(f"Database error: {e}. Running in no-db mode.")
+    except Exception as e:
+        print(f"Unexpected error: {e}. Running in no-db mode.")
