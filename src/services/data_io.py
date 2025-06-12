@@ -37,20 +37,20 @@ def save_processed_game_data(df, table = 'games_processed_data'):
     # Create SQLAlchemy engine
     try:
         engine = create_engine(DATABASE_URL)
+
+        # Get existing IDs from database
+        existing_ids = pd.read_sql("SELECT id FROM games_processed_data", engine)['id'].tolist()
+
+        # Filter DataFrame to exclude existing IDs
+        df_to_insert = df[~df['id'].isin(existing_ids)]
+
+        # Write to SQL table in the public schema
+        df_to_insert.to_sql(
+            name=table,
+            con=engine,
+            schema='public',
+            if_exists='replace',
+            index=False
+        )
     except:
         print("Database not found. Running in no-db mode.")
-
-    # Get existing IDs from database
-    existing_ids = pd.read_sql("SELECT id FROM games_processed_data", engine)['id'].tolist()
-
-    # Filter DataFrame to exclude existing IDs
-    df_to_insert = df[~df['id'].isin(existing_ids)]
-
-    # Write to SQL table in the public schema
-    df_to_insert.to_sql(
-        name=table,
-        con=engine,
-        schema='public',
-        if_exists='replace',
-        index=False
-    )
