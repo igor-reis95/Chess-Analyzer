@@ -35,7 +35,10 @@ def save_df_to_csv(df, username, folder="data/processed"):
 def save_processed_game_data(df, table = 'games_processed_data'):
     """Save processed data from games into a postgreSQL database managed by Render"""
     # Create SQLAlchemy engine
-    engine = create_engine(DATABASE_URL)
+    try:
+        engine = create_engine(DATABASE_URL)
+    except:
+        print("Database not found. Running in no-db mode.")
 
     # Get existing IDs from database
     existing_ids = pd.read_sql("SELECT id FROM games_processed_data", engine)['id'].tolist()
@@ -47,7 +50,7 @@ def save_processed_game_data(df, table = 'games_processed_data'):
     df_to_insert.to_sql(
         name=table,
         con=engine,
-        schema='public',     # explicitly specify schema
-        if_exists='replace', # options: 'fail', 'replace', 'append'
+        schema='public',
+        if_exists='replace',
         index=False
     )
