@@ -17,6 +17,7 @@ from flask import render_template, request, Response, make_response, send_file
 from src.services.analysis import basic_analysis, prepare_winrate_data
 from src.services.data_viz import plot_game_status_distribution, winrate_bar_graph
 from src.services.game_processor import GameProcessor
+from src.services.user_processor import UserProcessor
 from ..webapp import app
 
 # Constant values and logger creation
@@ -77,15 +78,21 @@ def _validate_inputs(form_data: dict) -> dict:
     }
 
 def _fetch_and_prepare_data(params: dict) -> dict:
-    """Fetch and process chess game data."""
-    processor = GameProcessor(
+    # Fetch game and user data from Lichess
+    #Fetch and process chess game data
+    game_processor = GameProcessor(
         username=params["username"],
         max_games=params["max_games"],
         perf_type=params["perf_type"],
         color=params["color"]
     )
-    processor.run_all()
-    return processor.get_dataframe().head(params["max_games"])
+    game_processor.run_all()
+
+    # Fetch and process chess user data
+    user_processor = UserProcessor(params["username"])
+    user_processor.run_all()
+
+    return game_processor.get_dataframe().head(params["max_games"])
 
 # ----------------------
 # Presentation Layer
