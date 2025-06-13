@@ -11,11 +11,10 @@ import os
 import json
 import pandas as pd
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
-from dotenv import load_dotenv
-load_dotenv()
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
 
-DATABASE_URL = os.getenv("local_database_url")
+
+DATABASE_URL = os.getenv("database_url")
 
 def save_games_to_json(games_list, username, folder="data/raw"):
     """Save the raw games list as a JSON file."""
@@ -35,27 +34,42 @@ def save_df_to_csv(df, username, folder="data/processed"):
 def save_processed_game_data(df, table='games_processed_data'):
     """Save processed data from games into a PostgreSQL database"""
     try:
+        # Create engine
         engine = create_engine(DATABASE_URL)
 
-        # Try reading existing IDs
-        try:
-            existing_ids = pd.read_sql("SELECT id FROM games_processed_data", engine)['id'].tolist()
-        except OperationalError as e:
-            print(f"Could not connect to database: {e}")
-            print("Running in no-db mode.")
-            return
+        # Get a list of repeating ids to not insert duplicate ids
+        existing_ids = pd.read_sql("SELECT match_id FROM games_processed_data", engine)['match_id'].tolist()
 
         # Filter DataFrame
-        df_to_insert = df[~df['id'].isin(existing_ids)]
+        df_to_insert = df[~df['match_id'].isin(existing_ids)]
 
         # Save filtered data
         df_to_insert.to_sql(
             name=table,
             con=engine,
             schema='public',
-            if_exists='replace',
+            if_exists='append',
             index=False
         )
-
+    except OperationalError as oe:
+        print(f"Database connection error: {oe}")
+    except SQLAlchemyError as se:
+        print(f"SQLAlchemy error: {se}")
+    except ValueError as ve:
+        print(f"Value error while processing DataFrame: {ve}")
     except Exception as e:
-        print(f"Unexpected error in DB logic: {e}")
+        print(f"Unexpected error: {e}")
+
+def save_processed_user_data(df):
+    """Save processed user data into the database"""
+    # Create engine and delete the row being inserted
+    engine = create_engine(DATABASE_URL)
+
+    # Append the updated rows
+    df.to_sql(
+        name='user_processed_data',
+        con=engine,
+        schema='public',
+        if_exists='append',
+        index=False
+    )
