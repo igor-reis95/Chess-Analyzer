@@ -205,8 +205,9 @@ def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame filtered to only the selected columns in the specified order.
     """
+    df.rename(columns={'id': 'match_id'}, inplace = True) # Necessary for no conflict with db id
     column_order = [
-        'id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
+        'match_id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
         'player_rating', 'opponent_rating', 'rating_difference',
         'variant', 'speed', 'perf', 'clock_time_control', 'clock_increment',
         'time_control_with_increment', 'source', 'tournament', 'division_middle', 'division_end',
@@ -220,3 +221,68 @@ def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     existing_cols = [col for col in column_order if col in df.columns]
     return df[existing_cols]
+
+def format_play_time(x):
+    """
+    Converts a timedelta to a human-readable string format.
+
+    Parameters:
+        x (pd.Timedelta): Duration to format.
+
+    Returns:
+        str: Formatted string like '12 hours and 34 minutes'.
+    """
+    total_seconds = int(x.total_seconds())
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    return f"{hours} hours and {minutes} minutes"
+
+def process_user_data(data, perfs_to_include=None):
+    """
+    Processes raw user data from Lichess API and returns a structured DataFrame.
+
+    Parameters:
+        data (dict): JSON-like response from the Lichess user API.
+        perfs_to_include (list, optional): List of performance types to include
+                                           (e.g., ['bullet', 'blitz']). Defaults to common types.
+
+    Returns:
+        pd.DataFrame: Processed data with user profile and performance stats.
+    """
+    if perfs_to_include is None:
+        perfs_to_include = ['bullet', 'blitz', 'rapid', 'classical', 'puzzle']
+
+    # Basic user info
+    user_data = {
+        'username': data.get('username'),
+        'created_at': data.get('createdAt'),
+        'last_seen': data.get('seenAt'),
+        'play_time': data.get('playTime', {}).get('total'),  # in seconds
+        'url': data.get('url')
+    }
+
+    # Extract performance-related stats
+    for perf in perfs_to_include:
+        perf_data = data.get('perfs', {}).get(perf, {})
+        user_data[f'{perf}_games'] = perf_data.get('games')
+        user_data[f'{perf}_rating'] = perf_data.get('rating')
+        user_data[f'{perf}_prog'] = perf_data.get('prog')
+
+    # Convert to DataFrame (single-row)
+    user_df = pd.DataFrame([user_data])
+
+    # Convert timestamps to datetime/timedelta
+    user_df['created_at_datetime'] = pd.to_datetime(user_df['created_at'], unit='ms')
+    user_df['last_seen_datetime'] = pd.to_datetime(user_df['last_seen'], unit='ms')
+
+    # Add timestamp of report creation
+    user_df['report_created_at'] = pd.Timestamp.now()
+
+    # Format datetime fields to readable strings
+    user_df["created_at"] = user_df["created_at_datetime"].dt.strftime("%d/%m/%y")
+    user_df["last_seen"] = user_df["last_seen_datetime"].dt.strftime("%d/%m/%y")
+
+    # Format play time as 'X hours and Y minutes'
+    user_df['play_time'] = pd.to_timedelta(user_df['play_time'], unit='s').apply(format_play_time)
+
+    return user_df
