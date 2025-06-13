@@ -1,6 +1,8 @@
-"""Main code to execute flask and the logging system"""
+"""Main code to execute flask, dotenv and the logging system"""
 import logging
 from flask import Flask
+from dotenv import load_dotenv # Runs dotenv for all the files
+load_dotenv()
 
 app = Flask(
     __name__,
