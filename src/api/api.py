@@ -14,9 +14,6 @@ import os
 import json
 import logging
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -96,3 +93,26 @@ def get_games(username, max_games, perf_type, color):
 
     logger.info("Successfully fetched %s games for user %s", len(games_list), username)
     return games_list
+
+def collect_user_data(username):
+    """
+    Fetches user profile data from the Lichess API.
+
+    Parameters:
+        username (str): The Lichess username to retrieve data for.
+
+    Returns:
+        dict: A dictionary containing user profile data from the Lichess API.
+
+    Raises:
+        requests.exceptions.HTTPError: If the API request returns an unsuccessful status code.
+    """
+    url = f"https://lichess.org/api/user/{username}"
+    response = requests.get(
+        url,
+        headers=headers,
+        stream=True,
+        timeout=10
+    )
+    response.raise_for_status()
+    return response.json()
