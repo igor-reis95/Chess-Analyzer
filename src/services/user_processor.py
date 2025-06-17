@@ -116,5 +116,5 @@ class UserProcessor:
         """
         self.fetch_user_data()
         self.process_user_data()
-        self.save_user_data()
-        self.get_user_data()
+        #self.save_user_data()
+        #self.get_user_data()
