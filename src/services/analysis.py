@@ -126,8 +126,8 @@ def get_top_openings(df: pd.DataFrame, n: int = 5) -> pd.Series:
     Returns:
         pd.Series: Top n openings by frequency.
     """
-    validate_columns(df, ['opening_eco'])
-    top_openings = df['opening_eco'].value_counts(dropna=False).head(n)
+    validate_columns(df, ['normalized_opening_name'])
+    top_openings = df['normalized_opening_name'].value_counts(dropna=False).head(n)
     logger.debug("Top %d openings:\n%s", n, top_openings)
     return top_openings
 
@@ -147,7 +147,7 @@ def get_top_openings_by_result(
     Returns:
         Tuple[pd.Series, pd.Series, pd.Series]: Top openings for wins, losses, draws.
     """
-    validate_columns(df, ['result', 'player_color', 'opening_eco'])
+    validate_columns(df, ['result', 'player_color', 'normalized_opening_name'])
     validated_color = validate_color(color)
     if validated_color is not None:
         df = df[df['player_color'] == validated_color]
@@ -157,15 +157,15 @@ def get_top_openings_by_result(
     losses = df[df['result'] == Result.LOSS]
     draws = df[df['result'] == Result.DRAW]
 
-    ecos_for_wins = wins['opening_eco'].value_counts().head(n)
-    ecos_for_losses = losses['opening_eco'].value_counts().head(n)
-    ecos_for_draws = draws['opening_eco'].value_counts().head(n)
+    openings_for_win = wins['normalized_opening_name'].value_counts().head(n)
+    openings_for_losses = losses['normalized_opening_name'].value_counts().head(n)
+    openings_for_draws = draws['normalized_opening_name'].value_counts().head(n)
 
-    logger.debug("Top %d openings for wins:\n%s", n, ecos_for_wins)
-    logger.debug("Top %d openings for losses:\n%s", n, ecos_for_losses)
-    logger.debug("Top %d openings for draws:\n%s", n, ecos_for_draws)
+    logger.debug("Top %d openings for wins:\n%s", n, openings_for_win)
+    logger.debug("Top %d openings for losses:\n%s", n, openings_for_losses)
+    logger.debug("Top %d openings for draws:\n%s", n, openings_for_draws)
 
-    return ecos_for_wins, ecos_for_losses, ecos_for_draws
+    return openings_for_win, openings_for_losses, openings_for_draws
 
 def get_rating_range(df: pd.DataFrame) -> Tuple[int, int]:
     """
@@ -255,7 +255,7 @@ def basic_analysis(
         Dict: Dictionary containing various analysis results.
     """
     required_columns = [
-        'player_color', 'result', 'opening_eco', 'player_rating_diff',
+        'player_color', 'result', 'normalized_opening_name', 'player_rating_diff',
         'player_rating', 'opponent_name', 'player_accuracy'
     ]
     validate_columns(df, required_columns)
