@@ -80,34 +80,6 @@ def normalize_perspective(df: pd.DataFrame, username: str) -> pd.DataFrame:
     black = extract_perspective(df, username, 'black')
     return pd.concat([white, black], ignore_index=True)
 
-
-def post_process(df: pd.DataFrame, username: str) -> pd.DataFrame:
-    """
-    Full post-processing pipeline to clean and enrich raw chess game data.
-
-    Args:
-        df: Raw DataFrame from Lichess API.
-        username: Player's username to normalize perspective.
-
-    Returns:
-        Processed DataFrame with standardized columns, formatting, and derived metrics.
-    """
-    # 1. Normalize player perspective
-    df = normalize_perspective(df, username)
-
-    # 2. Process datetime columns (convert and localize timestamps)
-    df = process_datetime_columns(df)
-
-    # 3. Calculate derived metrics (rating diff, moves, time control)
-    df = calculate_derived_metrics(df)
-
-    # 4. Apply final formatting and sorting
-    df = format_columns(df)
-
-    # 5. Select and order final columns
-    return select_final_columns(df)
-
-
 def calculate_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculate derived metrics such as rating difference, move counts, time spent playing,
@@ -194,6 +166,27 @@ def format_columns(df: pd.DataFrame) -> pd.DataFrame:
     df['created_at'] = df['created_at'].dt.strftime('%d/%m/%y %H:%M')
     return df
 
+def normalize_opening_name(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Normalize the names of the openings so it only shows the main opening, without variation
+    
+    - 'normalized_opening_name': the main opening name without sub-variation details.
+    - 'opening_eco_link': a direct URL to the 365chess.com page for that ECO code.
+    
+    Args:
+        df : A DataFrame containing at least 'opening_name' and 'opening_eco' columns.
+    
+    Returns:
+        The original DataFrame with two new columns added.
+    """
+    def get_main_opening(opening_name):
+        if isinstance(opening_name, str):
+            return opening_name.split(":")[0].strip()
+        return None
+
+    df['normalized_opening_name'] = df['opening_name'].apply(get_main_opening)
+    df['opening_eco_link'] = "https://www.365chess.com/eco/" + df['opening_eco'].astype(str)
+    return df
 
 def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -212,7 +205,7 @@ def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
         'variant', 'speed', 'perf', 'clock_time_control', 'clock_increment',
         'time_control_with_increment', 'source', 'tournament', 'division_middle', 'division_end',
         'created_at', 'last_move_at', 'time_spent_playing',
-        'opening_eco', 'opening_name', 'opening_ply',
+        'opening_eco', 'opening_eco_link', 'opening_name', 'normalized_opening_name', 'opening_ply',
         'player_rating_diff', 'player_inaccuracy', 'player_mistake',
         'player_blunder', 'player_accuracy',
         'opponent_rating_diff', 'opponent_inaccuracy', 'opponent_mistake',
@@ -286,3 +279,32 @@ def process_user_data(data, perfs_to_include=None):
     user_df['play_time'] = pd.to_timedelta(user_df['play_time'], unit='s').apply(format_play_time)
 
     return user_df
+
+def post_process(df: pd.DataFrame, username: str) -> pd.DataFrame:
+    """
+    Full post-processing pipeline to clean and enrich raw chess game data.
+
+    Args:
+        df: Raw DataFrame from Lichess API.
+        username: Player's username to normalize perspective.
+
+    Returns:
+        Processed DataFrame with standardized columns, formatting, and derived metrics.
+    """
+    # 1. Normalize player perspective
+    df = normalize_perspective(df, username)
+
+    # 2. Process datetime columns (convert and localize timestamps)
+    df = process_datetime_columns(df)
+
+    # 3. Calculate derived metrics (rating diff, moves, time control)
+    df = calculate_derived_metrics(df)
+
+    # 6. Format opening columns with a normalized name and also a link to the eco
+    df = normalize_opening_name(df)
+
+    # 5. Apply final formatting and sorting
+    df = format_columns(df)
+
+    # 6. Select and order final columns
+    return select_final_columns(df)
