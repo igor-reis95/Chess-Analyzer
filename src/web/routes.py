@@ -44,8 +44,8 @@ def _handle_form_submission(form_data: dict) -> str:
     """Process submitted form data and return results or errors."""
     try:
         params = _validate_inputs(form_data)
-        df = _fetch_and_prepare_data(params)
-        return _render_results(params, df)
+        df, user_data = _fetch_and_prepare_data(params)
+        return _render_results(params, df, user_data)
     except ValueError as e:
         logger.warning("Validation failed: %s", e)
         return _render_error(f"Invalid input: {str(e)}", status_code=400)
@@ -77,7 +77,7 @@ def _validate_inputs(form_data: dict) -> dict:
         "color": form_data.get("color", "both")
     }
 
-def _fetch_and_prepare_data(params: dict) -> dict:
+def _fetch_and_prepare_data(params: dict) -> tuple:
     # Fetch game and user data from Lichess
     #Fetch and process chess game data
     game_processor = GameProcessor(
@@ -91,28 +91,34 @@ def _fetch_and_prepare_data(params: dict) -> dict:
     # Fetch and process chess user data
     user_processor = UserProcessor(params["username"])
     user_processor.run_all()
+    user_data = user_processor.get_user_data()
 
-    return game_processor.get_dataframe().head(params["max_games"])
+    return game_processor.get_dataframe().head(params["max_games"]), user_data
 
 # ----------------------
 # Presentation Layer
 # ----------------------
-def _render_results(params: dict, df) -> str:
+def _render_results(params: dict, df, user_data) -> str:
     """Render analysis results template."""
     return render_template(
         "result.html",
-        **_generate_template_context(params, df)
+        **_generate_template_context(params, df, user_data)
     )
 
-def _generate_template_context(params: dict, df) -> dict:
+def _generate_template_context(params: dict, df, user_data) -> dict:
     """Prepare all data needed for the results template."""
+    print("params type:", type(params))
+    print("_get_analysis_data type:", type(_get_analysis_data(df)))
+    print("_get_visualizations type:", type(_get_visualizations(df)))
+    print("user_data type:", type(user_data))
     return {
         **params,
         "count": len(df),
-        "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient='records'),
+        "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient="records"),
         "form_data": params,
         **_get_analysis_data(df),
-        **_get_visualizations(df)
+        **_get_visualizations(df),
+        "user_data": user_data
     }
 
 def _get_analysis_data(df) -> dict[str, Any]:
@@ -149,7 +155,7 @@ def download_csv():
     try:
         # Get the form data again to reconstruct the dataframe
         params = _validate_inputs(request.form)
-        df = _fetch_and_prepare_data(params)
+        df, _ = _fetch_and_prepare_data(params)
 
         # Create CSV in memory
         output = io.StringIO()
@@ -179,12 +185,12 @@ def download_pdf():
     try:
         # Step 1: Reuse existing input validation and data fetching
         params = _validate_inputs(request.form)
-        df = _fetch_and_prepare_data(params)
+        df, user_data = _fetch_and_prepare_data(params)
 
         # Step 2: Render the HTML template with context
         rendered = render_template(
             "result.html",
-            **_generate_template_context(params, df)
+            **_generate_template_context(params, df, user_data)
         )
 
         # Step 3: Convert HTML to PDF in memory
