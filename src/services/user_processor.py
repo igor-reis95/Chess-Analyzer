@@ -9,13 +9,17 @@ This module defines a UserProcessor class that orchestrates the entire data work
 
 import logging
 from typing import Optional
-from pandas import DataFrame
+import pandas as pd
+import os
+import psycopg2
 
 from src.api.api import collect_user_data
-from src.services.post_process import process_user_data
 from src.services.data_io import save_processed_user_data
+import src.services.post_process as post_process
 
 logger = logging.getLogger(__name__)
+
+DATABASE_URL = os.getenv("database_url")
 
 class UserProcessor:
     """
@@ -36,7 +40,7 @@ class UserProcessor:
         """
         self.username = username
         self.raw_data: Optional[dict] = None
-        self.df_processed: Optional[DataFrame] = None
+        self.df_processed: Optional[pd.DataFrame] = None
 
     def fetch_user_data(self) -> None:
         """
@@ -56,7 +60,7 @@ class UserProcessor:
         if self.raw_data is None:
             logger.warning("No raw data to process for '%s'", self.username)
             return
-        self.df_processed = process_user_data(self.raw_data)
+        self.df_processed = post_process.process_user_data(self.raw_data)
         logger.info("Processed user data for '%s'", self.username)
 
     def save_user_data(self) -> None:
@@ -69,7 +73,7 @@ class UserProcessor:
         save_processed_user_data(self.df_processed)
         logger.info("Saved processed user data for '%s' to database", self.username)
 
-    def get_dataframe(self) -> Optional[DataFrame]:
+    def get_dataframe(self) -> Optional[pd.DataFrame]:
         """
         Get the final processed user DataFrame.
 
@@ -78,6 +82,34 @@ class UserProcessor:
         """
         return self.df_processed
 
+    def get_user_data(self) -> pd.Series:
+        """
+        Retrieve the row of user data with the highest ID for the current username
+        from the database.
+
+        Returns:
+            pd.Series: A row from the database representing the latest user data.
+        """
+        username = self.username
+
+        query = """
+            SELECT * FROM user_processed_data
+            WHERE username = %s
+            ORDER BY id DESC
+            LIMIT 1;
+        """
+
+        try:
+            with psycopg2.connect(DATABASE_URL) as conn:
+                df = pd.read_sql(query, conn, params=(username,))
+        except Exception as e:
+            raise RuntimeError(f"Database error: {e}")
+
+        if df.empty:
+            raise ValueError(f"No data found for username: {username}")
+
+        return df.iloc[0].to_dict()
+
     def run_all(self) -> None:
         """
         Run the full user data pipeline: fetch, process, and save.
@@ -85,3 +117,4 @@ class UserProcessor:
         self.fetch_user_data()
         self.process_user_data()
         self.save_user_data()
+        self.get_user_data()
