@@ -70,7 +70,7 @@ class UserProcessor:
         if self.df_processed is None:
             logger.warning("No processed data to save for '%s'", self.username)
             return
-        save_processed_user_data(self.df_processed)
+        #save_processed_user_data(self.df_processed)
         logger.info("Saved processed user data for '%s' to database", self.username)
 
     def get_dataframe(self) -> Optional[pd.DataFrame]:
