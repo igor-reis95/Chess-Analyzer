@@ -107,10 +107,6 @@ def _render_results(params: dict, df, user_data) -> str:
 
 def _generate_template_context(params: dict, df, user_data) -> dict:
     """Prepare all data needed for the results template."""
-    print("params type:", type(params))
-    print("_get_analysis_data type:", type(_get_analysis_data(df)))
-    print("_get_visualizations type:", type(_get_visualizations(df)))
-    print("user_data type:", type(user_data))
     return {
         **params,
         "count": len(df),
