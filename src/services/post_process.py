@@ -15,8 +15,10 @@ time control format.
 - select_final_columns: reorder and filter the final columns for output.
 """
 
+from typing import Optional, Tuple
 import math
 import pandas as pd
+
 
 
 def extract_perspective(df: pd.DataFrame, username: str, color: str) -> pd.DataFrame:
@@ -56,6 +58,12 @@ def extract_perspective(df: pd.DataFrame, username: str, color: str) -> pd.DataF
     perspective['opponent_mistake'] = perspective[f'{opp_color}_mistake']
     perspective['opponent_blunder'] = perspective[f'{opp_color}_acpl']
     perspective['opponent_accuracy'] = perspective[f'{opp_color}_accuracy']
+
+    # Time related data
+    perspective['player_final_clock'] = perspective[f'{color}_final_clock']
+    perspective['opponent_final_clock'] = perspective[f'{opp_color}_final_clock']
+    perspective['player_avg_time_per_move'] = perspective[f'{color}_avg_time']
+    perspective['opponent_avg_time_per_move'] = perspective[f'{opp_color}_avg_time']
 
     # Result mapping: 'win', 'loss', or 'draw' from player's perspective
     perspective['result'] = perspective['winner'].map(
@@ -171,7 +179,6 @@ def normalize_opening_name(df: pd.DataFrame) -> pd.DataFrame:
     Normalize the names of the openings so it only shows the main opening, without variation
     
     - 'normalized_opening_name': the main opening name without sub-variation details.
-    - 'opening_eco_link': a direct URL to the 365chess.com page for that ECO code.
     
     Args:
         df : A DataFrame containing at least 'opening_name' and 'opening_eco' columns.
@@ -185,7 +192,6 @@ def normalize_opening_name(df: pd.DataFrame) -> pd.DataFrame:
         return None
 
     df['normalized_opening_name'] = df['opening_name'].apply(get_main_opening)
-    df['opening_eco_link'] = "https://www.365chess.com/eco/" + df['opening_eco'].astype(str)
     return df
 
 def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -203,13 +209,14 @@ def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
         'match_id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
         'player_rating', 'opponent_rating', 'rating_difference',
         'variant', 'speed', 'perf', 'clock_time_control', 'clock_increment',
-        'time_control_with_increment', 'source', 'tournament', 'division_middle', 'division_end',
-        'created_at', 'last_move_at', 'time_spent_playing',
-        'opening_eco', 'opening_eco_link', 'opening_name', 'normalized_opening_name', 'opening_ply',
-        'player_rating_diff', 'player_inaccuracy', 'player_mistake',
-        'player_blunder', 'player_accuracy',
-        'opponent_rating_diff', 'opponent_inaccuracy', 'opponent_mistake',
-        'opponent_blunder', 'opponent_accuracy', 'half_moves', 'full_moves', 'moves'
+        'time_control_with_increment', 'source', 'tournament', 'division_middle', 'opening_eval',
+        'division_end', 'middlegame_eval', 'created_at', 'last_move_at', 'time_spent_playing',
+        'opening_eco', 'opening_name', 'normalized_opening_name', 'opening_ply',
+        'player_rating_diff', 'player_final_clock', 'player_avg_time_per_move',
+        'player_inaccuracy', 'player_mistake', 'player_blunder', 'player_accuracy',
+        'opponent_rating_diff', 'opponent_final_clock', 'opponent_avg_time_per_move',
+        'opponent_inaccuracy', 'opponent_mistake', 'opponent_blunder', 'opponent_accuracy',
+        'half_moves', 'full_moves', 'moves', 'clocks'
     ]
 
     existing_cols = [col for col in column_order if col in df.columns]
@@ -229,6 +236,89 @@ def format_play_time(x):
     hours = total_seconds // 3600
     minutes = (total_seconds % 3600) // 60
     return f"{hours} hours and {minutes} minutes"
+
+def get_final_clocks(df: pd.DataFrame) -> pd.DataFrame:
+    """Adds white_final_clock and black_final_clock columns to the DataFrame.
+    
+    Args:
+        df: DataFrame containing a 'clocks' column with list of clock times
+        
+    Returns:
+        Modified DataFrame with two new columns
+    """
+    def _extract_clocks(clock_array: list) -> Tuple[Optional[float], Optional[float]]:
+        """Helper function to extract the final clock times for white and black."""
+        if not isinstance(clock_array, list) or len(clock_array) < 2:
+            return None, None
+
+        last_two = clock_array[-2:]
+
+        # Determine whose turn it was last
+        if len(clock_array) % 2 == 1:  # White just moved
+            white = last_two[1] if len(last_two) > 1 else None
+            black = last_two[0]
+        else:  # Black just moved
+            white = last_two[0]
+            black = last_two[1] if len(last_two) > 1 else None
+        # TODO: Transform from centiseconds to mm:ss.ms
+
+        return white, black
+
+    # Apply the helper function to each row
+    clocks = df['clocks'].apply(_extract_clocks)
+
+    # Assign results to new columns
+    df['white_final_clock'] = clocks.str[0]
+    df['black_final_clock'] = clocks.str[1]
+
+    return df
+
+def get_avg_time_per_move(df: pd.DataFrame) -> pd.DataFrame:
+    """Calculate average time per move for white and black players.
+    
+    Args:
+        df: DataFrame containing a 'clocks' column with list of clock times
+        
+    Returns:
+        DataFrame with two new columns: white_avg_time, black_avg_time
+    """
+    def _calculate_avg_times(clock_array: list) -> Tuple[Optional[float], Optional[float]]:
+        """Helper function to calculate average time per move for each player."""
+        if not isinstance(clock_array, list) or len(clock_array) < 2:
+            return None, None
+
+        white_times = []
+        black_times = []
+
+        # Split times by player
+        for i, time in enumerate(clock_array):
+            if i % 2 == 0:  # White's moves are at even indices (0, 2, 4...)
+                white_times.append(time)
+            else:  # Black's moves are at odd indices (1, 3, 5...)
+                black_times.append(time)
+
+        # Calculate time differences and averages
+        if len(white_times) > 1:
+            white_total = white_times[0] - white_times[-1]
+            white_avg = white_total / (len(white_times) - 1)
+            white_avg = round(white_avg / 100, 2)
+
+        if len(black_times) > 1:
+            black_total = black_times[0] - black_times[-1]
+            black_avg = black_total / (len(black_times) - 1)
+            black_avg = round(black_avg / 100, 2)
+
+        return white_avg, black_avg
+
+    # Apply the helper function
+    print(type(df['clocks'][0]))
+    avg_times = df['clocks'].apply(_calculate_avg_times)
+
+    # Add new columns
+    df['white_avg_time'] = avg_times.str[0]
+    df['black_avg_time'] = avg_times.str[1]
+
+    return df
 
 def process_user_data(data, perfs_to_include=None):
     """
@@ -291,20 +381,26 @@ def post_process(df: pd.DataFrame, username: str) -> pd.DataFrame:
     Returns:
         Processed DataFrame with standardized columns, formatting, and derived metrics.
     """
-    # 1. Normalize player perspective
+    # 1. Retrieve final clock time for both players
+    df = get_final_clocks(df)
+
+    # 2. Calculate average time per move and save it to the dataframe
+    df = get_avg_time_per_move(df)
+
+    # 3. Normalize player perspective
     df = normalize_perspective(df, username)
 
-    # 2. Process datetime columns (convert and localize timestamps)
+    # 4. Process datetime columns (convert and localize timestamps)
     df = process_datetime_columns(df)
 
-    # 3. Calculate derived metrics (rating diff, moves, time control)
+    # 5. Calculate derived metrics (rating diff, moves, time control)
     df = calculate_derived_metrics(df)
 
     # 6. Format opening columns with a normalized name and also a link to the eco
     df = normalize_opening_name(df)
 
-    # 5. Apply final formatting and sorting
+    # 7. Apply final formatting and sorting
     df = format_columns(df)
 
-    # 6. Select and order final columns
+    # 8. Select and order final columns
     return select_final_columns(df)
