@@ -68,7 +68,8 @@ def extract_clock_features(game):
     return {
         "clock_time_control": _safe_get(game, "clock", "initial"),
         "clock_increment": _safe_get(game, "clock", "increment"),
-        "clock_total_time": _safe_get(game, "clock", "total_time")
+        "clock_total_time": _safe_get(game, "clock", "total_time"),
+        "clock_time_per_move": _safe_get(game, "clocks")
     }
 
 def extract_division_features(game):
