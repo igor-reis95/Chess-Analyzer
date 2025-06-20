@@ -240,6 +240,20 @@ def get_accuracy_stats(df: pd.DataFrame) -> Dict[str, float]:
         'draws': draws
     }
 
+def result_streak(df):
+    if len(df['result']) == 0:
+        return 0
+    
+    first_result = df['result'].iloc[0]
+    streak = 0
+    
+    for result in df['result']:
+        if result != first_result:
+            break
+        streak += 1
+    
+    return streak
+
 def basic_analysis(
     df: pd.DataFrame,
     color: Optional[str] = None
@@ -274,6 +288,7 @@ def basic_analysis(
         "opening_draws": opening_by_result[2],
         "rating_range": get_rating_range(filtered_df),
         "results": {"wins": wins, "losses": losses, "draws": draws},
+        "result_streak": result_streak(filtered_df),
         "common_opponents": get_common_opponents(filtered_df),
         "accuracy": get_accuracy_stats(filtered_df)
     }
