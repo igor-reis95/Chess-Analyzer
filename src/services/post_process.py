@@ -311,7 +311,6 @@ def get_avg_time_per_move(df: pd.DataFrame) -> pd.DataFrame:
         return white_avg, black_avg
 
     # Apply the helper function
-    print(type(df['clocks'][0]))
     avg_times = df['clocks'].apply(_calculate_avg_times)
 
     # Add new columns
