@@ -31,7 +31,7 @@ def get_games(username, max_games, perf_type, color):
         username (str): Lichess username to fetch games for.
         max_games (int): Maximum number of games to retrieve (API limit applies).
         perf_type (str): Game time control type. Options:
-            - Specific type: 'ultraBullet', 'bullet', 'blitz', 'rapid', 'classical'
+            - Specific type: 'bullet', 'blitz', 'rapid', 'classical'
             - 'all': Includes all time controls.
         color (str): Player color to filter. Options:
             - 'white': Only games where player was white.
@@ -46,7 +46,7 @@ def get_games(username, max_games, perf_type, color):
         json.JSONDecodeError: If response contains invalid JSON data.
     """
     if perf_type == 'all':
-        perf_type = 'ultraBullet,bullet,blitz,rapid,classical'
+        perf_type = 'bullet,blitz,rapid,classical'
 
     if color == 'Both':
         color = None
