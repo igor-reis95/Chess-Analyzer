@@ -52,11 +52,11 @@ def extract_perspective(df: pd.DataFrame, username: str, color: str) -> pd.DataF
     # Accuracy and errors
     perspective['player_inaccuracy'] = perspective[f'{color}_inaccuracy']
     perspective['player_mistake'] = perspective[f'{color}_mistake']
-    perspective['player_blunder'] = perspective[f'{color}_acpl']
+    perspective['player_blunder'] = perspective[f'{color}_blunder']
     perspective['player_accuracy'] = perspective[f'{color}_accuracy']
     perspective['opponent_inaccuracy'] = perspective[f'{opp_color}_inaccuracy']
     perspective['opponent_mistake'] = perspective[f'{opp_color}_mistake']
-    perspective['opponent_blunder'] = perspective[f'{opp_color}_acpl']
+    perspective['opponent_blunder'] = perspective[f'{opp_color}_blunder']
     perspective['opponent_accuracy'] = perspective[f'{opp_color}_accuracy']
 
     # Time related data
