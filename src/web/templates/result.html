@@ -446,20 +446,43 @@
 
         <!-- Charts Section -->
         <div class="row mt-4">
-            <div class="col-md-6 mb-4">
-                <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Game Status Distribution</h3>
-                    <div class="graph-container">
-                        <img src="data:image/png;base64,{{ status_distribution_graph }}" alt="Game Status Distribution" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-            
             <div class="col-md-6">
                 <div class="lichess-card p-4 h-100">
                     <h3 class="mb-3">Win Rate</h3>
                     <div class="graph-container">
                         <img src="data:image/png;base64,{{ winrate_graph }}" alt="Winrate Bar Graph" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="lichess-card p-4 h-100">
+                    <h3 class="mb-3">Score at the end of the opening </h3>
+                    <div class="graph-container">
+                        <img src="data:image/png;base64,{{ eval_per_opening }}" alt="Score at end of opening graph" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="lichess-card p-4 h-100">
+                    <h3 class="mb-3">Score at the end of the opening </h3>
+                    <div class="graph-container">
+                        <img src="data:image/png;base64,{{ overall_opening_stats }}" alt="Score at end of opening graph" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="lichess-card p-4 h-100">
+                    <h3 class="mb-3">Score at the end of the opening </h3>
+                    <div class="graph-container">
+                        <img src="data:image/png;base64,{{ white_opening_stats }}" alt="Score at end of opening graph" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="lichess-card p-4 h-100">
+                    <h3 class="mb-3">Score at the end of the opening </h3>
+                    <div class="graph-container">
+                        <img src="data:image/png;base64,{{ black_opening_stats }}" alt="Score at end of opening graph" class="img-fluid">
                     </div>
                 </div>
             </div>
