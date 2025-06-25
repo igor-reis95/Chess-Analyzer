@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt # pylint: disable=wrong-import-position
+import seaborn as sns
 
 # Create logger
 logger = logging.getLogger(__name__)
@@ -154,3 +155,57 @@ def plot_game_status_distribution(df: pd.DataFrame) -> str:
 
     logger.debug("Game status distribution chart successfully generated.")
     return img_base64
+
+def plot_eval_per_opening(df):
+    df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
+    df["adjusted_eval"] = df.apply(
+        lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
+        axis=1
+    )
+
+    # Overall average (all games)
+    overall_avg = df["adjusted_eval"].mean()
+
+    # Averages by player color
+    white_avg = df[df["player_color"] == "white"]["adjusted_eval"].mean()
+    black_avg = df[df["player_color"] == "black"]["adjusted_eval"].mean()
+
+    # Data for plotting
+    averages = {
+        "Overall": overall_avg,
+        "White": white_avg,
+        "Black": black_avg
+    }
+
+    # Plot
+    plt.figure(figsize=(8, 5))
+    plt.bar(averages.keys(), averages.values(), color=["gray", "blue", "black"])
+    plt.axhline(0, color="red", linestyle="--", alpha=0.5)  # Reference line
+    plt.title("Average Evaluation by Player Perspective")
+    plt.ylabel("Adjusted Evaluation")
+    plt.xlabel("Player Color")
+
+    plt.tight_layout()
+
+    img_stream = io.BytesIO()
+    plt.savefig(img_stream, format='png')
+    img_stream.seek(0)
+    img_base64 = base64.b64encode(img_stream.read()).decode('utf-8')
+    plt.close()
+    return img_base64
+
+def plot_opening_stats(stats, title, palette):
+    plt.figure(figsize=(10, 8))
+    sns.barplot(x="avg_eval", y="opening_label", data=stats, palette=palette)
+    plt.axvline(0, color="black", linestyle="--", alpha=0.5)
+    plt.title(title)
+    plt.xlabel("Average Evaluation")
+    plt.ylabel("Opening (Count)")
+    plt.tight_layout()
+
+    # Save plot to base64 string
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    plt.close()
+    img.seek(0)
+    return base64.b64encode(img.getvalue()).decode()
