@@ -194,11 +194,29 @@ def plot_eval_per_opening(df):
     plt.close()
     return img_base64
 
-def plot_opening_stats(stats, title, palette):
+def get_opening_stats(df):
+    df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
+    df["adjusted_eval"] = df.apply(
+        lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
+        axis=1
+    )
+    df = df.groupby("normalized_opening_name").agg(
+        count=("adjusted_eval", "size"),
+        avg_eval=("adjusted_eval", "mean")
+    ).reset_index()
+    df = df[df["count"] > 1].sort_values("count", ascending=False)
+    df["opening_label"] = df.apply(lambda x: f"{x['normalized_opening_name']} ({x['count']})",axis=1)
+    return df
+
+def plot_opening_stats(df, color="Overall"):
+    if color == "Overall":
+        df = get_opening_stats(df)
+    else:
+        df = get_opening_stats(df[df['player_color'] == color])
     plt.figure(figsize=(10, 8))
-    sns.barplot(x="avg_eval", y="opening_label", data=stats, palette=palette)
+    sns.barplot( x="avg_eval", y="opening_label", data=df, palette="Blues_d")
     plt.axvline(0, color="black", linestyle="--", alpha=0.5)
-    plt.title(title)
+    plt.title("Opening Stats")
     plt.xlabel("Average Evaluation")
     plt.ylabel("Opening (Count)")
     plt.tight_layout()
