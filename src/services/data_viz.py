@@ -177,10 +177,26 @@ def plot_eval_per_opening(df):
         "Black": black_avg
     }
 
+    # Define colors based on value
+    colors = []
+    for value in averages.values():
+        if value >= 0:
+            colors.append("#93b674")  # Green for positive
+        else:
+            colors.append("#da6f73")  # Red for negative
+
     # Plot
     plt.figure(figsize=(8, 5))
-    plt.bar(averages.keys(), averages.values(), color=["gray", "blue", "black"])
-    plt.axhline(0, color="red", linestyle="--", alpha=0.5)  # Reference line
+    bars = plt.bar(averages.keys(), averages.values(), color=colors)
+    plt.axhline(0, color="black", linestyle="--", alpha=0.5)  # Changed reference line to black for better visibility
+
+    # Add value labels on top of each bar
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                 f'{height:.2f}',
+                 ha='center', va='bottom')
+
     plt.title("Average Evaluation by Player Perspective")
     plt.ylabel("Adjusted Evaluation")
     plt.xlabel("Player Color")
@@ -213,17 +229,37 @@ def plot_opening_stats(df, color="Overall"):
         df = get_opening_stats(df)
     else:
         df = get_opening_stats(df[df['player_color'] == color])
+    
+    # Create color list based on evaluation values
+    colors = ["#93b674" if x >= 0 else "#da6f73" for x in df['avg_eval']]
+    
     plt.figure(figsize=(10, 8))
-    sns.barplot( x="avg_eval", y="opening_label", data=df, palette="Blues_d")
+    
+    # Create the barplot with our custom colors
+    bars = plt.barh(df['opening_label'], df['avg_eval'], color=colors)
+    
+    # Add value labels
+    for bar in bars:
+        width = bar.get_width()
+        label_x_pos = width if width >= 0 else width
+        plt.text(label_x_pos, bar.get_y() + bar.get_height()/2,
+                 f'{width:.2f}',
+                 va='center', ha='left' if width >= 0 else 'right',
+                 color='black', fontsize=8)
+    
     plt.axvline(0, color="black", linestyle="--", alpha=0.5)
-    plt.title("Opening Stats")
+    plt.title(f"Opening Performance ({color})")
     plt.xlabel("Average Evaluation")
     plt.ylabel("Opening (Count)")
+    
+    # Add some padding to prevent label cutoff
+    plt.xlim(min(df['avg_eval']) * 1.1, max(df['avg_eval']) * 1.1)
+    
     plt.tight_layout()
 
     # Save plot to base64 string
     img = io.BytesIO()
-    plt.savefig(img, format='png')
+    plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
     plt.close()
     img.seek(0)
     return base64.b64encode(img.getvalue()).decode()
