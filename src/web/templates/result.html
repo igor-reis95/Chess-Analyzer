@@ -464,25 +464,44 @@
             </div>
             <div class="col-md-6">
                 <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Score at the end of the opening </h3>
-                    <div class="graph-container">
-                        <img src="data:image/png;base64,{{ overall_opening_stats }}" alt="Score at end of opening graph" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Score at the end of the opening </h3>
-                    <div class="graph-container">
-                        <img src="data:image/png;base64,{{ white_opening_stats }}" alt="Score at end of opening graph" class="img-fluid">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Score at the end of the opening </h3>
-                    <div class="graph-container">
-                        <img src="data:image/png;base64,{{ black_opening_stats }}" alt="Score at end of opening graph" class="img-fluid">
+                    <h3 class="mb-3">Opening Performance</h3>
+                    
+                    <!-- Tab navigation -->
+                    <ul class="nav nav-tabs" id="graphTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall-graph" type="button" role="tab" aria-controls="overall-graph" aria-selected="true">
+                                Overall Stats
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="white-tab" data-bs-toggle="tab" data-bs-target="#white-graph" type="button" role="tab" aria-controls="white-graph" aria-selected="false">
+                                White Stats
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="black-tab" data-bs-toggle="tab" data-bs-target="#black-graph" type="button" role="tab" aria-controls="black-graph" aria-selected="false">
+                                Black Stats
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab content -->
+                    <div class="tab-content p-3" id="graphTabsContent">
+                        <div class="tab-pane fade show active" id="overall-graph" role="tabpanel" aria-labelledby="eval-tab">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ overall_opening_stats }}" alt="Overall opening stats graph" class="img-fluid">
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="white-graph" role="tabpanel" aria-labelledby="overall-tab">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ white_opening_stats }}" alt="White opening stats graph" class="img-fluid">
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="black-graph" role="tabpanel" aria-labelledby="white-tab">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ black_opening_stats }}" alt="Black opening stats graph" class="img-fluid">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
