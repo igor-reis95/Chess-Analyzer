@@ -88,74 +88,182 @@
             </a>
         </div>
         <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0">Player Profile</h3>
-            </div>
-            <div class="card-body p-0">
-                <div class="row">
-                    <!-- Basic Info Column -->
-                    <div class="col-md-6 p-4 border-end">
-                        <div class="d-flex align-items-center mb-4">
+            <div class="card-body">
+                <!-- Top Row - Basic Info -->
+                <div class="row mb-4 border-bottom pb-3">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
                             {% if user_data.url %}
-                            <a href="{{ user_data.url }}" target="_blank" class="text-decoration-none">
+                            <a href="{{ user_data.url }}" target="_blank" class="text-decoration-none text-dark">
                             {% endif %}
-                                <h4 class="mb-0">
+                                <h2 class="mb-0 fw-bold">
                                     <i class="fas fa-user me-2"></i>{{ user_data.username }}
-                                </h4>
+                                </h2>
                             {% if user_data.url %}
                             </a>
                             {% endif %}
                         </div>
+                        <div class="text-muted mb-2">
+                            <i class="fas fa-external-link-alt me-1"></i>{{ user_data.url }}
+                        </div>
                         
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Account Created</span>
-                                <span class="fw-bold">{{ user_data.created_at }}</span>
+                        <div class="row mt-2">
+                            <div class="col-4">
+                                <div class="text-muted small">Account Created</div>
+                                <div class="fw-bold">{{ user_data.created_at }}</div>
                             </div>
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Last Seen</span>
-                                <span class="fw-bold">{{ user_data.last_seen }}</span>
+                            <div class="col-4">
+                                <div class="text-muted small">Last Active</div>
+                                <div class="fw-bold">{{ user_data.last_seen }}</div>
                             </div>
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Total Play Time</span>
-                                <span class="fw-bold">{{ user_data.play_time }}</span>
+                            <div class="col-4">
+                                <div class="text-muted small">Total Play Time</div>
+                                <div class="fw-bold">{{ user_data.play_time }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Rating Cards Row -->
+                <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Rating Overview</h5>
+                <div class="row mb-4 g-3">
+                    <!-- Bullet -->
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 border rounded text-center bg-light">
+                            <div class="small text-muted">Bullet</div>
+                            <div class="h4 fw-bold my-1">{{ user_data.bullet_rating }}</div>
+                            <div class="small {% if user_data.bullet_prog > 0 %}text-success{% elif user_data.bullet_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                {% if user_data.bullet_prog > 0 %}+{% endif %}{{ user_data.bullet_prog }}
+                                <i class="fas fa-arrow-{% if user_data.bullet_prog > 0 %}up{% elif user_data.bullet_prog < 0 %}down{% else %}right{% endif %}"></i>
+                            </div>
+                            <div class="small text-muted mt-1">{{ user_data.bullet_games }} games</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Blitz -->
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 border rounded text-center bg-light">
+                            <div class="small text-muted">Blitz</div>
+                            <div class="h4 fw-bold my-1">{{ user_data.blitz_rating }}</div>
+                            <div class="small {% if user_data.blitz_prog > 0 %}text-success{% elif user_data.blitz_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                {% if user_data.blitz_prog > 0 %}+{% endif %}{{ user_data.blitz_prog }}
+                                <i class="fas fa-arrow-{% if user_data.blitz_prog > 0 %}up{% elif user_data.blitz_prog < 0 %}down{% else %}right{% endif %}"></i>
+                            </div>
+                            <div class="small text-muted mt-1">{{ user_data.blitz_games }} games</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rapid -->
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 border rounded text-center bg-light">
+                            <div class="small text-muted">Rapid</div>
+                            <div class="h4 fw-bold my-1">{{ user_data.rapid_rating }}</div>
+                            <div class="small {% if user_data.rapid_prog > 0 %}text-success{% elif user_data.rapid_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                {% if user_data.rapid_prog > 0 %}+{% endif %}{{ user_data.rapid_prog }}
+                                <i class="fas fa-arrow-{% if user_data.rapid_prog > 0 %}up{% elif user_data.rapid_prog < 0 %}down{% else %}right{% endif %}"></i>
+                            </div>
+                            <div class="small text-muted mt-1">{{ user_data.rapid_games }} games</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Classical -->
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 border rounded text-center bg-light">
+                            <div class="small text-muted">Classical</div>
+                            <div class="h4 fw-bold my-1">{{ user_data.classical_rating }}</div>
+                            <div class="small {% if user_data.classical_prog > 0 %}text-success{% elif user_data.classical_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                {% if user_data.classical_prog > 0 %}+{% endif %}{{ user_data.classical_prog }}
+                                <i class="fas fa-arrow-{% if user_data.classical_prog > 0 %}up{% elif user_data.classical_prog < 0 %}down{% else %}right{% endif %}"></i>
+                            </div>
+                            <div class="small text-muted mt-1">{{ user_data.classical_games }} games</div>
+                        </div>
+                    </div>
+
+                </div>
+                
+                <!-- Games Distribution -->
+                <h5 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Games Distribution</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light">
+                            {% set total_games = user_data.bullet_games + user_data.blitz_games + user_data.rapid_games + user_data.classical_games %}
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Total Games Played:</span>
+                                <span class="fw-bold">{{ total_games }}</span>
+                            </div>
+                            
+                            <div class="progress mb-2" style="height: 20px;">
+                                {% set bullet_percent = (user_data.bullet_games / total_games * 100)|round(1) %}
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ bullet_percent }}%" 
+                                    aria-valuenow="{{ bullet_percent }}" aria-valuemin="0" aria-valuemax="100" 
+                                    data-bs-toggle="tooltip" title="Bullet: {{ bullet_percent }}%"></div>
+                                
+                                {% set blitz_percent = (user_data.blitz_games / total_games * 100)|round(1) %}
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ blitz_percent }}%" 
+                                    aria-valuenow="{{ blitz_percent }}" aria-valuemin="0" aria-valuemax="100" 
+                                    data-bs-toggle="tooltip" title="Blitz: {{ blitz_percent }}%"></div>
+                                
+                                {% set rapid_percent = (user_data.rapid_games / total_games * 100)|round(1) %}
+                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ rapid_percent }}%" 
+                                    aria-valuenow="{{ rapid_percent }}" aria-valuemin="0" aria-valuemax="100" 
+                                    data-bs-toggle="tooltip" title="Rapid: {{ rapid_percent }}%"></div>
+                                
+                                {% set classical_percent = (user_data.classical_games / total_games * 100)|round(1) %}
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ classical_percent }}%" 
+                                    aria-valuenow="{{ classical_percent }}" aria-valuemin="0" aria-valuemax="100" 
+                                    data-bs-toggle="tooltip" title="Classical: {{ classical_percent }}%"></div>
+                                
+                            </div>
+                            
+                            <div class="small">
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-danger me-2">&nbsp;</span>
+                                    <span>Bullet: {{ user_data.bullet_games }} ({{ bullet_percent }}%)</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-warning me-2">&nbsp;</span>
+                                    <span>Blitz: {{ user_data.blitz_games }} ({{ blitz_percent }}%)</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-info me-2">&nbsp;</span>
+                                    <span>Rapid: {{ user_data.rapid_games }} ({{ rapid_percent }}%)</span>
+                                </div>
+                                <div class="d-flex align-items-center mb-1">
+                                    <span class="badge bg-success me-2">&nbsp;</span>
+                                    <span>Classical: {{ user_data.classical_games }} ({{ classical_percent }}%)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Stats Column -->
-                    <div class="col-md-6 p-4">
-                        <h5 class="mb-3"><i class="fas fa-chess me-2"></i>Game Statistics</h5>
-                        
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Total Games</span>
-                                <span class="fw-bold">{{ user_data.time_control_games }}</span>
-                            </div>
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Current Rating</span>
-                                <span class="fw-bold">{{ user_data.time_control_rating }}</span>
-                            </div>
-                        </div>
-                        
-                        <h5 class="mb-3 mt-4"><i class="fas fa-puzzle-piece me-2"></i>Puzzle Stats</h5>
-                        
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between py-2 border-bottom">
-                                <span class="text-muted">Puzzle Games</span>
-                                <span class="fw-bold">{{ user_data.puzzle_games }}</span>
-                            </div>
+                    <!-- Puzzle Stats -->
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <h6><i class="fas fa-puzzle-piece me-2"></i>Puzzle Stats</h6>
                             <div class="d-flex justify-content-between py-2 border-bottom">
                                 <span class="text-muted">Puzzle Rating</span>
                                 <span class="fw-bold">{{ user_data.puzzle_rating }}</span>
+                            </div>
+                            <div class="d-flex justify-content-between py-2 border-bottom">
+                                <span class="text-muted">Puzzles Solved</span>
+                                <span class="fw-bold">{{ user_data.puzzle_games }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <p class="text-muted mb-4">Total Games Analyzed: <span class="text-dark fw-bold">{{ count }}</span></p>
-        
+
+        <!-- Initialize Bootstrap tooltips -->
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+        </script>
+
         <!-- Game Details Section -->
         <div class="lichess-card p-4 mb-4">  <!-- Removed position-relative from here -->
             <div class="d-flex justify-content-between align-items-start mb-3">
@@ -444,9 +552,10 @@
             </div>
         </div>
 
-        <!-- Charts Section -->
+        <!-- Charts Section - Vertical Stack -->
         <div class="row mt-4">
-            <div class="col-md-6">
+            <!-- Win Rate Chart -->
+            <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <h3 class="mb-3">Win Rate</h3>
                     <div class="graph-container">
@@ -454,15 +563,19 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            
+            <!-- Score at End of Opening Chart -->
+            <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Score at the end of the opening </h3>
+                    <h3 class="mb-3">Score at the end of the opening</h3>
                     <div class="graph-container">
                         <img src="data:image/png;base64,{{ eval_per_opening }}" alt="Score at end of opening graph" class="img-fluid">
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            
+            <!-- Opening Performance Chart with Tabs -->
+            <div class="col-12">
                 <div class="lichess-card p-4 h-100">
                     <h3 class="mb-3">Opening Performance</h3>
                     
