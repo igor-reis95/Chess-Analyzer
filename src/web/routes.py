@@ -91,7 +91,7 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
     # Fetch and process chess user data
     user_processor = UserProcessor(params["username"])
     user_processor.run_all()
-    user_data = user_processor.get_user_data(params["perf_type"])
+    user_data = user_processor.get_user_data()
 
     return game_processor.get_dataframe().head(params["max_games"]), user_data
 
@@ -112,25 +112,8 @@ def _generate_template_context(params: dict, df, user_data) -> dict:
         "count": len(df),
         "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient="records"),
         "form_data": params,
-        **_get_analysis_data(df),
         **_get_visualizations(df),
         "user_data": user_data
-    }
-
-def _get_analysis_data(df) -> dict[str, Any]:
-    """Generate all analysis metrics."""
-    if df.empty:
-        raise ValueError("No games found. Try with different parameters.")
-    overall = basic_analysis(df)
-    return {
-        "overall_analysis": overall,
-        "analysis_for_white": basic_analysis(df, 'white'),
-        "analysis_for_black": basic_analysis(df, 'black'),
-        "common_opponents": overall['common_opponents'].to_frame().to_html(
-            classes="table table-striped",
-            header=True,
-            index=False
-        )
     }
 
 def _get_visualizations(df) -> dict:
