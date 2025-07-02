@@ -45,7 +45,7 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
     x = np.arange(len(labels))
     bar_width = 0.5
 
-    _, ax = plt.subplots()
+    _, ax = plt.subplots(figsize=(8,5))
 
     ax.bar(x, wins, bar_width, label='win', color='#92b76f')
     ax.bar(x, draws, bar_width, bottom=wins, label='draw', color='#d59c4d')
@@ -181,14 +181,14 @@ def plot_eval_per_opening(df):
     colors = []
     for value in averages.values():
         if value >= 0:
-            colors.append("#93b674")  # Green for positive
+            colors.append("#93b674")
         else:
-            colors.append("#da6f73")  # Red for negative
+            colors.append("#da6f73")
 
     # Plot
     plt.figure(figsize=(8, 5))
     bars = plt.bar(averages.keys(), averages.values(), color=colors)
-    plt.axhline(0, color="black", linestyle="--", alpha=0.5)  # Changed reference line to black for better visibility
+    plt.axhline(0, color="black", linestyle="--", alpha=0.5)
 
     # Add value labels on top of each bar
     for bar in bars:
@@ -220,7 +220,7 @@ def get_opening_stats(df):
         count=("adjusted_eval", "size"),
         avg_eval=("adjusted_eval", "mean")
     ).reset_index()
-    df = df[df["count"] > 1].sort_values("count", ascending=False)
+    df = df[df["count"] > 2].sort_values("count", ascending=False)
     df["opening_label"] = df.apply(lambda x: f"{x['normalized_opening_name']} ({x['count']})",axis=1)
     return df
 
@@ -229,32 +229,35 @@ def plot_opening_stats(df, color="Overall"):
         df = get_opening_stats(df)
     else:
         df = get_opening_stats(df[df['player_color'] == color])
-    
+
+    # Sort by frequency (assuming 'count' exists in your stats)
+    df = df.sort_values('count', ascending=True)
+
     # Create color list based on evaluation values
     colors = ["#93b674" if x >= 0 else "#da6f73" for x in df['avg_eval']]
-    
-    plt.figure(figsize=(10, 8))
-    
+
+    plt.figure(figsize=(8, 5))
+
     # Create the barplot with our custom colors
     bars = plt.barh(df['opening_label'], df['avg_eval'], color=colors)
-    
+
     # Add value labels
-    for bar in bars:
-        width = bar.get_width()
+    for bar_rect in bars:
+        width = bar_rect.get_width()
         label_x_pos = width if width >= 0 else width
-        plt.text(label_x_pos, bar.get_y() + bar.get_height()/2,
+        plt.text(label_x_pos, bar_rect.get_y() + bar_rect.get_height()/2,
                  f'{width:.2f}',
                  va='center', ha='left' if width >= 0 else 'right',
                  color='black', fontsize=8)
-    
+
     plt.axvline(0, color="black", linestyle="--", alpha=0.5)
     plt.title(f"Opening Performance ({color})")
     plt.xlabel("Average Evaluation")
     plt.ylabel("Opening (Count)")
-    
+
     # Add some padding to prevent label cutoff
     plt.xlim(min(df['avg_eval']) * 1.1, max(df['avg_eval']) * 1.1)
-    
+
     plt.tight_layout()
 
     # Save plot to base64 string
