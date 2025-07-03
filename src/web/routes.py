@@ -11,10 +11,10 @@ import logging
 import io
 from io import BytesIO
 import csv
-from typing import Any
+import json
 from weasyprint import HTML
 from flask import render_template, request, Response, make_response, send_file
-from src.services.analysis import basic_analysis, prepare_winrate_data
+from src.services.analysis import prepare_winrate_data
 import src.services.data_viz as data_viz
 from src.services.game_processor import GameProcessor
 from src.services.user_processor import UserProcessor
@@ -119,13 +119,20 @@ def _generate_template_context(params: dict, df, user_data) -> dict:
 def _get_visualizations(df) -> dict:
     """Generate all visualization outputs."""
 
+    # Read Lichess analysis data from the 2 million games
+    with open("data/summary_data_lichess_games.json", "r") as f:
+        lichess_analysis_data = json.load(f)
+
     return {
         "status_distribution_graph": data_viz.plot_game_status_distribution(df),
         "winrate_graph": data_viz.winrate_bar_graph(prepare_winrate_data(df)),
         "eval_per_opening": data_viz.plot_eval_per_opening(df),
         "overall_opening_stats": data_viz.plot_opening_stats(df, "Overall"),
         "white_opening_stats": data_viz.plot_opening_stats(df, "white"),
-        "black_opening_stats": data_viz.plot_opening_stats(df, "black")
+        "black_opening_stats": data_viz.plot_opening_stats(df, "black"),
+        "lichess_popular_openings": data_viz.lichess_popular_openings(lichess_analysis_data),
+        "lichess_successful_openings_white": data_viz.lichess_successful_openings(lichess_analysis_data, "white"),
+        "lichess_successful_openings_white": data_viz.lichess_successful_openings(lichess_analysis_data, "black")
     }
 
 def _render_error(message: str, status_code: int = 500) -> str:
