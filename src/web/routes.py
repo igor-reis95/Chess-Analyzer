@@ -132,7 +132,7 @@ def _get_visualizations(df) -> dict:
         "black_opening_stats": data_viz.plot_opening_stats(df, "black"),
         "lichess_popular_openings": data_viz.lichess_popular_openings(lichess_analysis_data),
         "lichess_successful_openings_white": data_viz.lichess_successful_openings(lichess_analysis_data, "white"),
-        "lichess_successful_openings_white": data_viz.lichess_successful_openings(lichess_analysis_data, "black")
+        "lichess_successful_openings_black": data_viz.lichess_successful_openings(lichess_analysis_data, "black")
     }
 
 def _render_error(message: str, status_code: int = 500) -> str:
