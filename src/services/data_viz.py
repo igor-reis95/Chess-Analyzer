@@ -283,11 +283,27 @@ def lichess_popular_openings(lichess_analysis_data):
     plt.xticks([0, 0.02, 0.04, 0.06], ['0%', '2%', '4%', '6%'])
 
     # Add percentage labels
-    for bar_rect in bars:
-        width = bar_rect.get_width()
-        plt.text(width + 0.002, bar_rect.get_y() + bar_rect.get_height()/2,
-                f'{width*100:.2f}%',  # Multiply by 100 and add % symbol
-                ha='center', va='center', fontweight='bold')
+    for b in bars:
+        width = b.get_width()
+        percentage = width * 100  # Convert to percentage
+        
+        # Position text at the end of the bar
+        if percentage >= 0:
+            x_pos = percentage - 0.5  # Slightly inside from the end for positive values (in percentage units)
+            ha = 'right'  # Right-align for positive bars
+        else:
+            x_pos = percentage + 0.5  # Slightly inside from the end for negative values (in percentage units)
+            ha = 'left'  # Left-align for negative bars
+        
+        plt.text(
+            x_pos/100,  # Convert back to decimal for positioning
+            b.get_y() + b.get_height()/2,
+            f'{percentage:.2f}%',
+            ha=ha,
+            va='center',
+            color='black',
+            fontweight='bold'
+        )
 
     plt.tight_layout()
     # Save plot to base64 string
@@ -311,10 +327,27 @@ def lichess_successful_openings(lichess_analysis_data, color):
     plt.xlabel('Evaluation of Games')
     plt.ylabel('ECO Code')
 
-    # Add evaluation labels
+    # Add value labels at bar ends
     for b in bars:
         width = b.get_width()
-        plt.text(width + 0.002, b.get_y() + b.get_height()/2, width, ha='center', va='center', fontweight='bold')
+        
+        # Position text at the end of the bar
+        if width >= 0:
+            x_pos = width - 0.05  # Slightly inside from the end for positive values
+            ha = 'right'  # Right-align for positive bars
+        else:
+            x_pos = width + 0.05  # Slightly inside from the end for negative values
+            ha = 'left'  # Left-align for negative bars
+        
+        plt.text(
+            x_pos,
+            b.get_y() + b.get_height()/2,
+            f'{width:.2f}',
+            ha=ha,
+            va='center',
+            color='black',
+            fontweight='bold'
+        )
 
     plt.tight_layout()
 
