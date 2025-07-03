@@ -190,25 +190,24 @@
                             
                             <div class="progress mb-2" style="height: 20px;">
                                 {% set bullet_percent = (user_data.bullet_games / total_games * 100)|round(1) %}
-                                <div class="progress-bar bg-danger" role="progressbar" style="width: {{ bullet_percent }}%" 
+                                <div class="progress-bar" role="progressbar" style="width: {{ bullet_percent }}%; background-color: #ff4757;" 
                                     aria-valuenow="{{ bullet_percent }}" aria-valuemin="0" aria-valuemax="100" 
                                     data-bs-toggle="tooltip" title="Bullet: {{ bullet_percent }}%"></div>
                                 
                                 {% set blitz_percent = (user_data.blitz_games / total_games * 100)|round(1) %}
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ blitz_percent }}%" 
+                                <div class="progress-bar" role="progressbar" style="width: {{ blitz_percent }}%; background-color: #ffa502;" 
                                     aria-valuenow="{{ blitz_percent }}" aria-valuemin="0" aria-valuemax="100" 
                                     data-bs-toggle="tooltip" title="Blitz: {{ blitz_percent }}%"></div>
                                 
                                 {% set rapid_percent = (user_data.rapid_games / total_games * 100)|round(1) %}
-                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ rapid_percent }}%" 
+                                <div class="progress-bar" role="progressbar" style="width: {{ rapid_percent }}%; background-color: #1e90ff;" 
                                     aria-valuenow="{{ rapid_percent }}" aria-valuemin="0" aria-valuemax="100" 
                                     data-bs-toggle="tooltip" title="Rapid: {{ rapid_percent }}%"></div>
                                 
                                 {% set classical_percent = (user_data.classical_games / total_games * 100)|round(1) %}
-                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ classical_percent }}%" 
+                                <div class="progress-bar" role="progressbar" style="width: {{ classical_percent }}%; background-color: #2ed573;" 
                                     aria-valuenow="{{ classical_percent }}" aria-valuemin="0" aria-valuemax="100" 
                                     data-bs-toggle="tooltip" title="Classical: {{ classical_percent }}%"></div>
-                                
                             </div>
                             
                             <div class="small">
@@ -365,13 +364,15 @@
                     </div>
                 </div>
             </div>
+
+            
             
             <!-- Opening Performance Chart with Tabs -->
             <div class="col-12">
                 <div class="lichess-card p-4 h-100">
                     <h3 class="mb-3">Opening Performance</h3>
                     
-                    <!-- Tab navigation -->
+                    <!-- Tab navigation of data analysis of user openings data -->
                     <ul class="nav nav-tabs" id="graphTabs" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="overall-tab" data-bs-toggle="tab" data-bs-target="#overall-graph" type="button" role="tab" aria-controls="overall-graph" aria-selected="true">
@@ -392,19 +393,62 @@
                     
                     <!-- Tab content -->
                     <div class="tab-content p-3" id="graphTabsContent">
-                        <div class="tab-pane fade show active" id="overall-graph" role="tabpanel" aria-labelledby="eval-tab">
+                        <div class="tab-pane fade show active" id="overall-graph" role="tabpanel" aria-labelledby="overall-tab">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ overall_opening_stats }}" alt="Overall opening stats graph" class="img-fluid">
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="white-graph" role="tabpanel" aria-labelledby="overall-tab">
+                        <div class="tab-pane fade" id="white-graph" role="tabpanel" aria-labelledby="white-tab">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ white_opening_stats }}" alt="White opening stats graph" class="img-fluid">
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="black-graph" role="tabpanel" aria-labelledby="white-tab">
+                        <div class="tab-pane fade" id="black-graph" role="tabpanel" aria-labelledby="black-tab">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ black_opening_stats }}" alt="Black opening stats graph" class="img-fluid">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Opening analysis for lichess Charts with Tabs -->
+            <div class="col-12">
+                <div class="lichess-card p-4 h-100">
+                    <h3 class="mb-3">Lichess Opening Analysis</h3>
+                    <!-- Tab navigation of data analysis of lichess openings data-->
+                    <ul class="nav nav-tabs" id="graphTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="popular-tab" data-bs-toggle="tab" data-bs-target="#popular-graph" type="button" role="tab" aria-controls="popular-graph" aria-selected="true">
+                                Popular openings
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="white-tab" data-bs-toggle="tab" data-bs-target="#white-lichess-graph" type="button" role="tab" aria-controls="white-lichess-graph" aria-selected="false">
+                                Successful openings for white
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="black-tab" data-bs-toggle="tab" data-bs-target="#black-lichess-graph" type="button" role="tab" aria-controls="black-lichess-graph" aria-selected="false">
+                                Successful openings for black
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab content -->
+                    <div class="tab-content p-3" id="graphTabsContent">
+                        <div class="tab-pane fade show active" id="popular-graph" role="tabpanel" aria-labelledby="popular-tab">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ lichess_popular_openings }}" alt="Popular openings" class="img-fluid">
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="white-lichess-graph" role="tabpanel" aria-labelledby="white-lichess-graph">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ lichess_successful_openings_white }}" alt="Successful openings for white" class="img-fluid">
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="black-lichess-graph" role="tabpanel" aria-labelledby="black-lichess-graph">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ lichess_successful_openings_black }}" alt="Successful openings for black" class="img-fluid">
                             </div>
                         </div>
                     </div>
