@@ -270,24 +270,24 @@ def plot_opening_stats(df, color="Overall"):
 def lichess_popular_openings(lichess_analysis_data):
     # Retrieve popular openings data, turn it into a dataframe and return the top 5
     popular_openings_df = pd.DataFrame(lichess_analysis_data["popular_openings"]).head()
-    popular_openings_df = popular_openings_df.sort_values('evaluation')
+    popular_openings_df = popular_openings_df.sort_values('percentage')
 
     plt.figure(figsize=(8, 5))
-    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#1E90FF')
+    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['percentage'], color='#1E90FF')
 
     plt.title('Most Popular Chess Openings by ECO Code')
-    plt.xlabel('evaluation of Games')
+    plt.xlabel('Percentage of Games')
     plt.ylabel('ECO Code')
 
-    # Manually format as evaluations by multiplying by 100 (x-axis legend)
+    # Manually format as percentages by multiplying by 100 (x-axis legend)
     plt.xticks([0, 0.02, 0.04, 0.06], ['0%', '2%', '4%', '6%'])
 
-    # Add evaluation labels
+    # Add percentage labels
     for bar_rect in bars:
         width = bar_rect.get_width()
         plt.text(width + 0.002, bar_rect.get_y() + bar_rect.get_height()/2,
                 f'{width*100:.2f}%',  # Multiply by 100 and add % symbol
-                ha='left', va='center')
+                ha='center', va='center', fontweight='bold')
 
     plt.tight_layout()
     # Save plot to base64 string
@@ -300,10 +300,9 @@ def lichess_popular_openings(lichess_analysis_data):
 def lichess_successful_openings(lichess_analysis_data, color):
     # Retrieve popular openings data, turn it into a dataframe and return the top 5
     if color == 'white':
-        popular_openings_df = pd.DataFrame(lichess_analysis_data["opening_eval_per_eco"]).head()
-    else:
         popular_openings_df = pd.DataFrame(lichess_analysis_data["opening_eval_per_eco"]).tail()
-    popular_openings_df = popular_openings_df.sort_values('evaluation')
+    else:
+        popular_openings_df = pd.DataFrame(lichess_analysis_data["opening_eval_per_eco"]).head().sort_values(by='evaluation', ascending=False)
 
     plt.figure(figsize=(8, 5))
     bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#1E90FF')
@@ -312,17 +311,13 @@ def lichess_successful_openings(lichess_analysis_data, color):
     plt.xlabel('Evaluation of Games')
     plt.ylabel('ECO Code')
 
-    # Manually format as evaluations by multiplying by 100 (x-axis legend)
-    plt.xticks([0, 0.02, 0.04, 0.06], ['0%', '2%', '4%', '6%'])
-
     # Add evaluation labels
-    for bar_rect in bars:
-        width = bar_rect.get_width()
-        plt.text(width + 0.002, bar_rect.get_y() + bar_rect.get_height()/2,
-                f'{width*100:.2f}%',  # Multiply by 100 and add % symbol
-                ha='left', va='center')
+    for b in bars:
+        width = b.get_width()
+        plt.text(width + 0.002, b.get_y() + b.get_height()/2, width, ha='center', va='center', fontweight='bold')
 
     plt.tight_layout()
+
     # Save plot to base64 string
     img = io.BytesIO()
     plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
