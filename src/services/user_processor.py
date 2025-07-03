@@ -70,8 +70,13 @@ class UserProcessor:
         if self.df_processed is None:
             logger.warning("No processed data to save for '%s'", self.username)
             return
-        #save_processed_user_data(self.df_processed)
+        save_processed_user_data(self.df_processed)
         logger.info("Saved processed user data for '%s' to database", self.username)
+
+        # Save the data to CSV
+        folder = "data/processed"
+        filepath = os.path.join(folder, "IgorSReis_user_data.csv")
+        self.df_processed.to_csv(filepath, index=False)
 
     def get_dataframe(self) -> Optional[pd.DataFrame]:
         """
@@ -101,7 +106,7 @@ class UserProcessor:
 
         try:
             with psycopg2.connect(DATABASE_URL) as conn:
-                df = pd.read_sql(query, conn, params=(username,))
+                df = pd.read_sql(query, conn, params=(username,)) # TODO Change to SQLAlchemy
         except Exception as e:
             raise RuntimeError(f"Database error: {e}")
 
@@ -116,5 +121,5 @@ class UserProcessor:
         """
         self.fetch_user_data()
         self.process_user_data()
-        #self.save_user_data()
-        #self.get_user_data()
+        self.save_user_data()
+        self.get_user_data()
