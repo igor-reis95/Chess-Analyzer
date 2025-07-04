@@ -254,6 +254,39 @@ def result_streak(df):
     
     return streak
 
+def adjust_evaluations(df):
+    """Adjust evaluations based on player color."""
+    df["opening_eval"] = pd.to_numeric(df["opening_eval"], errors='coerce')
+    return df.apply(
+        lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
+        axis=1
+    )
+
+def calculate_conversion_rate(condition, success_condition, total_games):
+    """Calculate percentage of games meeting success_condition given initial condition."""
+    if total_games == 0:
+        return 0.0
+    return (condition & success_condition).sum() / total_games * 100
+
+def calculate_advantage_stats(df):
+    """Calculate all advantage-related statistics."""
+    df['adjusted_eval'] = adjust_evaluations(df)
+
+    advantage = df['adjusted_eval'] > 1
+    disadvantage = df['adjusted_eval'] < -1
+    won = df['result'] == 'win'
+    drawn = df['result'] == 'draw'
+
+    stats = {
+        'pct_won_when_ahead': calculate_conversion_rate(advantage, won, advantage.sum()),
+        'pct_won_or_drawn_when_behind': calculate_conversion_rate(
+            disadvantage, (won | drawn), disadvantage.sum()
+        ),
+        'games_with_advantage': advantage.sum(),
+        'games_with_disadvantage': disadvantage.sum()
+    }
+
+    return stats
 
 def prepare_winrate_data(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
     """
