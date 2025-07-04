@@ -286,20 +286,15 @@ def lichess_popular_openings(lichess_analysis_data):
     for b in bars:
         width = b.get_width()
         percentage = width * 100  # Convert to percentage
-        
-        # Position text at the end of the bar
-        if percentage >= 0:
-            x_pos = percentage - 0.5  # Slightly inside from the end for positive values (in percentage units)
-            ha = 'right'  # Right-align for positive bars
-        else:
-            x_pos = percentage + 0.5  # Slightly inside from the end for negative values (in percentage units)
-            ha = 'left'  # Left-align for negative bars
-        
+
+        # Calculate the position relative to bar width
+        x_pos = width - (width * 0.005)
+
         plt.text(
-            x_pos/100,  # Convert back to decimal for positioning
+            x_pos,  # Convert back to decimal for positioning
             b.get_y() + b.get_height()/2,
             f'{percentage:.2f}%',
-            ha=ha,
+            ha='right',
             va='center',
             color='black',
             fontweight='bold'
@@ -320,10 +315,12 @@ def lichess_successful_openings(lichess_analysis_data, color):
     else:
         popular_openings_df = pd.DataFrame(lichess_analysis_data["opening_eval_per_eco"]).head().sort_values(by='evaluation', ascending=False)
 
+    color_text = color[0].upper() + color[1:] # To make the first letter uppercase
+
     plt.figure(figsize=(8, 5))
     bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#1E90FF')
 
-    plt.title('Most Popular Chess Openings by ECO Code')
+    plt.title(f'Most Successful Chess Openings for {color_text} by ECO Code')
     plt.xlabel('Evaluation of Games')
     plt.ylabel('ECO Code')
 
@@ -351,6 +348,46 @@ def lichess_successful_openings(lichess_analysis_data, color):
 
     plt.tight_layout()
 
+    # Save plot to base64 string
+    img = io.BytesIO()
+    plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    img.seek(0)
+    return base64.b64encode(img.getvalue()).decode()
+
+def plot_conversion_comparison(player_stats, lichess_stats, 
+                             stat_key, title):
+    """
+    Plot comparison between player and Lichess playerbase for any conversion stat
+    
+    Parameters:
+        player_stats: dict with player's statistics
+        lichess_stats: dict with Lichess reference stats
+        stat_key: key to extract from both stats dictionaries
+        title: plot title
+        colors: tuple of two colors for the bars
+    """
+    player_value = player_stats[stat_key]
+    lichess_value = lichess_stats['conversion_stats'][stat_key]
+    
+    plt.figure(figsize=(8, 5))
+    metrics = ['You', 'Lichess Playerbase']
+    values = [player_value, lichess_value]
+    
+    bars = plt.bar(metrics, values, color=('#93b674', '#d49b54'))
+    plt.title(title)
+    plt.ylabel('Percentage (%)')
+    plt.ylim(0, 100)
+    
+    # Add value labels
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                f'{height:.1f}%',
+                ha='center', va='bottom')
+    
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    
     # Save plot to base64 string
     img = io.BytesIO()
     plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
