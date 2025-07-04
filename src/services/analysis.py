@@ -254,46 +254,6 @@ def result_streak(df):
     
     return streak
 
-def basic_analysis(
-    df: pd.DataFrame,
-    color: Optional[str] = None
-) -> Dict[str, Union[int, Tuple[int, int], pd.Series, Dict]]:
-    """
-    Perform a basic analysis summary optionally filtered by player color.
-    
-    Args:
-        df (pd.DataFrame): Games DataFrame.
-        color (Optional[str]): Player color filter.
-        
-    Returns:
-        Dict: Dictionary containing various analysis results.
-    """
-    required_columns = [
-        'player_color', 'result', 'normalized_opening_name', 'player_rating_diff',
-        'player_rating', 'opponent_name', 'player_accuracy'
-    ]
-    validate_columns(df, required_columns)
-
-    validated_color = validate_color(color)
-    filtered_df = filter_by_color(df, validated_color)
-
-    opening_by_result = get_top_openings_by_result(filtered_df, None)
-    wins, losses, draws = count_results(filtered_df)
-
-    analysis = {
-        "rating_diff": get_rating_diff(filtered_df),
-        "opening_counts": get_top_openings(filtered_df),
-        "opening_wins": opening_by_result[0],
-        "opening_losses": opening_by_result[1],
-        "opening_draws": opening_by_result[2],
-        "rating_range": get_rating_range(filtered_df),
-        "results": {"wins": wins, "losses": losses, "draws": draws},
-        "result_streak": result_streak(filtered_df),
-        "common_opponents": get_common_opponents(filtered_df),
-        "accuracy": get_accuracy_stats(filtered_df)
-    }
-    logger.debug("Basic analysis completed.")
-    return analysis
 
 def prepare_winrate_data(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
     """
