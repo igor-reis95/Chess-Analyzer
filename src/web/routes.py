@@ -16,6 +16,7 @@ from weasyprint import HTML
 from flask import render_template, request, Response, make_response, send_file
 from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
 import src.services.data_viz as data_viz
+import src.services.data_viz_insights as viz_insights
 from src.services.game_processor import GameProcessor
 from src.services.user_processor import UserProcessor
 from ..webapp import app
@@ -181,34 +182,3 @@ def download_csv():
     except Exception as e:
         logger.exception("Error generating CSV download")
         return _render_error(f"Could not generate CSV: {str(e)}")
-
-@app.route("/download_pdf", methods=["POST"])
-def download_pdf():
-    """Handle PDF download requests."""
-    try:
-        # Step 1: Reuse existing input validation and data fetching
-        params = _validate_inputs(request.form)
-        df, user_data = _fetch_and_prepare_data(params)
-
-        # Step 2: Render the HTML template with context
-        rendered = render_template(
-            "result.html",
-            **_generate_template_context(params, df, user_data)
-        )
-
-        # Step 3: Convert HTML to PDF in memory
-        pdf_io = BytesIO()
-        HTML(string=rendered).write_pdf(target=pdf_io)
-        pdf_io.seek(0)
-
-        # Step 4: Send the PDF file as response
-        return send_file(
-            pdf_io,
-            as_attachment=True,
-            download_name="chess_games_analysis.pdf",
-            mimetype="application/pdf"
-        )
-
-    except Exception as e:
-        logger.exception("Error generating PDF download")
-        return _render_error(f"Could not generate PDF: {str(e)}")
