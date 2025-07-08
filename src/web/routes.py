@@ -121,7 +121,7 @@ def _get_visualizations(df) -> dict:
 
     # Retrieve player stats data and Lichess stats data
     player_data = calculate_advantage_stats(df)
-    with open("data/summary_data_lichess_games.json", "r") as f:
+    with open("data/lichess_analysis_snapshot.json", "r") as f:
         lichess_data = json.load(f)
     
 
