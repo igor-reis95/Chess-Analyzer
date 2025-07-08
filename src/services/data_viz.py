@@ -19,7 +19,6 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt # pylint: disable=wrong-import-position
-import seaborn as sns
 
 # Create logger
 logger = logging.getLogger(__name__)
