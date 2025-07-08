@@ -15,8 +15,8 @@ import json
 from weasyprint import HTML
 from flask import render_template, request, Response, make_response, send_file
 from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
-import src.services.data_viz as data_viz
-import src.services.data_viz_insights as viz_insights
+import src.services.data_viz as viz
+import src.services.data_insights as insights
 from src.services.game_processor import GameProcessor
 from src.services.user_processor import UserProcessor
 from ..webapp import app
@@ -108,77 +108,52 @@ def _render_results(params: dict, df, user_data) -> str:
 
 def _generate_template_context(params: dict, df, user_data) -> dict:
     """Prepare all data needed for the results template."""
-    return {
-        **params,
-        "count": len(df),
-        "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient="records"),
-        "form_data": params,
-        **_get_visualizations(df),
-        "user_data": user_data
-    }
-
-def _get_visualizations(df) -> dict:
-    """Generate all visualization outputs."""
 
     # Retrieve player stats data and Lichess stats data
     player_data = calculate_advantage_stats(df)
     with open("data/lichess_analysis_snapshot.json", "r") as f:
         lichess_data = json.load(f)
-    
 
     return {
-        "status_distribution_graph": data_viz.plot_game_status_distribution(df),
-        "winrate_graph": data_viz.winrate_bar_graph(prepare_winrate_data(df)),
-        "eval_per_opening": data_viz.plot_eval_per_opening(df),
-        "overall_opening_stats": data_viz.plot_opening_stats(df, "Overall"),
-        "white_opening_stats": data_viz.plot_opening_stats(df, "white"),
-        "black_opening_stats": data_viz.plot_opening_stats(df, "black"),
-        "lichess_popular_openings": data_viz.lichess_popular_openings(lichess_data),
-        "lichess_successful_openings_white": data_viz.lichess_successful_openings(lichess_data, "white"),
-        "lichess_successful_openings_black": data_viz.lichess_successful_openings(lichess_data, "black"),
-        "plot_conversion_comparison_when_ahead": data_viz.plot_conversion_comparison(
-                                                    player_data, lichess_data,
-                                                    stat_key='pct_won_when_ahead',
-                                                    title='% Wins when ahead after opening'
-                                                ),
-        "plot_conversion_comparison_when_behind": data_viz.plot_conversion_comparison(
-                                                    player_data, lichess_data,
-                                                    stat_key='pct_won_or_drawn_when_behind',
-                                                    title='% Wins/Draws when behind after opening'
-                                                ),
+        **params,
+        "count": len(df),
+        "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient="records"),
+        "form_data": params,
+        **_get_visualizations(df, player_data, lichess_data),
+        "user_data": user_data
+    }
+
+def _get_visualizations(df, player_data, lichess_data) -> dict:
+    """Generate all visualization outputs."""
+    return {
+        "status_distribution_graph": viz.plot_game_status_distribution(df),
+        "winrate_graph": viz.winrate_bar_graph(prepare_winrate_data(df)),
+        "eval_per_opening": viz.plot_eval_per_opening(df),
+        "openings": {
+            "overall": viz.plot_opening_stats(df, "Overall"),
+            "white": viz.plot_opening_stats(df, "white"),
+            "black": viz.plot_opening_stats(df, "black"),
+        },
+        "lichess_openings": {
+            "popular": viz.lichess_popular_openings(lichess_data),
+            "successful_white": viz.lichess_successful_openings(lichess_data, "white"),
+            "successful_black": viz.lichess_successful_openings(lichess_data, "black"),
+        },
+        "conversion": {
+            "when_ahead": viz.plot_conversion_comparison(
+                player_data, lichess_data,
+                stat_key='pct_won_when_ahead',
+                title='% Wins when ahead after opening'
+            ),
+            "when_behind": viz.plot_conversion_comparison(
+                player_data, lichess_data,
+                stat_key='pct_won_or_drawn_when_behind',
+                title='% Wins/Draws when behind after opening'
+            )
+        }
     }
 
 def _render_error(message: str, status_code: int = 500) -> str:
     """Render error message with traceback."""
     tb = traceback.format_exc()
     return Response(f"<pre>{message}\n\n{tb}</pre>", status=status_code, mimetype="text/html")
-
-@app.route("/download_csv", methods=["POST"])
-def download_csv():
-    """Handle CSV download requests."""
-    try:
-        # Get the form data again to reconstruct the dataframe
-        params = _validate_inputs(request.form)
-        df, _ = _fetch_and_prepare_data(params)
-
-        # Create CSV in memory
-        output = io.StringIO()
-        writer = csv.writer(output)
-
-        # Write header
-        writer.writerow(df.columns)
-
-        # Write data
-        for row in df.itertuples(index=False):
-            writer.writerow(row)
-
-        # Prepare response
-        output.seek(0)
-        response = make_response(output.getvalue())
-        response.headers["Content-Disposition"] = "attachment; filename=chess_games_analysis.csv"
-        response.headers["Content-type"] = "text/csv"
-        return response
-
-    except Exception as e:
-        logger.exception("Error generating CSV download")
-        return _render_error(f"Could not generate CSV: {str(e)}")
