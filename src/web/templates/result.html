@@ -393,17 +393,17 @@
                     <div class="tab-content p-3" id="graphTabsContent">
                         <div class="tab-pane fade show active" id="overall-graph" role="tabpanel" aria-labelledby="overall-tab">
                             <div class="graph-container">
-                                <img src="data:image/png;base64,{{ overall_opening_stats }}" alt="Overall opening stats graph" class="img-fluid">
+                                <img src="data:image/png;base64,{{ openings.overall }}" alt="Overall opening stats graph" class="img-fluid">
                             </div>
                         </div>
                         <div class="tab-pane fade" id="white-graph" role="tabpanel" aria-labelledby="white-tab">
                             <div class="graph-container">
-                                <img src="data:image/png;base64,{{ white_opening_stats }}" alt="White opening stats graph" class="img-fluid">
+                                <img src="data:image/png;base64,{{ openings.white }}" alt="White opening stats graph" class="img-fluid">
                             </div>
                         </div>
                         <div class="tab-pane fade" id="black-graph" role="tabpanel" aria-labelledby="black-tab">
                             <div class="graph-container">
-                                <img src="data:image/png;base64,{{ black_opening_stats }}" alt="Black opening stats graph" class="img-fluid">
+                                <img src="data:image/png;base64,{{ openings.black }}" alt="Black opening stats graph" class="img-fluid">
                             </div>
                         </div>
                     </div>
@@ -415,7 +415,7 @@
                 <div class="lichess-card p-4 h-100">
                     <h3 class="mb-3">Advantage Capitalization</h3>
                     <div class="graph-container">
-                        <img src="data:image/png;base64,{{ plot_conversion_comparison_when_ahead }}" alt="Advantage Capitalization" class="img-fluid">
+                        <img src="data:image/png;base64,{{ conversion.when_ahead }}" alt="Advantage Capitalization" class="img-fluid">
                     </div>
                 </div>
             </div>
@@ -424,7 +424,7 @@
                 <div class="lichess-card p-4 h-100">
                     <h3 class="mb-3">Resourcefulness</h3>
                     <div class="graph-container">
-                        <img src="data:image/png;base64,{{ plot_conversion_comparison_when_behind }}" alt="Resourcefulness" class="img-fluid">
+                        <img src="data:image/png;base64,{{ conversion.when_behind }}" alt="Resourcefulness" class="img-fluid">
                     </div>
                 </div>
             </div>
@@ -456,17 +456,17 @@
                     <div class="tab-content p-3" id="graphTabsContent">
                         <div class="tab-pane fade show active" id="popular-graph" role="tabpanel" aria-labelledby="popular-tab">
                             <div class="graph-container">
-                                <img src="data:image/png;base64,{{ lichess_popular_openings }}" alt="Popular openings" class="img-fluid">
+                                <img src="data:image/png;base64,{{ lichess_openings.popular }}" alt="Popular openings" class="img-fluid">
                             </div>
                         </div>
                         <div class="tab-pane fade" id="white-lichess-graph" role="tabpanel" aria-labelledby="white-lichess-graph">
                             <div class="graph-container">
-                                <img src="data:image/png;base64,{{ lichess_successful_openings_white }}" alt="Successful openings for white" class="img-fluid">
+                                <img src="data:image/png;base64,{{ lichess_openings.successful_white }}" alt="Successful openings for white" class="img-fluid">
                             </div>
                         </div>
                         <div class="tab-pane fade" id="black-lichess-graph" role="tabpanel" aria-labelledby="black-lichess-graph">
                             <div class="graph-container">
-                                <img src="data:image/png;base64,{{ lichess_successful_openings_black }}" alt="Successful openings for black" class="img-fluid">
+                                <img src="data:image/png;base64,{{ lichess_openings.successful_black }}" alt="Successful openings for black" class="img-fluid">
                             </div>
                         </div>
                     </div>
