@@ -1,0 +1,1632 @@
+{
+  "conversion_stats": {
+    "pct_won_when_ahead": 64.21,
+    "pct_won_or_drawn_when_behind": 33.0,
+    "games_with_advantage": 15656,
+    "games_with_disadvantage": 10619
+  },
+  "opening_eval_per_eco": [
+    {
+      "ECO": "E85",
+      "evaluation": -6.45
+    },
+    {
+      "ECO": "E27",
+      "evaluation": -5.31
+    },
+    {
+      "ECO": "C32",
+      "evaluation": -4.89
+    },
+    {
+      "ECO": "E44",
+      "evaluation": -4.37
+    },
+    {
+      "ECO": "B78",
+      "evaluation": -3.82
+    },
+    {
+      "ECO": "A83",
+      "evaluation": -3.09
+    },
+    {
+      "ECO": "B89",
+      "evaluation": -3.04
+    },
+    {
+      "ECO": "C82",
+      "evaluation": -2.6
+    },
+    {
+      "ECO": "B98",
+      "evaluation": -2.44
+    },
+    {
+      "ECO": "A88",
+      "evaluation": -2.27
+    },
+    {
+      "ECO": "A66",
+      "evaluation": -2.2
+    },
+    {
+      "ECO": "D09",
+      "evaluation": -2.08
+    },
+    {
+      "ECO": "B88",
+      "evaluation": -1.99
+    },
+    {
+      "ECO": "A96",
+      "evaluation": -1.96
+    },
+    {
+      "ECO": "D39",
+      "evaluation": -1.69
+    },
+    {
+      "ECO": "A37",
+      "evaluation": -1.52
+    },
+    {
+      "ECO": "C31",
+      "evaluation": -1.33
+    },
+    {
+      "ECO": "B59",
+      "evaluation": -1.3
+    },
+    {
+      "ECO": "D70",
+      "evaluation": -1.27
+    },
+    {
+      "ECO": "D80",
+      "evaluation": -1.26
+    },
+    {
+      "ECO": "B71",
+      "evaluation": -1.26
+    },
+    {
+      "ECO": "B51",
+      "evaluation": -1.12
+    },
+    {
+      "ECO": "C33",
+      "evaluation": -1.09
+    },
+    {
+      "ECO": "B39",
+      "evaluation": -1.08
+    },
+    {
+      "ECO": "C35",
+      "evaluation": -0.95
+    },
+    {
+      "ECO": "B97",
+      "evaluation": -0.95
+    },
+    {
+      "ECO": "D77",
+      "evaluation": -0.86
+    },
+    {
+      "ECO": "C17",
+      "evaluation": -0.86
+    },
+    {
+      "ECO": "D90",
+      "evaluation": -0.84
+    },
+    {
+      "ECO": "C67",
+      "evaluation": -0.84
+    },
+    {
+      "ECO": "C37",
+      "evaluation": -0.84
+    },
+    {
+      "ECO": "B92",
+      "evaluation": -0.77
+    },
+    {
+      "ECO": "E38",
+      "evaluation": -0.69
+    },
+    {
+      "ECO": "B80",
+      "evaluation": -0.68
+    },
+    {
+      "ECO": "C27",
+      "evaluation": -0.65
+    },
+    {
+      "ECO": "E36",
+      "evaluation": -0.55
+    },
+    {
+      "ECO": "B84",
+      "evaluation": -0.55
+    },
+    {
+      "ECO": "B11",
+      "evaluation": -0.52
+    },
+    {
+      "ECO": "B16",
+      "evaluation": -0.51
+    },
+    {
+      "ECO": "C28",
+      "evaluation": -0.5
+    },
+    {
+      "ECO": "B20",
+      "evaluation": -0.48
+    },
+    {
+      "ECO": "B29",
+      "evaluation": -0.47
+    },
+    {
+      "ECO": "E61",
+      "evaluation": -0.46
+    },
+    {
+      "ECO": "D19",
+      "evaluation": -0.39
+    },
+    {
+      "ECO": "D40",
+      "evaluation": -0.37
+    },
+    {
+      "ECO": "B52",
+      "evaluation": -0.33
+    },
+    {
+      "ECO": "E11",
+      "evaluation": -0.33
+    },
+    {
+      "ECO": "D29",
+      "evaluation": -0.33
+    },
+    {
+      "ECO": "C52",
+      "evaluation": -0.32
+    },
+    {
+      "ECO": "B10",
+      "evaluation": -0.31
+    },
+    {
+      "ECO": "B34",
+      "evaluation": -0.31
+    },
+    {
+      "ECO": "D94",
+      "evaluation": -0.31
+    },
+    {
+      "ECO": "B04",
+      "evaluation": -0.3
+    },
+    {
+      "ECO": "A11",
+      "evaluation": -0.27
+    },
+    {
+      "ECO": "C09",
+      "evaluation": -0.24
+    },
+    {
+      "ECO": "C80",
+      "evaluation": -0.21
+    },
+    {
+      "ECO": "C89",
+      "evaluation": -0.21
+    },
+    {
+      "ECO": "B56",
+      "evaluation": -0.2
+    },
+    {
+      "ECO": "B95",
+      "evaluation": -0.19
+    },
+    {
+      "ECO": "B21",
+      "evaluation": -0.19
+    },
+    {
+      "ECO": "C84",
+      "evaluation": -0.18
+    },
+    {
+      "ECO": "A05",
+      "evaluation": -0.18
+    },
+    {
+      "ECO": "C90",
+      "evaluation": -0.14
+    },
+    {
+      "ECO": "B54",
+      "evaluation": -0.14
+    },
+    {
+      "ECO": "D33",
+      "evaluation": -0.13
+    },
+    {
+      "ECO": "C71",
+      "evaluation": -0.12
+    },
+    {
+      "ECO": "D63",
+      "evaluation": -0.1
+    },
+    {
+      "ECO": "D03",
+      "evaluation": -0.09
+    },
+    {
+      "ECO": "A00",
+      "evaluation": -0.09
+    },
+    {
+      "ECO": "C24",
+      "evaluation": -0.06
+    },
+    {
+      "ECO": "B25",
+      "evaluation": -0.04
+    },
+    {
+      "ECO": "B33",
+      "evaluation": -0.01
+    },
+    {
+      "ECO": "C20",
+      "evaluation": -0.0
+    },
+    {
+      "ECO": "C26",
+      "evaluation": -0.0
+    },
+    {
+      "ECO": "B83",
+      "evaluation": 0.0
+    },
+    {
+      "ECO": "D66",
+      "evaluation": 0.0
+    },
+    {
+      "ECO": "E24",
+      "evaluation": 0.01
+    },
+    {
+      "ECO": "C58",
+      "evaluation": 0.01
+    },
+    {
+      "ECO": "E06",
+      "evaluation": 0.01
+    },
+    {
+      "ECO": "C72",
+      "evaluation": 0.02
+    },
+    {
+      "ECO": "B41",
+      "evaluation": 0.03
+    },
+    {
+      "ECO": "E19",
+      "evaluation": 0.03
+    },
+    {
+      "ECO": "B43",
+      "evaluation": 0.04
+    },
+    {
+      "ECO": "A06",
+      "evaluation": 0.04
+    },
+    {
+      "ECO": "B30",
+      "evaluation": 0.05
+    },
+    {
+      "ECO": "A14",
+      "evaluation": 0.06
+    },
+    {
+      "ECO": "B44",
+      "evaluation": 0.06
+    },
+    {
+      "ECO": "A29",
+      "evaluation": 0.09
+    },
+    {
+      "ECO": "D85",
+      "evaluation": 0.1
+    },
+    {
+      "ECO": "B31",
+      "evaluation": 0.1
+    },
+    {
+      "ECO": "C13",
+      "evaluation": 0.11
+    },
+    {
+      "ECO": "B40",
+      "evaluation": 0.11
+    },
+    {
+      "ECO": "E53",
+      "evaluation": 0.11
+    },
+    {
+      "ECO": "E00",
+      "evaluation": 0.11
+    },
+    {
+      "ECO": "A42",
+      "evaluation": 0.12
+    },
+    {
+      "ECO": "B50",
+      "evaluation": 0.13
+    },
+    {
+      "ECO": "D05",
+      "evaluation": 0.14
+    },
+    {
+      "ECO": "B23",
+      "evaluation": 0.14
+    },
+    {
+      "ECO": "D34",
+      "evaluation": 0.14
+    },
+    {
+      "ECO": "B05",
+      "evaluation": 0.15
+    },
+    {
+      "ECO": "E05",
+      "evaluation": 0.16
+    },
+    {
+      "ECO": "E35",
+      "evaluation": 0.16
+    },
+    {
+      "ECO": "B90",
+      "evaluation": 0.16
+    },
+    {
+      "ECO": "D44",
+      "evaluation": 0.17
+    },
+    {
+      "ECO": "C22",
+      "evaluation": 0.17
+    },
+    {
+      "ECO": "B13",
+      "evaluation": 0.17
+    },
+    {
+      "ECO": "C11",
+      "evaluation": 0.17
+    },
+    {
+      "ECO": "C02",
+      "evaluation": 0.18
+    },
+    {
+      "ECO": "A01",
+      "evaluation": 0.19
+    },
+    {
+      "ECO": "B93",
+      "evaluation": 0.19
+    },
+    {
+      "ECO": "B70",
+      "evaluation": 0.19
+    },
+    {
+      "ECO": "B24",
+      "evaluation": 0.19
+    },
+    {
+      "ECO": "B28",
+      "evaluation": 0.19
+    },
+    {
+      "ECO": "B63",
+      "evaluation": 0.21
+    },
+    {
+      "ECO": "B08",
+      "evaluation": 0.21
+    },
+    {
+      "ECO": "A45",
+      "evaluation": 0.22
+    },
+    {
+      "ECO": "E08",
+      "evaluation": 0.22
+    },
+    {
+      "ECO": "B12",
+      "evaluation": 0.23
+    },
+    {
+      "ECO": "D56",
+      "evaluation": 0.23
+    },
+    {
+      "ECO": "C55",
+      "evaluation": 0.24
+    },
+    {
+      "ECO": "A27",
+      "evaluation": 0.24
+    },
+    {
+      "ECO": "D14",
+      "evaluation": 0.25
+    },
+    {
+      "ECO": "A43",
+      "evaluation": 0.25
+    },
+    {
+      "ECO": "A61",
+      "evaluation": 0.26
+    },
+    {
+      "ECO": "E48",
+      "evaluation": 0.26
+    },
+    {
+      "ECO": "A50",
+      "evaluation": 0.26
+    },
+    {
+      "ECO": "A03",
+      "evaluation": 0.26
+    },
+    {
+      "ECO": "C91",
+      "evaluation": 0.26
+    },
+    {
+      "ECO": "B75",
+      "evaluation": 0.26
+    },
+    {
+      "ECO": "D42",
+      "evaluation": 0.27
+    },
+    {
+      "ECO": "B27",
+      "evaluation": 0.27
+    },
+    {
+      "ECO": "C14",
+      "evaluation": 0.27
+    },
+    {
+      "ECO": "C92",
+      "evaluation": 0.28
+    },
+    {
+      "ECO": "C07",
+      "evaluation": 0.28
+    },
+    {
+      "ECO": "C01",
+      "evaluation": 0.29
+    },
+    {
+      "ECO": "A48",
+      "evaluation": 0.29
+    },
+    {
+      "ECO": "A08",
+      "evaluation": 0.3
+    },
+    {
+      "ECO": "B72",
+      "evaluation": 0.3
+    },
+    {
+      "ECO": "A82",
+      "evaluation": 0.3
+    },
+    {
+      "ECO": "A02",
+      "evaluation": 0.31
+    },
+    {
+      "ECO": "E63",
+      "evaluation": 0.32
+    },
+    {
+      "ECO": "D25",
+      "evaluation": 0.34
+    },
+    {
+      "ECO": "A85",
+      "evaluation": 0.34
+    },
+    {
+      "ECO": "C47",
+      "evaluation": 0.34
+    },
+    {
+      "ECO": "D13",
+      "evaluation": 0.34
+    },
+    {
+      "ECO": "E47",
+      "evaluation": 0.35
+    },
+    {
+      "ECO": "C75",
+      "evaluation": 0.35
+    },
+    {
+      "ECO": "C34",
+      "evaluation": 0.35
+    },
+    {
+      "ECO": "B03",
+      "evaluation": 0.35
+    },
+    {
+      "ECO": "A58",
+      "evaluation": 0.35
+    },
+    {
+      "ECO": "B19",
+      "evaluation": 0.35
+    },
+    {
+      "ECO": "D32",
+      "evaluation": 0.37
+    },
+    {
+      "ECO": "E14",
+      "evaluation": 0.37
+    },
+    {
+      "ECO": "C00",
+      "evaluation": 0.37
+    },
+    {
+      "ECO": "E18",
+      "evaluation": 0.38
+    },
+    {
+      "ECO": "D78",
+      "evaluation": 0.38
+    },
+    {
+      "ECO": "C97",
+      "evaluation": 0.39
+    },
+    {
+      "ECO": "C23",
+      "evaluation": 0.4
+    },
+    {
+      "ECO": "A28",
+      "evaluation": 0.41
+    },
+    {
+      "ECO": "E10",
+      "evaluation": 0.41
+    },
+    {
+      "ECO": "B01",
+      "evaluation": 0.42
+    },
+    {
+      "ECO": "E54",
+      "evaluation": 0.42
+    },
+    {
+      "ECO": "C50",
+      "evaluation": 0.42
+    },
+    {
+      "ECO": "C46",
+      "evaluation": 0.43
+    },
+    {
+      "ECO": "E20",
+      "evaluation": 0.43
+    },
+    {
+      "ECO": "A46",
+      "evaluation": 0.43
+    },
+    {
+      "ECO": "A84",
+      "evaluation": 0.43
+    },
+    {
+      "ECO": "D26",
+      "evaluation": 0.43
+    },
+    {
+      "ECO": "D08",
+      "evaluation": 0.43
+    },
+    {
+      "ECO": "E95",
+      "evaluation": 0.44
+    },
+    {
+      "ECO": "D35",
+      "evaluation": 0.44
+    },
+    {
+      "ECO": "C49",
+      "evaluation": 0.44
+    },
+    {
+      "ECO": "A19",
+      "evaluation": 0.44
+    },
+    {
+      "ECO": "E12",
+      "evaluation": 0.44
+    },
+    {
+      "ECO": "A51",
+      "evaluation": 0.45
+    },
+    {
+      "ECO": "C30",
+      "evaluation": 0.45
+    },
+    {
+      "ECO": "C68",
+      "evaluation": 0.45
+    },
+    {
+      "ECO": "E90",
+      "evaluation": 0.45
+    },
+    {
+      "ECO": "A65",
+      "evaluation": 0.46
+    },
+    {
+      "ECO": "E97",
+      "evaluation": 0.47
+    },
+    {
+      "ECO": "B46",
+      "evaluation": 0.47
+    },
+    {
+      "ECO": "A36",
+      "evaluation": 0.48
+    },
+    {
+      "ECO": "B18",
+      "evaluation": 0.48
+    },
+    {
+      "ECO": "D00",
+      "evaluation": 0.48
+    },
+    {
+      "ECO": "E07",
+      "evaluation": 0.49
+    },
+    {
+      "ECO": "C43",
+      "evaluation": 0.5
+    },
+    {
+      "ECO": "D58",
+      "evaluation": 0.52
+    },
+    {
+      "ECO": "B32",
+      "evaluation": 0.52
+    },
+    {
+      "ECO": "E60",
+      "evaluation": 0.53
+    },
+    {
+      "ECO": "D37",
+      "evaluation": 0.53
+    },
+    {
+      "ECO": "C16",
+      "evaluation": 0.53
+    },
+    {
+      "ECO": "D92",
+      "evaluation": 0.53
+    },
+    {
+      "ECO": "B99",
+      "evaluation": 0.53
+    },
+    {
+      "ECO": "B74",
+      "evaluation": 0.54
+    },
+    {
+      "ECO": "E21",
+      "evaluation": 0.55
+    },
+    {
+      "ECO": "D53",
+      "evaluation": 0.55
+    },
+    {
+      "ECO": "A56",
+      "evaluation": 0.55
+    },
+    {
+      "ECO": "A95",
+      "evaluation": 0.56
+    },
+    {
+      "ECO": "B06",
+      "evaluation": 0.57
+    },
+    {
+      "ECO": "A20",
+      "evaluation": 0.57
+    },
+    {
+      "ECO": "A38",
+      "evaluation": 0.57
+    },
+    {
+      "ECO": "D02",
+      "evaluation": 0.57
+    },
+    {
+      "ECO": "B42",
+      "evaluation": 0.58
+    },
+    {
+      "ECO": "D04",
+      "evaluation": 0.58
+    },
+    {
+      "ECO": "D01",
+      "evaluation": 0.58
+    },
+    {
+      "ECO": "A81",
+      "evaluation": 0.58
+    },
+    {
+      "ECO": "A57",
+      "evaluation": 0.59
+    },
+    {
+      "ECO": "D52",
+      "evaluation": 0.59
+    },
+    {
+      "ECO": "C15",
+      "evaluation": 0.59
+    },
+    {
+      "ECO": "D91",
+      "evaluation": 0.61
+    },
+    {
+      "ECO": "C70",
+      "evaluation": 0.61
+    },
+    {
+      "ECO": "A70",
+      "evaluation": 0.62
+    },
+    {
+      "ECO": "C56",
+      "evaluation": 0.62
+    },
+    {
+      "ECO": "D55",
+      "evaluation": 0.63
+    },
+    {
+      "ECO": "A80",
+      "evaluation": 0.63
+    },
+    {
+      "ECO": "C54",
+      "evaluation": 0.63
+    },
+    {
+      "ECO": "C21",
+      "evaluation": 0.63
+    },
+    {
+      "ECO": "D45",
+      "evaluation": 0.64
+    },
+    {
+      "ECO": "B15",
+      "evaluation": 0.64
+    },
+    {
+      "ECO": "A59",
+      "evaluation": 0.64
+    },
+    {
+      "ECO": "E76",
+      "evaluation": 0.64
+    },
+    {
+      "ECO": "D64",
+      "evaluation": 0.65
+    },
+    {
+      "ECO": "C45",
+      "evaluation": 0.65
+    },
+    {
+      "ECO": "E30",
+      "evaluation": 0.66
+    },
+    {
+      "ECO": "E73",
+      "evaluation": 0.66
+    },
+    {
+      "ECO": "A39",
+      "evaluation": 0.67
+    },
+    {
+      "ECO": "B22",
+      "evaluation": 0.68
+    },
+    {
+      "ECO": "B00",
+      "evaluation": 0.68
+    },
+    {
+      "ECO": "C65",
+      "evaluation": 0.68
+    },
+    {
+      "ECO": "D43",
+      "evaluation": 0.68
+    },
+    {
+      "ECO": "A35",
+      "evaluation": 0.68
+    },
+    {
+      "ECO": "A54",
+      "evaluation": 0.68
+    },
+    {
+      "ECO": "C42",
+      "evaluation": 0.69
+    },
+    {
+      "ECO": "E94",
+      "evaluation": 0.69
+    },
+    {
+      "ECO": "E16",
+      "evaluation": 0.7
+    },
+    {
+      "ECO": "A25",
+      "evaluation": 0.72
+    },
+    {
+      "ECO": "D10",
+      "evaluation": 0.72
+    },
+    {
+      "ECO": "B17",
+      "evaluation": 0.72
+    },
+    {
+      "ECO": "C59",
+      "evaluation": 0.74
+    },
+    {
+      "ECO": "C77",
+      "evaluation": 0.74
+    },
+    {
+      "ECO": "C19",
+      "evaluation": 0.75
+    },
+    {
+      "ECO": "A53",
+      "evaluation": 0.75
+    },
+    {
+      "ECO": "A60",
+      "evaluation": 0.75
+    },
+    {
+      "ECO": "B96",
+      "evaluation": 0.75
+    },
+    {
+      "ECO": "B53",
+      "evaluation": 0.75
+    },
+    {
+      "ECO": "A10",
+      "evaluation": 0.76
+    },
+    {
+      "ECO": "E65",
+      "evaluation": 0.77
+    },
+    {
+      "ECO": "C62",
+      "evaluation": 0.78
+    },
+    {
+      "ECO": "A13",
+      "evaluation": 0.78
+    },
+    {
+      "ECO": "A31",
+      "evaluation": 0.79
+    },
+    {
+      "ECO": "D30",
+      "evaluation": 0.79
+    },
+    {
+      "ECO": "A40",
+      "evaluation": 0.8
+    },
+    {
+      "ECO": "B73",
+      "evaluation": 0.8
+    },
+    {
+      "ECO": "D93",
+      "evaluation": 0.8
+    },
+    {
+      "ECO": "A16",
+      "evaluation": 0.8
+    },
+    {
+      "ECO": "E68",
+      "evaluation": 0.81
+    },
+    {
+      "ECO": "E64",
+      "evaluation": 0.81
+    },
+    {
+      "ECO": "C08",
+      "evaluation": 0.81
+    },
+    {
+      "ECO": "C48",
+      "evaluation": 0.81
+    },
+    {
+      "ECO": "B02",
+      "evaluation": 0.81
+    },
+    {
+      "ECO": "A41",
+      "evaluation": 0.83
+    },
+    {
+      "ECO": "A12",
+      "evaluation": 0.84
+    },
+    {
+      "ECO": "A90",
+      "evaluation": 0.84
+    },
+    {
+      "ECO": "A30",
+      "evaluation": 0.84
+    },
+    {
+      "ECO": "D87",
+      "evaluation": 0.84
+    },
+    {
+      "ECO": "E98",
+      "evaluation": 0.85
+    },
+    {
+      "ECO": "E62",
+      "evaluation": 0.85
+    },
+    {
+      "ECO": "C61",
+      "evaluation": 0.85
+    },
+    {
+      "ECO": "E28",
+      "evaluation": 0.85
+    },
+    {
+      "ECO": "A47",
+      "evaluation": 0.86
+    },
+    {
+      "ECO": "B91",
+      "evaluation": 0.87
+    },
+    {
+      "ECO": "A22",
+      "evaluation": 0.87
+    },
+    {
+      "ECO": "E41",
+      "evaluation": 0.88
+    },
+    {
+      "ECO": "C53",
+      "evaluation": 0.88
+    },
+    {
+      "ECO": "D31",
+      "evaluation": 0.88
+    },
+    {
+      "ECO": "A04",
+      "evaluation": 0.89
+    },
+    {
+      "ECO": "A15",
+      "evaluation": 0.9
+    },
+    {
+      "ECO": "D11",
+      "evaluation": 0.9
+    },
+    {
+      "ECO": "D74",
+      "evaluation": 0.92
+    },
+    {
+      "ECO": "C44",
+      "evaluation": 0.93
+    },
+    {
+      "ECO": "C60",
+      "evaluation": 0.93
+    },
+    {
+      "ECO": "A21",
+      "evaluation": 0.93
+    },
+    {
+      "ECO": "B07",
+      "evaluation": 0.94
+    },
+    {
+      "ECO": "C41",
+      "evaluation": 0.94
+    },
+    {
+      "ECO": "B76",
+      "evaluation": 0.94
+    },
+    {
+      "ECO": "A73",
+      "evaluation": 0.95
+    },
+    {
+      "ECO": "D15",
+      "evaluation": 0.96
+    },
+    {
+      "ECO": "C05",
+      "evaluation": 0.96
+    },
+    {
+      "ECO": "A07",
+      "evaluation": 0.98
+    },
+    {
+      "ECO": "A78",
+      "evaluation": 0.98
+    },
+    {
+      "ECO": "D38",
+      "evaluation": 0.99
+    },
+    {
+      "ECO": "A34",
+      "evaluation": 1.0
+    },
+    {
+      "ECO": "D60",
+      "evaluation": 1.0
+    },
+    {
+      "ECO": "D23",
+      "evaluation": 1.0
+    },
+    {
+      "ECO": "A23",
+      "evaluation": 1.0
+    },
+    {
+      "ECO": "A17",
+      "evaluation": 1.0
+    },
+    {
+      "ECO": "C57",
+      "evaluation": 1.02
+    },
+    {
+      "ECO": "C25",
+      "evaluation": 1.02
+    },
+    {
+      "ECO": "E71",
+      "evaluation": 1.03
+    },
+    {
+      "ECO": "B38",
+      "evaluation": 1.05
+    },
+    {
+      "ECO": "C64",
+      "evaluation": 1.06
+    },
+    {
+      "ECO": "D20",
+      "evaluation": 1.06
+    },
+    {
+      "ECO": "C36",
+      "evaluation": 1.06
+    },
+    {
+      "ECO": "C03",
+      "evaluation": 1.06
+    },
+    {
+      "ECO": "E09",
+      "evaluation": 1.08
+    },
+    {
+      "ECO": "B45",
+      "evaluation": 1.08
+    },
+    {
+      "ECO": "D36",
+      "evaluation": 1.08
+    },
+    {
+      "ECO": "D06",
+      "evaluation": 1.08
+    },
+    {
+      "ECO": "C12",
+      "evaluation": 1.09
+    },
+    {
+      "ECO": "E91",
+      "evaluation": 1.09
+    },
+    {
+      "ECO": "B86",
+      "evaluation": 1.1
+    },
+    {
+      "ECO": "D50",
+      "evaluation": 1.11
+    },
+    {
+      "ECO": "A49",
+      "evaluation": 1.13
+    },
+    {
+      "ECO": "D17",
+      "evaluation": 1.13
+    },
+    {
+      "ECO": "E83",
+      "evaluation": 1.13
+    },
+    {
+      "ECO": "A18",
+      "evaluation": 1.14
+    },
+    {
+      "ECO": "C29",
+      "evaluation": 1.16
+    },
+    {
+      "ECO": "B68",
+      "evaluation": 1.17
+    },
+    {
+      "ECO": "A69",
+      "evaluation": 1.17
+    },
+    {
+      "ECO": "C10",
+      "evaluation": 1.19
+    },
+    {
+      "ECO": "A62",
+      "evaluation": 1.19
+    },
+    {
+      "ECO": "E70",
+      "evaluation": 1.2
+    },
+    {
+      "ECO": "D86",
+      "evaluation": 1.2
+    },
+    {
+      "ECO": "A09",
+      "evaluation": 1.21
+    },
+    {
+      "ECO": "B77",
+      "evaluation": 1.21
+    },
+    {
+      "ECO": "E92",
+      "evaluation": 1.21
+    },
+    {
+      "ECO": "B62",
+      "evaluation": 1.22
+    },
+    {
+      "ECO": "C66",
+      "evaluation": 1.27
+    },
+    {
+      "ECO": "A52",
+      "evaluation": 1.28
+    },
+    {
+      "ECO": "E66",
+      "evaluation": 1.31
+    },
+    {
+      "ECO": "E80",
+      "evaluation": 1.33
+    },
+    {
+      "ECO": "C63",
+      "evaluation": 1.34
+    },
+    {
+      "ECO": "D12",
+      "evaluation": 1.34
+    },
+    {
+      "ECO": "D71",
+      "evaluation": 1.34
+    },
+    {
+      "ECO": "D46",
+      "evaluation": 1.38
+    },
+    {
+      "ECO": "B58",
+      "evaluation": 1.39
+    },
+    {
+      "ECO": "E15",
+      "evaluation": 1.4
+    },
+    {
+      "ECO": "D22",
+      "evaluation": 1.4
+    },
+    {
+      "ECO": "E43",
+      "evaluation": 1.43
+    },
+    {
+      "ECO": "C04",
+      "evaluation": 1.43
+    },
+    {
+      "ECO": "B48",
+      "evaluation": 1.44
+    },
+    {
+      "ECO": "E01",
+      "evaluation": 1.44
+    },
+    {
+      "ECO": "D41",
+      "evaluation": 1.44
+    },
+    {
+      "ECO": "E42",
+      "evaluation": 1.45
+    },
+    {
+      "ECO": "B09",
+      "evaluation": 1.46
+    },
+    {
+      "ECO": "E51",
+      "evaluation": 1.47
+    },
+    {
+      "ECO": "D47",
+      "evaluation": 1.48
+    },
+    {
+      "ECO": "E04",
+      "evaluation": 1.48
+    },
+    {
+      "ECO": "C40",
+      "evaluation": 1.49
+    },
+    {
+      "ECO": "C18",
+      "evaluation": 1.51
+    },
+    {
+      "ECO": "C06",
+      "evaluation": 1.53
+    },
+    {
+      "ECO": "E32",
+      "evaluation": 1.54
+    },
+    {
+      "ECO": "D27",
+      "evaluation": 1.54
+    },
+    {
+      "ECO": "E34",
+      "evaluation": 1.58
+    },
+    {
+      "ECO": "D16",
+      "evaluation": 1.59
+    },
+    {
+      "ECO": "A67",
+      "evaluation": 1.61
+    },
+    {
+      "ECO": "C51",
+      "evaluation": 1.61
+    },
+    {
+      "ECO": "E22",
+      "evaluation": 1.67
+    },
+    {
+      "ECO": "E81",
+      "evaluation": 1.69
+    },
+    {
+      "ECO": "E77",
+      "evaluation": 1.69
+    },
+    {
+      "ECO": "E46",
+      "evaluation": 1.7
+    },
+    {
+      "ECO": "D07",
+      "evaluation": 1.71
+    },
+    {
+      "ECO": "D51",
+      "evaluation": 1.74
+    },
+    {
+      "ECO": "B35",
+      "evaluation": 1.74
+    },
+    {
+      "ECO": "B14",
+      "evaluation": 1.77
+    },
+    {
+      "ECO": "D24",
+      "evaluation": 1.78
+    },
+    {
+      "ECO": "C85",
+      "evaluation": 1.8
+    },
+    {
+      "ECO": "B66",
+      "evaluation": 1.8
+    },
+    {
+      "ECO": "B36",
+      "evaluation": 1.8
+    },
+    {
+      "ECO": "B37",
+      "evaluation": 1.82
+    },
+    {
+      "ECO": "D83",
+      "evaluation": 1.82
+    },
+    {
+      "ECO": "E72",
+      "evaluation": 1.85
+    },
+    {
+      "ECO": "E40",
+      "evaluation": 1.89
+    },
+    {
+      "ECO": "A44",
+      "evaluation": 1.9
+    },
+    {
+      "ECO": "D79",
+      "evaluation": 1.96
+    },
+    {
+      "ECO": "D21",
+      "evaluation": 1.96
+    },
+    {
+      "ECO": "A71",
+      "evaluation": 1.96
+    },
+    {
+      "ECO": "E67",
+      "evaluation": 2.08
+    },
+    {
+      "ECO": "B94",
+      "evaluation": 2.16
+    },
+    {
+      "ECO": "C69",
+      "evaluation": 2.17
+    },
+    {
+      "ECO": "B47",
+      "evaluation": 2.24
+    },
+    {
+      "ECO": "C78",
+      "evaluation": 2.25
+    },
+    {
+      "ECO": "C38",
+      "evaluation": 2.3
+    },
+    {
+      "ECO": "B60",
+      "evaluation": 2.31
+    },
+    {
+      "ECO": "C88",
+      "evaluation": 2.31
+    },
+    {
+      "ECO": "E69",
+      "evaluation": 2.4
+    },
+    {
+      "ECO": "D98",
+      "evaluation": 2.43
+    },
+    {
+      "ECO": "C74",
+      "evaluation": 2.48
+    },
+    {
+      "ECO": "C39",
+      "evaluation": 2.54
+    },
+    {
+      "ECO": "B49",
+      "evaluation": 3.15
+    },
+    {
+      "ECO": "E82",
+      "evaluation": 3.28
+    },
+    {
+      "ECO": "C87",
+      "evaluation": 3.32
+    },
+    {
+      "ECO": "B81",
+      "evaluation": 3.72
+    },
+    {
+      "ECO": "B26",
+      "evaluation": 3.87
+    },
+    {
+      "ECO": "A33",
+      "evaluation": 3.94
+    },
+    {
+      "ECO": "A87",
+      "evaluation": 3.95
+    },
+    {
+      "ECO": "B57",
+      "evaluation": 4.49
+    },
+    {
+      "ECO": "A32",
+      "evaluation": 5.76
+    },
+    {
+      "ECO": "C79",
+      "evaluation": 5.77
+    },
+    {
+      "ECO": "E17",
+      "evaluation": 6.93
+    }
+  ],
+  "popular_openings": [
+    {
+      "ECO": "A00",
+      "percentage": 0.0648
+    },
+    {
+      "ECO": "A40",
+      "percentage": 0.057
+    },
+    {
+      "ECO": "B01",
+      "percentage": 0.0553
+    },
+    {
+      "ECO": "B00",
+      "percentage": 0.0481
+    },
+    {
+      "ECO": "D00",
+      "percentage": 0.0423
+    }
+  ]
+}
