@@ -120,26 +120,26 @@ def _generate_template_context(params: dict, df, user_data) -> dict:
         "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient="records"),
         "form_data": params,
         **_get_visualizations(df, player_data, lichess_data),
+        **_get_insights(df, player_data, lichess_data),
         "user_data": user_data
     }
 
 def _get_visualizations(df, player_data, lichess_data) -> dict:
     """Generate all visualization outputs."""
     return {
-        "status_distribution_graph": viz.plot_game_status_distribution(df),
-        "winrate_graph": viz.winrate_bar_graph(prepare_winrate_data(df)),
-        "eval_per_opening": viz.plot_eval_per_opening(df),
-        "openings": {
+        "winrate_graph_viz": viz.winrate_bar_graph(prepare_winrate_data(df)),
+        "eval_on_opening_viz": viz.plot_eval_on_opening(df),
+        "openings_viz": {
             "overall": viz.plot_opening_stats(df, "Overall"),
             "white": viz.plot_opening_stats(df, "white"),
             "black": viz.plot_opening_stats(df, "black"),
         },
-        "lichess_openings": {
+        "lichess_openings_viz": {
             "popular": viz.lichess_popular_openings(lichess_data),
             "successful_white": viz.lichess_successful_openings(lichess_data, "white"),
             "successful_black": viz.lichess_successful_openings(lichess_data, "black"),
         },
-        "conversion": {
+        "conversion_viz": {
             "when_ahead": viz.plot_conversion_comparison(
                 player_data, lichess_data,
                 stat_key='pct_won_when_ahead',
@@ -150,6 +150,26 @@ def _get_visualizations(df, player_data, lichess_data) -> dict:
                 stat_key='pct_won_or_drawn_when_behind',
                 title='% Wins/Draws when behind after opening'
             )
+        }
+    }
+
+def _get_insights(df, player_data, lichess_data) -> dict:
+    """Generate all visualization outputs."""
+    return {
+        "winrate_graph_insights": {
+            "overall": insights.winrate_graph_insights(prepare_winrate_data(df), "Both"),
+            "white": insights.winrate_graph_insights(prepare_winrate_data(df), "White"),
+            "black": insights.winrate_graph_insights(prepare_winrate_data(df), "Black")
+            },
+        "conversion_insights": {
+            "when_ahead": {
+                "text": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_when_ahead")["text"],
+                "link": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_when_ahead")["link"]
+            },
+            "when_behind": {
+                "text": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_or_drawn_when_behind")["text"],
+                "link": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_or_drawn_when_behind")["link"]
+            }
         }
     }
 
