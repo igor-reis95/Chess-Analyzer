@@ -1,15 +1,3 @@
-"""
-This module provides utility functions to generate base64-encoded visualizations 
-from chess match data.
-
-Functions:
-- winrate_bar_graph: Generates a stacked bar chart of win/draw/loss percentages by color.
-- plot_game_status_distribution: Generates a donut chart showing game outcome distributions.
-
-These functions are designed for integration in data pipelines or web apps where
-image output needs to be embedded or transmitted via text (e.g., HTML or JSON).
-"""
-
 import io
 import base64
 import logging
@@ -44,7 +32,7 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
     x = np.arange(len(labels))
     bar_width = 0.5
 
-    _, ax = plt.subplots(figsize=(8,5))
+    _, ax = plt.subplots(figsize=(10,5))
 
     ax.bar(x, wins, bar_width, label='win', color='#92b76f')
     ax.bar(x, draws, bar_width, bottom=wins, label='draw', color='#d59c4d')
@@ -80,82 +68,7 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
     logger.debug("Winrate bar graph successfully generated.")
     return img_base64
 
-
-def plot_game_status_distribution(df: pd.DataFrame) -> str:
-    """
-    Generate a base64-encoded donut chart for game status distribution.
-
-    Args:
-        df (pd.DataFrame): DataFrame containing a 'status' column.
-
-    Returns:
-        str: Base64-encoded PNG image of the chart.
-    """
-    logger.debug("Generating game status distribution chart.")
-
-    # Count and compute relative frequency
-    status_counts = df['status'].value_counts()
-    total = status_counts.sum()
-    status_percent = status_counts / total
-
-    # Group small categories into 'other'
-    threshold = 0.10
-    major_statuses = status_percent[status_percent >= threshold]
-    other_count = status_counts[status_percent < threshold].sum() / 100
-
-    # Final data
-    final_counts = major_statuses.copy()
-    if other_count > 0:
-        final_counts['other'] = other_count
-
-    # Define color mapping
-    color_map = {
-        'resign': '#93b674',
-        'mate': '#da6f73',
-        'draw': '#d49b54',
-        'outoftime': '#3288d1',
-        'other': '#6c757d'
-    }
-
-    # Assign colors based on final labels
-    custom_colors = [color_map.get(status, '#6c757d') for status in final_counts.index]
-
-    # Plot
-    fig, ax = plt.subplots()
-    wedges, _, _ = ax.pie(
-        final_counts,
-        labels=final_counts.index,
-        autopct='%1.1f%%',
-        startangle=90,
-        wedgeprops={'width': 0.4},
-        colors=custom_colors
-    )
-
-    centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-    fig.gca().add_artist(centre_circle)
-
-    ax.axis('equal')
-    plt.title("Game Status Distribution")
-    ax.legend(
-        wedges,
-        final_counts.index,
-        title="Status",
-        loc="center left",
-        bbox_to_anchor=(1, 0.5)
-    )
-
-    plt.tight_layout()
-
-    img_stream = io.BytesIO()
-    plt.savefig(img_stream, format='png')
-    img_stream.seek(0)
-    img_base64 = base64.b64encode(img_stream.read()).decode('utf-8')
-    plt.close()
-
-    logger.debug("Game status distribution chart successfully generated.")
-    return img_base64
-
-def plot_eval_per_opening(df):
+def plot_eval_on_opening(df):
     df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
     df["adjusted_eval"] = df.apply(
         lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
@@ -190,9 +103,9 @@ def plot_eval_per_opening(df):
     plt.axhline(0, color="black", linestyle="--", alpha=0.5)
 
     # Add value labels on top of each bar
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2., height,
+    for b in bars:
+        height = b.get_height()
+        plt.text(b.get_x() + b.get_width()/2., height,
                  f'{height:.2f}',
                  ha='center', va='bottom')
 
@@ -235,16 +148,16 @@ def plot_opening_stats(df, color="Overall"):
     # Create color list based on evaluation values
     colors = ["#93b674" if x >= 0 else "#da6f73" for x in df['avg_eval']]
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(10, 5))
 
     # Create the barplot with our custom colors
     bars = plt.barh(df['opening_label'], df['avg_eval'], color=colors)
 
     # Add value labels
-    for bar_rect in bars:
-        width = bar_rect.get_width()
+    for b in bars:
+        width = b.get_width()
         label_x_pos = width if width >= 0 else width
-        plt.text(label_x_pos, bar_rect.get_y() + bar_rect.get_height()/2,
+        plt.text(label_x_pos, b.get_y() + b.get_height()/2,
                  f'{width:.2f}',
                  va='center', ha='left' if width >= 0 else 'right',
                  color='black', fontsize=8)
@@ -326,7 +239,7 @@ def lichess_successful_openings(lichess_analysis_data, color):
     # Add value labels at bar ends
     for b in bars:
         width = b.get_width()
-        
+
         # Position text at the end of the bar
         if width >= 0:
             x_pos = width - 0.05  # Slightly inside from the end for positive values
@@ -334,7 +247,7 @@ def lichess_successful_openings(lichess_analysis_data, color):
         else:
             x_pos = width + 0.05  # Slightly inside from the end for negative values
             ha = 'left'  # Left-align for negative bars
-        
+
         plt.text(
             x_pos,
             b.get_y() + b.get_height()/2,
@@ -369,7 +282,7 @@ def plot_conversion_comparison(player_stats, lichess_stats,
     player_value = player_stats[stat_key]
     lichess_value = lichess_stats['conversion_stats'][stat_key]
     
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(10, 5))
     metrics = ['You', 'Lichess Playerbase']
     values = [player_value, lichess_value]
     
