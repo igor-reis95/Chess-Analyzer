@@ -13,7 +13,7 @@ def winrate_graph_insights(data, color):
     else:
         return "You're doing fine, but you might want to check your other analytics on ways to improve"
     
-def eval_per_opening_insights(df, color):
+def opening_stats_insights(df, color):
     df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
     df["adjusted_eval"] = df.apply(
         lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
@@ -32,7 +32,7 @@ def eval_per_opening_insights(df, color):
     else:
         return "It is not bad, but the games are coming down to who plays middlegame/endgame best. You might want to practice your opening to be able to reach the middlegame with advantage or practice your middlegame/endgame to be able to convert games into wins (https://lichess.org/training/middlegame / https://lichess.org/training/endgame)"
     
-def opening_stats_insights(df, color):
+def eval_per_opening_insights(df, color):
     if color == "Overall":
         df = get_opening_stats(df)
     else:
@@ -45,11 +45,11 @@ def opening_stats_insights(df, color):
     for i, opening_name in enumerate(df['normalized_opening_name']):
         avg_eval = df['avg_eval'].iloc[i].round(2)
         if avg_eval > 0.2:
-            opening_insights.append(f"The opening {opening_name} is your most played with an average {avg_eval} eval after opening. You're doing well with it. Keep up the good work!")
+            opening_insights.append(f"The opening {opening_name} is one of your most played with an average {avg_eval} eval after opening. You're doing well with it. Keep up the good work!")
         elif avg_eval < 0.2:
-            opening_insights.append(f"The opening {opening_name} is your most played with an average {avg_eval} eval after opening. It could use some practice. How about doing some studies or lichess puzzles?")
+            opening_insights.append(f"The opening {opening_name} is one of your most played with an average {avg_eval} eval after opening. It could use some practice. How about doing some studies or lichess puzzles?")
         else:
-            opening_insights.append(f"The opening {opening_name} is your most played with an average {avg_eval} eval after opening. You're reaching middlegame in an OK position. I hope your middlegame is more polished")
+            opening_insights.append(f"The opening {opening_name} is one of your most played with an average {avg_eval} eval after opening. You're reaching middlegame in an OK position. I hope your middlegame is more polished")
     return opening_insights
     
 def lichess_popular_openings_insights():
