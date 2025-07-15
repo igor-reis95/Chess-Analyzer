@@ -86,11 +86,45 @@ h1, h2, h3, h4, h5, h6 {
     transition: all 0.2s ease;
 }
 
-/* Add responsive styles for the graph and insights side-by-side layout */
+/* Graph and Insights Layout */
+.graph-and-insights {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.graph-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.insights-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.insight-card {
+    padding: 20px;
+}
+
+.insight-card h5 {
+    color: #2a2a2a;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.insight-card ul li {
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* Responsive Behavior */
 @media (min-width: 768px) {
     .graph-and-insights {
-        display: flex;
-        gap: 20px;
+        flex-direction: row;
     }
     
     .graph-container {
@@ -100,5 +134,12 @@ h1, h2, h3, h4, h5, h6 {
     
     .insights-container {
         flex: 1;
+    }
+}
+
+@media (max-width: 767px) {
+    .graph-container,
+    .insights-container {
+        width: 100%;
     }
 }
