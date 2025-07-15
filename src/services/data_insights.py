@@ -26,11 +26,11 @@ def opening_stats_insights(df, color):
         opening_avg = df[df["player_color"] == f"{color}"]["adjusted_eval"].mean()
 
     if opening_avg < 0.2:
-        return "You might want to reavaluate your choice of openings or practice the ones you are using (https://lichess.org/training/openings)"
+        return "You might want to reavaluate your choice of openings or practice the ones you are using"
     elif opening_avg > 0.2:
-        return "You're doing well on the opening phase and could keep improving your game by focusing on your middlegame and endgame abilities (https://lichess.org/training/middlegame / https://lichess.org/training/endgame)"
+        return "You're doing well on the opening phase and could keep improving your game by focusing on your middlegame and endgame abilities"
     else:
-        return "It is not bad, but the games are coming down to who plays middlegame/endgame best. You might want to practice your opening to be able to reach the middlegame with advantage or practice your middlegame/endgame to be able to convert games into wins (https://lichess.org/training/middlegame / https://lichess.org/training/endgame)"
+        return "It is not bad, but the games are coming down to who plays middlegame/endgame best. You might want to practice your opening to be able to reach the middlegame with advantage or practice your middlegame/endgame to be able to convert games into wins"
     
 def eval_per_opening_insights(df, color):
     if color == "Overall":
@@ -72,9 +72,9 @@ def insight_conversion_stat(player_stats, lichess_stats, stat_key):
     lichess_value = lichess_stats["conversion_stats"][stat_key]
 
     if player_value < lichess_value - 5:
-        return "Compared to average players, you struggle to recover when behind. It is recommended to practice defensive and counter-attacking tactics.",
+        return "Compared to average players, you struggle to recover when behind. It is recommended to practice defensive and counter-attacking tactics"
 
     elif player_value > lichess_value + 5:
-        return "You outperform most players when behind. This shows good resilience under pressure!"
+        return "You outperform most players when behind. This shows good resilience under pressure"
     else:
-        return "Your recovery rate is around average. Keep working on improving your defense and resilience."
+        return "Your recovery rate is around average. Keep working on improving your defense and resilience"
