@@ -173,7 +173,7 @@ def _get_insights(df, player_data, lichess_data) -> dict:
         },
         "lichess_openings_insights": {
             "popular_insights": insights.lichess_popular_openings_insights(),
-            "succesful_white": insights.lichess_successful_openings_insights("white"),
+            "successful_white": insights.lichess_successful_openings_insights("white"),
             "successful_black": insights.lichess_successful_openings_insights("black")
         },
         "conversion_insights": {
