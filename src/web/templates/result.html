@@ -388,6 +388,26 @@
                     <div class="graph-container">
                         <img src="data:image/png;base64,{{ eval_on_opening_viz }}" alt="Score at end of opening graph" class="img-fluid">
                     </div>
+                    <!-- Insights Column -->
+                    <div class="col-md-4">
+                        <div class="insights-container">
+                            <!-- Overall Insight -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>Overall</h5>
+                                <p>{{ openings_insights.overall }}</p>
+                            </div>
+                            <!-- White Insight -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>As White</h5>
+                                <p>{{ openings_insights.white }}</p>
+                            </div>
+                            <!-- Black Insight -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>As Black</h5>
+                                <p>{{ openings_insights.black }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -421,15 +441,30 @@
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ openings_viz.overall }}" alt="Overall opening stats graph" class="img-fluid">
                             </div>
+                            <!-- Overall Insight -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>Overall</h5>
+                                <p>{{ eval_on_opening_insights.overall }}</p>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="white-graph" role="tabpanel" aria-labelledby="white-tab">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ openings_viz.white }}" alt="White opening stats graph" class="img-fluid">
                             </div>
+                            <!-- White Insight -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>As White</h5>
+                                <p>{{ eval_on_opening_insights.white }}</p>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="black-graph" role="tabpanel" aria-labelledby="black-tab">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ openings_viz.black }}" alt="Black opening stats graph" class="img-fluid">
+                            </div>
+                            <!-- Black Insight -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>As Black</h5>
+                                <p>{{ eval_on_opening_insights.black }}</p>
                             </div>
                         </div>
                     </div>
@@ -443,6 +478,14 @@
                     <div class="graph-container">
                         <img src="data:image/png;base64,{{ conversion_viz.when_ahead }}" alt="Advantage Capitalization" class="img-fluid">
                     </div>
+                    <div class="col-md-4 d-flex align-items-center ps-2"> <!-- Add left padding -->
+                        <div style="font-size: 1.1rem;"> <!-- Increase font size -->
+                            <p class="mb-2">{{ conversion_insights.when_ahead }}</p> <!-- Reduce paragraph bottom margin -->
+                            {% if conversion_insights.when_ahead.link %}
+                                <a href="{{ conversion_insights.when_ahead }}" target="_blank" class="btn btn-sm btn-secondary">Practice</a>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -454,11 +497,11 @@
                         <div class="col-md-8 pe-2"> <!-- Add right padding instead of gutter -->
                             <img src="data:image/png;base64,{{ conversion_viz.when_behind }}" alt="Resourcefulness" class="img-fluid">
                         </div>
-                        <div class="col-md-4 d-flex align-items-center ps-2" style="border: 1px solid red"> <!-- Add left padding -->
+                        <div class="col-md-4 d-flex align-items-center ps-2"> <!-- Add left padding -->
                             <div style="font-size: 1.1rem;"> <!-- Increase font size -->
-                                <p class="mb-2">{{ conversion_insights.when_behind.text }}</p> <!-- Reduce paragraph bottom margin -->
+                                <p class="mb-2">{{ conversion_insights.when_behind }}</p> <!-- Reduce paragraph bottom margin -->
                                 {% if conversion_insights.when_behind.link %}
-                                    <a href="{{ conversion_insights.when_behind.link }}" target="_blank" class="btn btn-sm btn-secondary">Practice</a>
+                                    <a href="{{ conversion_insights.when_behind }}" target="_blank" class="btn btn-sm btn-secondary">Practice</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -495,15 +538,30 @@
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ lichess_openings_viz.popular }}" alt="Popular openings" class="img-fluid">
                             </div>
+                            <!-- Text Insights -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>Overall</h5>
+                                <p>{{ lichess_openings_insights.popular_insights }}</p>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="white-lichess-graph" role="tabpanel" aria-labelledby="white-lichess-graph">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ lichess_openings_viz.successful_white }}" alt="Successful openings for white" class="img-fluid">
                             </div>
+                            <!-- Text Insights -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>Overall</h5>
+                                <p>{{ lichess_openings_insights.successful_white }}</p>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="black-lichess-graph" role="tabpanel" aria-labelledby="black-lichess-graph">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ lichess_openings_viz.successful_black }}" alt="Successful openings for black" class="img-fluid">
+                            </div>
+                            <!-- Text Insights -->
+                            <div class="insight-card mb-3 p-3">
+                                <h5>Overall</h5>
+                                <p>{{ lichess_openings_insights.successful_black }}</p>
                             </div>
                         </div>
                     </div>

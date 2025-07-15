@@ -160,16 +160,25 @@ def _get_insights(df, player_data, lichess_data) -> dict:
             "overall": insights.winrate_graph_insights(prepare_winrate_data(df), "Both"),
             "white": insights.winrate_graph_insights(prepare_winrate_data(df), "White"),
             "black": insights.winrate_graph_insights(prepare_winrate_data(df), "Black")
-            },
+        },
+        "openings_insights": {
+            "overall": insights.opening_stats_insights(df, "Overall"),
+            "white": insights.opening_stats_insights(df, "white"),
+            "black": insights.opening_stats_insights(df, "black")
+        },
+        "eval_on_opening_insights": {
+            "overall": insights.eval_per_opening_insights(df, "Overall"),
+            "white": insights.eval_per_opening_insights(df, "white"),
+            "black": insights.eval_per_opening_insights(df, "black")
+        },
+        "lichess_openings_insights": {
+            "popular_insights": insights.lichess_popular_openings_insights(),
+            "succesful_white": insights.lichess_successful_openings_insights("white"),
+            "successful_black": insights.lichess_successful_openings_insights("black")
+        },
         "conversion_insights": {
-            "when_ahead": {
-                "text": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_when_ahead")["text"],
-                "link": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_when_ahead")["link"]
-            },
-            "when_behind": {
-                "text": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_or_drawn_when_behind")["text"],
-                "link": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_or_drawn_when_behind")["link"]
-            }
+            "when_ahead": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_when_ahead"),
+            "when_behind": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_or_drawn_when_behind"),
         }
     }
 
