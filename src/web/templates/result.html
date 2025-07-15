@@ -3,84 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games Results for {{ username }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='chess-data-coach-icon.png') }}">
-    <title>Games Results for {{ username }}</title>
-    <style>
-        body {
-            background-color: #ecebe9;
-            font-family: 'Roboto', sans-serif;
-            color: #2a2a2a;
-        }
-        .lichess-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-            border: none;
-        }
-        .card-header {
-            background-color: #f8f9fa !important;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .btn-lichess {
-            background-color: #3288d1;
-            color: white;
-            border: none;
-        }
-        .btn-lichess:hover {
-            background-color: #3288d1;
-        }
-        .table {
-            margin-bottom: 0;
-        }
-        .table th {
-            font-weight: 500;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            color: #2a2a2a;
-            font-weight: 500;
-        }
-        .opening-link {
-            background-color: rgba(47, 164, 184, 0.1);
-            color: #2fa4b8;
-            padding: 2px 8px;
-            border-radius: 4px;
-            text-decoration: none;
-        }
-        .opening-link:hover {
-            background-color: rgba(47, 164, 184, 0.2);
-        }
-        .graph-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-        .footer {
-            margin-top: auto; /* Pushes footer to bottom */
-            padding: 1.5rem 0;
-            text-align: center;
-        }
-        .social-icon {
-            color: #2fa4b8; /* Match Lichess blue */
-            font-size: 1.5rem;
-            margin: 0 10px;
-            transition: transform 0.2s;
-        }
-        .social-icon:hover {
-            color: #2a8f9e; /* Darker on hover */
-            transform: scale(1.1);
-        }
-        .hover-teal:hover {
-            background-color: #0f3a38 !important;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.2s ease;
-        }
-    </style>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='chess-data-coach-icon.png') }}">
 </head>
 <body>
     <div class="container py-4">
@@ -585,14 +513,6 @@
   </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Toggle button text
-        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
-            button.addEventListener('click', function() {
-                const spans = this.querySelectorAll('span');
-                spans.forEach(span => span.classList.toggle('d-none'));
-            });
-        });
-    </script>
+    <script src="{{ url_for('static', filename='js/collapse-toggle.js') }}"></script>
 </body>
 </html>

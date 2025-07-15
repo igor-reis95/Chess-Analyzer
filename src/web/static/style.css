@@ -1,34 +1,104 @@
-/* Basic table styling */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-th, td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-th {
-  background-color: #f2f2f2;
+/* styles.css */
+body {
+    background-color: #ecebe9;
+    font-family: 'Roboto', sans-serif;
+    color: #2a2a2a;
 }
 
-/* Toggle button styling */
-#toggleTable {
-  padding: 8px 16px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
+.lichess-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: none;
 }
 
-/* Hide full table by default */
-#gamesTable {
-  display: none;
+.card-header {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #e9ecef;
 }
 
-.when-expanded { display: none; }
-.when-collapsed { display: inline; }
-[aria-expanded="true"] .when-expanded { display: inline; }
-[aria-expanded="true"] .when-collapsed { display: none; }
+.btn-lichess {
+    background-color: #3288d1;
+    color: white;
+    border: none;
+}
+
+.btn-lichess:hover {
+    background-color: #2a7abf; /* Slightly darker on hover */
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 500;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #2a2a2a;
+    font-weight: 500;
+}
+
+.opening-link {
+    background-color: rgba(47, 164, 184, 0.1);
+    color: #2fa4b8;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.2s ease; /* Added transition */
+}
+
+.opening-link:hover {
+    background-color: rgba(47, 164, 184, 0.2);
+}
+
+.graph-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.footer {
+    margin-top: auto;
+    padding: 1.5rem 0;
+    text-align: center;
+}
+
+.social-icon {
+    color: #2fa4b8;
+    font-size: 1.5rem;
+    margin: 0 10px;
+    transition: all 0.2s ease;
+}
+
+.social-icon:hover {
+    color: #2a8f9e;
+    transform: scale(1.1);
+}
+
+.hover-teal:hover {
+    background-color: #0f3a38 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+/* Add responsive styles for the graph and insights side-by-side layout */
+@media (min-width: 768px) {
+    .graph-and-insights {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .graph-container {
+        flex: 2;
+        margin-bottom: 0;
+    }
+    
+    .insights-container {
+        flex: 1;
+    }
+}

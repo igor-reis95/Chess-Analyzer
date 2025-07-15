@@ -132,29 +132,6 @@
       <p class="mt-2 mb-0 text-muted small">2025 Chess Game Analyzer</p>
     </div>
   </footer>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const input = document.querySelector('input[name="username"]');
-      const form = document.querySelector('form');
-      const spinner = document.getElementById('loading-spinner');
-
-      input.addEventListener('input', () => {
-        if (input.value.length < 3) {
-          input.setCustomValidity("Username must be at least 3 characters");
-          input.classList.add('is-invalid');
-          input.classList.remove('is-valid');
-        } else {
-          input.setCustomValidity("");
-          input.classList.remove('is-invalid');
-          input.classList.add('is-valid');
-        }
-      });
-
-      form.addEventListener('submit', () => {
-        spinner.style.display = 'block';
-      });
-    });
-  </script>
+  <script src="{{ url_for('static', filename='js/form-validation.js') }}"></script>
 </body>
 </html>
