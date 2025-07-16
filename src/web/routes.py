@@ -130,7 +130,7 @@ def _get_visualizations(df, player_data, lichess_data) -> dict:
         "winrate_graph_viz": viz.winrate_bar_graph(prepare_winrate_data(df)),
         "eval_on_opening_viz": viz.plot_eval_on_opening(df),
         "openings_viz": {
-            "overall": viz.plot_opening_stats(df, "Overall"),
+            "overall": viz.plot_opening_stats(df, "overall"),
             "white": viz.plot_opening_stats(df, "white"),
             "black": viz.plot_opening_stats(df, "black"),
         },
@@ -157,17 +157,17 @@ def _get_insights(df, player_data, lichess_data) -> dict:
     """Generate all visualization outputs."""
     return {
         "winrate_graph_insights": {
-            "overall": insights.winrate_graph_insights(prepare_winrate_data(df), "Both"),
-            "white": insights.winrate_graph_insights(prepare_winrate_data(df), "White"),
-            "black": insights.winrate_graph_insights(prepare_winrate_data(df), "Black")
+            "overall": insights.winrate_graph_insights(prepare_winrate_data(df), "overall"),
+            "white": insights.winrate_graph_insights(prepare_winrate_data(df), "white"),
+            "black": insights.winrate_graph_insights(prepare_winrate_data(df), "black")
         },
         "openings_insights": {
-            "overall": insights.opening_stats_insights(df, "Overall"),
+            "overall": insights.opening_stats_insights(df, "overall"),
             "white": insights.opening_stats_insights(df, "white"),
             "black": insights.opening_stats_insights(df, "black")
         },
         "eval_on_opening_insights": {
-            "overall": insights.eval_per_opening_insights(df, "Overall"),
+            "overall": insights.eval_per_opening_insights(df, "overall"),
             "white": insights.eval_per_opening_insights(df, "white"),
             "black": insights.eval_per_opening_insights(df, "black")
         },
