@@ -351,7 +351,21 @@
                     
                     <!-- Tab navigation -->
                     <ul class="nav nav-tabs" id="graphTabs" role="tablist">
-                        <!-- [Keep your existing tab buttons unchanged] -->
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overall-tab" data-bs-toggle="tab"
+                                    data-bs-target="#overall-graph" type="button" role="tab" aria-controls="overall-graph"
+                                    aria-selected="true">Overall</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="white-tab" data-bs-toggle="tab"
+                                    data-bs-target="#white-graph" type="button" role="tab" aria-controls="white-graph"
+                                    aria-selected="false">White</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="black-tab" data-bs-toggle="tab"
+                                    data-bs-target="#black-graph" type="button" role="tab" aria-controls="black-graph"
+                                    aria-selected="false">Black</button>
+                        </li>
                     </ul>
                     
                     <!-- Tab content -->
@@ -514,6 +528,11 @@
                                     <div class="insight-card">
                                         <h5>Popular Openings Insight</h5>
                                         <p>{{ lichess_openings_insights.popular_insights }}</p>
+                                        <div class="mt-3">
+                                            <a href="https://365chess.com/eco" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-book"></i> ECO Code Reference
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -529,6 +548,11 @@
                                     <div class="insight-card">
                                         <h5>White Openings Insight</h5>
                                         <p>{{ lichess_openings_insights.successful_white }}</p>
+                                        <div class="mt-3">
+                                            <a href="https://365chess.com/eco" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-book"></i> ECO Code Reference
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -544,6 +568,11 @@
                                     <div class="insight-card">
                                         <h5>Black Openings Insight</h5>
                                         <p>{{ lichess_openings_insights.successful_black }}</p>
+                                        <div class="mt-3">
+                                            <a href="https://365chess.com/eco" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-book"></i> ECO Code Reference
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
