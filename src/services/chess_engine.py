@@ -20,7 +20,7 @@ def convert_moves_to_fen(moves_str):
             return None
     return board.fen()
 
-def get_stockfish_eval_batch(fens, depth=20, threads=4, hash_mb=16, move_time=0.2):
+def get_stockfish_eval_batch(fens, depth=15, threads=1, hash_mb=16, move_time=0.1):
     with chess.engine.SimpleEngine.popen_uci("stockfish/stockfish-ubuntu-x86-64-avx2") as engine:
         engine.configure({
             "Threads": threads,
