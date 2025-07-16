@@ -311,7 +311,7 @@ def prepare_winrate_data(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
 
     logger.debug("Winrate data prepared for White, Black, and Both.")
     return {
-        'White': white,
-        'Black': black,
-        'Both': total
+        'white': white,
+        'black': black,
+        'overall': total
     }
