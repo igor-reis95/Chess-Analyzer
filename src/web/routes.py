@@ -155,11 +155,12 @@ def _get_visualizations(df, player_data, lichess_data) -> dict:
 
 def _get_insights(df, player_data, lichess_data) -> dict:
     """Generate all visualization outputs."""
+    winrate_data = prepare_winrate_data(df)
     return {
         "winrate_graph_insights": {
-            "overall": insights.winrate_graph_insights(prepare_winrate_data(df), "overall"),
-            "white": insights.winrate_graph_insights(prepare_winrate_data(df), "white"),
-            "black": insights.winrate_graph_insights(prepare_winrate_data(df), "black")
+            "overall": insights.winrate_graph_insights(winrate_data, "overall"),
+            "white": insights.winrate_graph_insights(winrate_data, "white"),
+            "black": insights.winrate_graph_insights(winrate_data, "black")
         },
         "openings_insights": {
             "overall": insights.opening_stats_insights(df, "overall"),
