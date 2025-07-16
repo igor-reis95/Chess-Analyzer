@@ -136,8 +136,8 @@ def get_opening_stats(df):
     df["opening_label"] = df.apply(lambda x: f"{x['normalized_opening_name']} ({x['count']})",axis=1)
     return df
 
-def plot_opening_stats(df, color="Overall"):
-    if color == "Overall":
+def plot_opening_stats(df, color="overall"):
+    if color == "overall":
         df = get_opening_stats(df)
     else:
         df = get_opening_stats(df[df['player_color'] == color])
@@ -168,7 +168,15 @@ def plot_opening_stats(df, color="Overall"):
     plt.ylabel("Opening (Count)")
 
     # Add some padding to prevent label cutoff
-    plt.xlim(min(df['avg_eval']) * 1.1, max(df['avg_eval']) * 1.1)
+    min_eval = df['avg_eval'].min()
+    max_eval = df['avg_eval'].max()
+    padding = (max_eval - min_eval) * 0.1  # 10% padding
+
+    # Handle edge case when all values are equal
+    if padding == 0:
+        padding = 0.1
+
+    plt.xlim(min_eval - padding, max_eval + padding)
 
     plt.tight_layout()
 
