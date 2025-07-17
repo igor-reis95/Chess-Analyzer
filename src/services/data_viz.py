@@ -69,7 +69,7 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
     return img_base64
 
 def plot_eval_on_opening(df):
-    df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
+    df.loc[:, 'opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
     df["adjusted_eval"] = df.apply(
         lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
         axis=1
@@ -123,8 +123,8 @@ def plot_eval_on_opening(df):
     return img_base64
 
 def get_opening_stats(df):
-    df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
-    df["adjusted_eval"] = df.apply(
+    df.loc[:, 'opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
+    df.loc[:, "adjusted_eval"] = df.apply(
         lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
         axis=1
     )
