@@ -73,3 +73,37 @@ def save_processed_user_data(df):
         if_exists='append',
         index=False
     )
+
+def get_user_data(username) -> pd.Series:
+        """
+        Retrieve the row of user data with the highest ID for the current username
+        from the database using SQLAlchemy.
+
+        Returns:
+            pd.Series: A row from the database representing the latest user data.
+        """
+
+        query = """
+            SELECT * FROM user_processed_data
+            WHERE username = %s
+            ORDER BY id DESC
+            LIMIT 1;
+        """
+
+        try:
+            # Create SQLAlchemy engine
+            engine = create_engine(DATABASE_URL)
+            
+            # Use with engine.connect() for proper connection management
+            with engine.connect() as conn:
+                df = pd.read_sql(query, conn, params=(username,))
+                
+        except Exception as e:
+            raise RuntimeError(f"Database error: {e}")
+        finally:
+            engine.dispose()  # Clean up engine resources
+
+        if df.empty:
+            raise ValueError(f"No data found for username: {username}")
+
+        return df.iloc[0].to_dict()

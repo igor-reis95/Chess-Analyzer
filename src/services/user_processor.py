@@ -11,15 +11,14 @@ import logging
 from typing import Optional
 import pandas as pd
 import os
-import psycopg2
-
 from src.api.api import collect_user_data
-from src.services.data_io import save_processed_user_data
+from src.services.data_io import save_processed_user_data, get_user_data
 import src.services.post_process as post_process
+
 
 logger = logging.getLogger(__name__)
 
-DATABASE_URL = os.getenv("database_url")
+
 
 class UserProcessor:
     """
@@ -87,34 +86,6 @@ class UserProcessor:
         """
         return self.df_processed
 
-    def get_user_data(self) -> pd.Series:
-        """
-        Retrieve the row of user data with the highest ID for the current username
-        from the database.
-
-        Returns:
-            pd.Series: A row from the database representing the latest user data.
-        """
-        username = self.username
-
-        query = """
-            SELECT * FROM user_processed_data
-            WHERE username = %s
-            ORDER BY id DESC
-            LIMIT 1;
-        """
-
-        try:
-            with psycopg2.connect(DATABASE_URL) as conn:
-                df = pd.read_sql(query, conn, params=(username,)) # TODO Change to SQLAlchemy
-        except Exception as e:
-            raise RuntimeError(f"Database error: {e}")
-
-        if df.empty:
-            raise ValueError(f"No data found for username: {username}")
-
-        return df.iloc[0].to_dict()
-
     def run_all(self) -> None:
         """
         Run the full user data pipeline: fetch, process, and save.
@@ -122,4 +93,4 @@ class UserProcessor:
         self.fetch_user_data()
         self.process_user_data()
         self.save_user_data()
-        self.get_user_data()
+        get_user_data(self.username)
