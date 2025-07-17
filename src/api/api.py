@@ -23,7 +23,7 @@ headers = {
     "Accept": "application/x-ndjson"
 }
 
-def get_games(username, max_games, perf_type, color):
+def get_games(username, max_games, perf_type):
     """
     Fetch chess games from Lichess API for a specific user with given filters.
 
@@ -36,7 +36,6 @@ def get_games(username, max_games, perf_type, color):
         color (str): Player color to filter. Options:
             - 'white': Only games where player was white.
             - 'black': Only games where player was black.
-            - 'Both': Includes games for both colors (no filter).
 
     Returns:
         list: A list of dictionaries, each representing a game with complete metadata.
@@ -48,13 +47,10 @@ def get_games(username, max_games, perf_type, color):
     if perf_type == 'all':
         perf_type = 'bullet,blitz,rapid,classical'
 
-    if color == 'Both':
-        color = None
-
     params = {
         "max": max_games,
         "perfType": perf_type,
-        "color": color,
+        "color": None,
         "rated": True,
         "accuracy": True,
         "division": True,
