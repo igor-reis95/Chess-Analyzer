@@ -55,21 +55,18 @@
         <form method="POST" action="/" class="lichess-form p-4">
           <!-- Your existing form content remains the same -->
           <div class="mb-3">
-            <label for="username" class="form-label">Chess Username</label>
-            <input 
-              type="text"
-              class="form-control"
-              name="username"
-              required
-              value="IgorSReis"
-              pattern="[a-zA-Z0-9_-]{3,20}"
-              title="3-20 chars (letters, numbers, _, -)"
-            >
-            <div class="invalid-feedback">
-              Username must be at least 3 characters
-            </div>
+              <label for="username" class="form-label">Chess Username</label>
+              <input 
+                  type="text"
+                  class="form-control"
+                  name="username"
+                  id="username"
+                  required
+                  value="IgorSReis"
+              >
+              <div class="invalid-feedback"></div>
           </div>
-
+          
           <div class="mb-3">
             <label for="max_games" class="form-label">Number of games</label>
             <input 
