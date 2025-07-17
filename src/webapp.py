@@ -25,10 +25,13 @@ def setup_logging():
     if len(logging.root.handlers) > 0:
         return
 
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
 
+    # File handler (now includes INFO level for timing logs)
     file_handler = logging.FileHandler('app.log')
-    file_handler.setLevel(logging.WARNING)
+    file_handler.setLevel(logging.INFO)  # Changed from WARNING to INFO
     file_handler.setFormatter(formatter)
 
     console_handler = logging.StreamHandler()
@@ -39,7 +42,7 @@ def setup_logging():
     logging.root.addHandler(file_handler)
     logging.root.addHandler(console_handler)
 
-    # Configure werkzeug logger level only (DO NOT add handlers)
+    # Configure werkzeug logger
     werkzeug_logger = logging.getLogger('werkzeug')
     werkzeug_logger.setLevel(logging.INFO)
 
