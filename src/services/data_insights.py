@@ -21,7 +21,7 @@ def winrate_graph_insights(data, color):
     return feedback_for_winrate(win_percent)
     
 def opening_stats_insights(df, color):
-    df['opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
+    df.loc[:, 'opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
     df['adjusted_eval'] = df.apply(
         lambda row: -row['opening_eval'] if row['player_color'] == 'black' else row['opening_eval'],
         axis=1
@@ -154,7 +154,7 @@ def insight_conversion_stat(player_stats, lichess_stats, stat_key):
                 "Keep working on your technique to consistently finish strong positions."
             )
     
-    elif stat_key == "pct_won_when_behind":
+    elif stat_key == "pct_won_or_drawn_when_behind":
         if player_value < lichess_value - 5:
             return (
                 "Compared to average players, you struggle to recover when behind. "
