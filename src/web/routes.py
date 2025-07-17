@@ -5,17 +5,15 @@ It handles user submissions, processes game data through various services,
 and renders visualizations of the analysis results.
 """
 
-import traceback
 import re
 import logging
-import io
-from io import BytesIO
-import csv
 import json
-from weasyprint import HTML
-from flask import render_template, request, Response, make_response, send_file
+import time
+from functools import wraps
+from flask import render_template, request, Response
 from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
 import src.services.data_viz as viz
+import src.services.data_io as io
 import src.services.data_insights as insights
 from src.services.game_processor import GameProcessor
 from src.services.user_processor import UserProcessor
@@ -26,6 +24,31 @@ MAX_GAMES_LIMIT = 900
 GAMES_TABLE_PREVIEW = 30
 
 logger = logging.getLogger(__name__)
+
+def log_execution_time(func):
+    """Decorator to log function execution time"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        logger = logging.getLogger(func.__module__)
+        start_time = time.perf_counter()
+        
+        try:
+            result = func(*args, **kwargs)
+            elapsed = time.perf_counter() - start_time
+            logger.info(
+                f"{func.__name__} executed in {elapsed:.4f}s | "
+                f"Args: {str(args)[:100]}... | "
+                f"Kwargs: {str(kwargs)[:100]}..."
+            )
+            return result
+        except Exception as e:
+            logger.error(
+                f"Error in {func.__name__} after {time.perf_counter()-start_time:.4f}s: {str(e)}",
+                exc_info=True
+            )
+            raise
+
+    return wrapper
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -45,7 +68,8 @@ def _handle_form_submission(form_data: dict) -> str:
     """Process submitted form data and return results or errors."""
     try:
         params = _validate_inputs(form_data)
-        df, user_data = _fetch_and_prepare_data(params)
+        df = _fetch_and_prepare_data(params)
+        user_data = user_data = io.get_user_data(params["username"])
         return _render_results(params, df, user_data)
     except ValueError as e:
         logger.warning("Validation failed: %s", e)
@@ -78,6 +102,7 @@ def _validate_inputs(form_data: dict) -> dict:
         "color": form_data.get("color", "both")
     }
 
+@log_execution_time
 def _fetch_and_prepare_data(params: dict) -> tuple:
     # Fetch game and user data from Lichess
     #Fetch and process chess game data
@@ -92,9 +117,8 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
     # Fetch and process chess user data
     user_processor = UserProcessor(params["username"])
     user_processor.run_all()
-    user_data = user_processor.get_user_data()
 
-    return game_processor.get_dataframe().head(params["max_games"]), user_data
+    return game_processor.get_dataframe().head(params["max_games"])
 
 # ----------------------
 # Presentation Layer
@@ -124,6 +148,7 @@ def _generate_template_context(params: dict, df, user_data) -> dict:
         "user_data": user_data
     }
 
+@log_execution_time
 def _get_visualizations(df, player_data, lichess_data) -> dict:
     """Generate all visualization outputs."""
     return {
@@ -183,7 +208,24 @@ def _get_insights(df, player_data, lichess_data) -> dict:
         }
     }
 
-def _render_error(message: str, status_code: int = 500) -> str:
-    """Render error message with traceback."""
-    tb = traceback.format_exc()
-    return Response(f"<pre>{message}\n\n{tb}</pre>", status=status_code, mimetype="text/html")
+def _render_error(error_message: str, status_code: int = 400) -> str:
+    """Render error page with consistent styling."""
+    logger.error(f"Rendering error page: {error_message}")
+    return render_template(
+        'error.html',
+        error_message=error_message
+    ), status_code
+
+# Example usage in your route:
+@app.errorhandler(404)
+def page_not_found():
+    return _render_error("Page not found", 404)
+
+@app.errorhandler(500)
+def internal_server_error():
+    return _render_error("Internal server error", 500)
+
+@app.route('/error')
+def show_error():
+    message = request.args.get('message', 'An unknown error occurred')
+    return _render_error(message)
