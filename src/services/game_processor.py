@@ -28,13 +28,12 @@ class GameProcessor:
         username (str): Player username to fetch games for.
         max_games (int): Maximum number of games to fetch.
         perf_type (str): Performance type filter (e.g., 'rapid', 'blitz').
-        color (Optional[str]): Player color filter ('white', 'black', or None).
         games (Optional[list]): Raw game data fetched from API.
         df_flat (Optional[DataFrame]): Flattened game data as DataFrame.
         df_processed (Optional[DataFrame]): Post-processed game DataFrame.
     """
 
-    def __init__(self, username: str, max_games: int, perf_type: str, color: Optional[str]) -> None:
+    def __init__(self, username: str, max_games: int, perf_type: str) -> None:
         """
         Initialize the GameProcessor with user parameters.
 
@@ -42,12 +41,10 @@ class GameProcessor:
             username (str): Player username.
             max_games (int): Max games to fetch.
             perf_type (str): Performance type.
-            color (Optional[str]): Player color filter.
         """
         self.username = username
         self.max_games = max_games
         self.perf_type = perf_type
-        self.color = color
         self.games: Optional[list] = None
         self.df_flat: Optional[DataFrame] = None
         self.df_processed: Optional[DataFrame] = None
@@ -59,9 +56,9 @@ class GameProcessor:
         Raises:
             Exception: Propagates exceptions from get_games.
         """
-        logger.info("Fetching up to %d games for user '%s', perf_type='%s', color='%s'",
-                    self.max_games, self.username, self.perf_type, self.color)
-        self.games = get_games(self.username, self.max_games, self.perf_type, self.color)
+        logger.info("Fetching up to %d games for user '%s', perf_type='%s'",
+                    self.max_games, self.username, self.perf_type)
+        self.games = get_games(self.username, self.max_games, self.perf_type)
         logger.info("Fetched %d games for user '%s'", len(self.games), self.username)
 
     def save_raw_data(self) -> None:

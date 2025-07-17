@@ -98,8 +98,7 @@ def _validate_inputs(form_data: dict) -> dict:
     return {
         "username": username,
         "max_games": min(max_games, MAX_GAMES_LIMIT),  # Force compliance
-        "perf_type": form_data.get("perf_type", "blitz"),
-        "color": form_data.get("color", "both")
+        "perf_type": form_data.get("perf_type", "blitz")
     }
 
 @log_execution_time
@@ -109,8 +108,7 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
     game_processor = GameProcessor(
         username=params["username"],
         max_games=params["max_games"],
-        perf_type=params["perf_type"],
-        color=params["color"]
+        perf_type=params["perf_type"]
     )
     game_processor.run_all()
 
