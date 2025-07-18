@@ -16,7 +16,6 @@ from src.api.api import get_games
 from src.services.flatten import flatten_game_data
 from src.services.post_process import post_process
 from src.services.chess_engine import run_evaluation_pipeline
-from src.services import data_io
 
 logger = logging.getLogger(__name__)
 
@@ -61,18 +60,6 @@ class GameProcessor:
         self.games = get_games(self.username, self.max_games, self.perf_type)
         logger.info("Fetched %d games for user '%s'", len(self.games), self.username)
 
-    def save_raw_data(self) -> None:
-        """
-        Save raw game data to JSON file.
-
-        Assumes self.games is populated.
-        """
-        if not self.games:
-            logger.warning("No games to save for user '%s'", self.username)
-            return
-        data_io.save_games_to_json(self.games, self.username)
-        logger.info("Saved raw games JSON for user '%s'", self.username)
-
     def flatten_games(self) -> None:
         """
         Flatten raw game data into a DataFrame.
@@ -92,8 +79,6 @@ class GameProcessor:
             logger.warning("No flattened data to process for user '%s'", self.username)
             return
         self.df_processed = post_process(self.df_flat, self.username)
-        data_io.save_df_to_csv(self.df_processed, self.username) # TODO - Put these in run_all()
-        #data_io.save_processed_game_data(self.df_processed)
         logger.info("Post-processed and saved CSV for user '%s'", self.username)
 
     def get_dataframe(self) -> Optional[DataFrame]:
@@ -110,7 +95,6 @@ class GameProcessor:
         Run the full pipeline: fetch, save raw, flatten, post-process, and save processed data.
         """
         self.fetch_games()
-        self.save_raw_data()
         self.flatten_games()
         self.df_flat = run_evaluation_pipeline(self.df_flat)
         self.post_process_games()

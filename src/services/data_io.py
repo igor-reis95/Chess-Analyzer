@@ -10,9 +10,8 @@ Files are stored under configurable folders (default: data/raw and data/processe
 import os
 import json
 import pandas as pd
-from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
-
+import psycopg2
+from psycopg2.extras import execute_values
 
 DATABASE_URL = os.getenv("database_url")
 
@@ -31,79 +30,116 @@ def save_df_to_csv(df, username, folder="data/processed"):
     df.to_csv(filepath, index=False)
     print(f"Saved processed games to {filepath}")
 
-def save_processed_game_data(df, table='games_processed_data'):
-    """Save processed data from games into a PostgreSQL database"""
+def save_processed_game_data(conn, df, table='games_processed_data'):
+    """Append all rows in df to the table using fast psycopg2 bulk insert"""
+
     try:
-        # Create engine
-        engine = create_engine(DATABASE_URL)
+        with conn.cursor() as cur:
+            if df.empty:
+                print("DataFrame is empty. Nothing to insert.")
+                return
 
-        # Get a list of repeating ids to not insert duplicate ids
-        existing_ids = pd.read_sql("SELECT match_id FROM games_processed_data", engine)['match_id'].tolist()
+            # Prepare data for insertion
+            values = [tuple(row) for row in df.to_numpy()]
+            columns = ', '.join(df.columns)
+            insert_sql = f"INSERT INTO {table} ({columns}) VALUES %s"
 
-        # Filter DataFrame
-        df_to_insert = df[~df['match_id'].isin(existing_ids)]
+            execute_values(cur, insert_sql, values)
+            conn.commit()
+            print(f"Inserted {len(values)} rows into {table}.")
 
-        # Save filtered data
-        df_to_insert.to_sql(
-            name=table,
-            con=engine,
-            schema='public',
-            if_exists='append',
-            index=False
-        )
-    except OperationalError as oe:
+    except psycopg2.OperationalError as oe:
         print(f"Database connection error: {oe}")
-    except SQLAlchemyError as se:
-        print(f"SQLAlchemy error: {se}")
-    except ValueError as ve:
-        print(f"Value error while processing DataFrame: {ve}")
+    except psycopg2.DatabaseError as de:
+        print(f"Database error: {de}")
     except Exception as e:
         print(f"Unexpected error: {e}")
 
-def save_processed_user_data(df):
-    """Save processed user data into the database"""
-    # Create engine and delete the row being inserted
-    engine = create_engine(DATABASE_URL)
+def save_processed_user_data(conn, df):
+    """Fast insert using psycopg2 + execute_values"""
 
-    # Append the updated rows
-    df.to_sql(
-        name='user_processed_data',
-        con=engine,
-        schema='public',
-        if_exists='append',
-        index=False
-    )
+    # Convert DataFrame to list of tuples
+    values = [tuple(row) for row in df.to_numpy()]
+    columns = ', '.join(df.columns)
 
-def get_user_data(username) -> pd.Series:
-        """
-        Retrieve the row of user data with the highest ID for the current username
-        from the database using SQLAlchemy.
+    # Build SQL statement (parameterized)
+    insert_sql = f"INSERT INTO users_processed_data ({columns}) VALUES %s"
 
-        Returns:
-            pd.Series: A row from the database representing the latest user data.
-        """
+    # Connect and insert
+    try:
+        with conn.cursor() as cur:
+            execute_values(cur, insert_sql, values)
+            conn.commit()
 
-        query = """
-            SELECT * FROM user_processed_data
-            WHERE username = %s
-            ORDER BY id DESC
-            LIMIT 1;
-        """
+    except Exception as e:
+        raise RuntimeError(f"psycopg2 insert error: {e}")
 
-        try:
-            # Create SQLAlchemy engine
-            engine = create_engine(DATABASE_URL)
-            
-            # Use with engine.connect() for proper connection management
-            with engine.connect() as conn:
-                df = pd.read_sql(query, conn, params=(username,))
-                
-        except Exception as e:
-            raise RuntimeError(f"Database error: {e}")
-        finally:
-            engine.dispose()  # Clean up engine resources
+def get_user_data(conn, username) -> dict:
+    query = """
+        SELECT * FROM users_processed_data
+        WHERE username = %s
+        ORDER BY id DESC
+        LIMIT 1;
+    """
 
-        if df.empty:
-            raise ValueError(f"No data found for username: {username}")
+    try:
+        with conn.cursor() as cur:
+            cur.execute(query, (username,))
+            row = cur.fetchone()
 
-        return df.iloc[0].to_dict()
+            if not row:
+                raise ValueError(f"No data found for username: {username}")
+
+            # Convert to dict using cursor description
+            colnames = [desc[0] for desc in cur.description]
+            return dict(zip(colnames, row))
+
+    except Exception as e:
+        raise RuntimeError(f"Database error: {e}")
+    
+def save_report_data(conn, username, number_of_games, time_control, slug) -> dict:
+    try:
+        with conn.cursor() as cur:
+            insert_sql = """
+                INSERT INTO reports (username, number_of_games, time_control, public_id)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id;
+            """
+            cur.execute(insert_sql, (username, number_of_games, time_control, slug))
+            report_id = cur.fetchone()[0]
+            return report_id
+
+    except Exception as e:
+        raise RuntimeError(f"Database error: {e}")
+    
+def get_report_by_slug(conn, slug: str) -> dict | None:
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT id, username, number_of_games, time_control, public_id
+            FROM reports
+            WHERE public_id = %s
+        """, (slug,))
+        row = cur.fetchone()
+
+    if row:
+        return {
+            "id": row[0],
+            "username": row[1],
+            "number_of_games": row[2],
+            "time_control": row[3],
+            "public_id": row[4]
+        }
+    return None
+
+def get_games_by_report_id(conn, report_id: int):
+    query = "SELECT * FROM games_processed_data WHERE reports_id = %s"
+    return pd.read_sql(query, conn, params=(report_id,))
+
+def get_user_by_report_id(conn, report_id: int) -> dict:
+    query = "SELECT * FROM users_processed_data WHERE reports_id = %s"
+    df = pd.read_sql(query, conn, params=(report_id,))
+    
+    if df.empty:
+        return {}
+
+    return df.iloc[0].to_dict()

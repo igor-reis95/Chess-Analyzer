@@ -4,13 +4,16 @@ This module provides the main Flask route for analyzing chess game data.
 It handles user submissions, processes game data through various services,
 and renders visualizations of the analysis results.
 """
-
+# pylint: skip-file
+import os
 import re
 import logging
 import json
 import time
+import uuid
+import psycopg2
 from functools import wraps
-from flask import render_template, request, Response
+from flask import render_template, request, redirect, url_for
 from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
 import src.services.data_viz as viz
 import src.services.data_io as io
@@ -22,6 +25,7 @@ from ..webapp import app
 # Constant values and logger creation
 MAX_GAMES_LIMIT = 900
 GAMES_TABLE_PREVIEW = 30
+DATABASE_URL = os.getenv("database_url")
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +61,32 @@ def index():
         return _show_form()
     return _handle_form_submission(request.form)
 
+@app.route("/report/<slug>")
+def report_view(slug):
+    conn = psycopg2.connect(DATABASE_URL)
+    try:
+        report = io.get_report_by_slug(conn, slug)
+        if report is None:
+            return _render_error("Report not found", status_code=404)
+
+        report_id = report["id"]
+        params = {
+            "username": report["username"],
+            "max_games": report["number_of_games"],
+            "perf_type": report["time_control"]
+        }
+        games_df = io.get_games_by_report_id(conn, report_id)
+        user_data = io.get_user_by_report_id(conn, report_id)
+
+        context = _generate_template_context(params, games_df, user_data)
+
+        return render_template(
+            "result.html",
+            **context
+        )
+    finally:
+        conn.close()
+
 # ----------------------
 # Helper Functions
 # ----------------------
@@ -68,9 +98,9 @@ def _handle_form_submission(form_data: dict) -> str:
     """Process submitted form data and return results or errors."""
     try:
         params = _validate_inputs(form_data)
-        df = _fetch_and_prepare_data(params)
-        user_data = user_data = io.get_user_data(params["username"])
-        return _render_results(params, df, user_data)
+        slug = create_and_store_report(params)
+        return _redirect_to_report(slug)
+
     except ValueError as e:
         logger.warning("Validation failed: %s", e)
         return _render_error(f"Invalid input: {str(e)}", status_code=400)
@@ -103,30 +133,76 @@ def _validate_inputs(form_data: dict) -> dict:
 
 @log_execution_time
 def _fetch_and_prepare_data(params: dict) -> tuple:
-    # Fetch game and user data from Lichess
-    #Fetch and process chess game data
+    """Fetch and process data. No DB actions."""
+    timings = {}
+
+    # GameProcessor
+    game_start = time.perf_counter()
     game_processor = GameProcessor(
         username=params["username"],
         max_games=params["max_games"],
         perf_type=params["perf_type"]
     )
     game_processor.run_all()
+    timings["game_processing"] = time.perf_counter() - game_start
 
-    # Fetch and process chess user data
-    user_processor = UserProcessor(params["username"])
-    user_processor.run_all()
+    # UserProcessor
+    user_start = time.perf_counter()
+    user_processor = UserProcessor(username=params["username"])
+    user_processor.fetch_user_data()
+    user_processor.process_user_data()
+    timings["user_processing"] = time.perf_counter() - user_start
 
-    return game_processor.get_dataframe().head(params["max_games"])
+    # Log
+    logger.info(
+        f"Performance Breakdown:\n"
+        f"Game Processing: {timings['game_processing']:.2f}s\n"
+        f"User Processing: {timings['user_processing']:.2f}s\n"
+        f"Game/User Ratio: {timings['game_processing']/timings['user_processing']:.1f}x"
+    )
+
+    return game_processor, user_processor
+
+def create_and_store_report(params: dict) -> str:
+
+    conn = psycopg2.connect(DATABASE_URL)
+
+    slug = uuid.uuid4().hex[:8]
+
+    # Process data
+    game_processor, user_processor = _fetch_and_prepare_data(params)
+
+    # Insert report and get ID
+    report_id = io.save_report_data(
+        conn,
+        username=params["username"],
+        number_of_games=params["max_games"],
+        time_control=params["perf_type"],
+        slug=slug
+    )
+
+    # Add report_id to the DataFrames
+    game_df = game_processor.get_dataframe()
+    game_df["reports_id"] = report_id
+
+    user_df = user_processor.get_dataframe()
+    user_df["reports_id"] = report_id
+
+    # Store data
+    io.save_processed_game_data(conn, game_df)
+    io.save_df_to_csv(game_df, params["username"])
+    io.save_processed_user_data(conn, user_df)
+
+    return slug  # Used to redirect to /report/{slug}
+
 
 # ----------------------
 # Presentation Layer
 # ----------------------
-def _render_results(params: dict, df, user_data) -> str:
-    """Render analysis results template."""
-    return render_template(
-        "result.html",
-        **_generate_template_context(params, df, user_data)
-    )
+def _redirect_to_report(slug: str):
+    """Redirect user to their report page."""
+    return redirect(url_for("report_view", slug=slug))
+
 
 def _generate_template_context(params: dict, df, user_data) -> dict:
     """Prepare all data needed for the results template."""

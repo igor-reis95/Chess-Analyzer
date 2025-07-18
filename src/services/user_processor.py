@@ -10,14 +10,13 @@ This module defines a UserProcessor class that orchestrates the entire data work
 import logging
 from typing import Optional
 import pandas as pd
-import os
 from src.api.api import collect_user_data
-from src.services.data_io import save_processed_user_data, get_user_data
+from src.services.data_io import get_user_data
 import src.services.post_process as post_process
-
 
 logger = logging.getLogger(__name__)
 
+import time
 
 
 class UserProcessor:
@@ -62,21 +61,6 @@ class UserProcessor:
         self.df_processed = post_process.process_user_data(self.raw_data)
         logger.info("Processed user data for '%s'", self.username)
 
-    def save_user_data(self) -> None:
-        """
-        Save the processed user data to the database.
-        """
-        if self.df_processed is None:
-            logger.warning("No processed data to save for '%s'", self.username)
-            return
-        save_processed_user_data(self.df_processed)
-        logger.info("Saved processed user data for '%s' to database", self.username)
-
-        # Save the data to CSV
-        folder = "data/processed"
-        filepath = os.path.join(folder, "IgorSReis_user_data.csv")
-        self.df_processed.to_csv(filepath, index=False)
-
     def get_dataframe(self) -> Optional[pd.DataFrame]:
         """
         Get the final processed user DataFrame.
@@ -85,12 +69,3 @@ class UserProcessor:
             Optional[DataFrame]: Processed DataFrame or None if not available.
         """
         return self.df_processed
-
-    def run_all(self) -> None:
-        """
-        Run the full user data pipeline: fetch, process, and save.
-        """
-        self.fetch_user_data()
-        self.process_user_data()
-        self.save_user_data()
-        get_user_data(self.username)
