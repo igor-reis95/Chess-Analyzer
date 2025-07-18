@@ -134,7 +134,7 @@ def get_opening_stats(df):
     ).reset_index()
     df = df[df["count"] > 2].sort_values("count", ascending=False)
     df["opening_label"] = df.apply(lambda x: f"{x['normalized_opening_name']} ({x['count']})",axis=1)
-    return df
+    return df.head() # .head() to not bring every value and create a huge graph
 
 def plot_opening_stats(df, color="overall"):
     if color == "overall":
@@ -148,7 +148,7 @@ def plot_opening_stats(df, color="overall"):
     # Create color list based on evaluation values
     colors = ["#93b674" if x >= 0 else "#da6f73" for x in df['avg_eval']]
 
-    plt.figure(figsize=(10, 5))
+    plt.figure(figsize=(10, 7))
 
     # Create the barplot with our custom colors
     bars = plt.barh(df['opening_label'], df['avg_eval'], color=colors)
