@@ -209,7 +209,7 @@ def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
         'match_id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
         'player_rating', 'opponent_rating', 'rating_difference',
         'variant', 'speed', 'perf', 'clock_time_control', 'clock_increment',
-        'time_control_with_increment', 'source', 'tournament', 'division_middle', 'opening_eval',
+        'time_control_with_increment', 'source', 'division_middle', 'opening_eval',
         'division_end', 'middlegame_eval', 'created_at', 'last_move_at', 'time_spent_playing',
         'opening_eco', 'opening_name', 'normalized_opening_name', 'opening_ply',
         'player_rating_diff', 'player_final_clock', 'player_avg_time_per_move',
