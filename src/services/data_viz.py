@@ -142,45 +142,52 @@ def plot_opening_stats(df, color="overall"):
     else:
         df = get_opening_stats(df[df['player_color'] == color])
 
-    # Sort by frequency (assuming 'count' exists in your stats)
-    df = df.sort_values('count', ascending=True)
+    # Check if we have any valid data to plot
+    if len(df) == 0 or df['avg_eval'].isna().all():
+        # Create an empty plot with a message
+        plt.figure(figsize=(10, 7))
+        plt.text(0.5, 0.5, 
+                f"No opening data available for {color}\n(Need at least 3 games per opening)",
+                ha='center', va='center')
+        plt.axis('off')
+    else:
+        # Sort by frequency
+        df = df.sort_values('count', ascending=True)
 
-    # Create color list based on evaluation values
-    colors = ["#93b674" if x >= 0 else "#da6f73" for x in df['avg_eval']]
+        # Create color list based on evaluation values
+        colors = ["#93b674" if x >= 0 else "#da6f73" for x in df['avg_eval']]
 
-    plt.figure(figsize=(10, 7))
+        plt.figure(figsize=(10, 7))
+        bars = plt.barh(df['opening_label'], df['avg_eval'], color=colors)
 
-    # Create the barplot with our custom colors
-    bars = plt.barh(df['opening_label'], df['avg_eval'], color=colors)
+        # Add value labels
+        for b in bars:
+            width = b.get_width()
+            label_x_pos = width if width >= 0 else width
+            plt.text(label_x_pos, b.get_y() + b.get_height()/2,
+                    f'{width:.2f}',
+                    va='center', ha='left' if width >= 0 else 'right',
+                    color='black', fontsize=8)
 
-    # Add value labels
-    for b in bars:
-        width = b.get_width()
-        label_x_pos = width if width >= 0 else width
-        plt.text(label_x_pos, b.get_y() + b.get_height()/2,
-                 f'{width:.2f}',
-                 va='center', ha='left' if width >= 0 else 'right',
-                 color='black', fontsize=8)
+        plt.axvline(0, color="black", linestyle="--", alpha=0.5)
+        plt.title(f"Opening Performance ({color})")
+        plt.xlabel("Average Evaluation")
+        plt.ylabel("Opening (Count)")
 
-    plt.axvline(0, color="black", linestyle="--", alpha=0.5)
-    plt.title(f"Opening Performance ({color})")
-    plt.xlabel("Average Evaluation")
-    plt.ylabel("Opening (Count)")
+        # Calculate min/max with fallback values
+        min_eval = df['avg_eval'].replace([np.inf, -np.inf], np.nan).min()
+        max_eval = df['avg_eval'].replace([np.inf, -np.inf], np.nan).max()
+        
+        # Handle case where all values are the same or NaN
+        if pd.isna(min_eval) or pd.isna(max_eval):
+            min_eval, max_eval = -1, 1  # Default range when no valid data
+        elif min_eval == max_eval:
+            min_eval, max_eval = min_eval - 1, max_eval + 1
 
-    # Add some padding to prevent label cutoff
-    min_eval = df['avg_eval'].min()
-    max_eval = df['avg_eval'].max()
-    padding = (max_eval - min_eval) * 0.1  # 10% padding
-
-    # Handle edge case when all values are equal
-    if padding == 0:
-        padding = 0.1
-
-    plt.xlim(min_eval - padding, max_eval + padding)
+        padding = (max_eval - min_eval) * 0.1  # 10% padding
+        plt.xlim(min_eval - padding, max_eval + padding)
 
     plt.tight_layout()
-
-    # Save plot to base64 string
     img = io.BytesIO()
     plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
     plt.close()
