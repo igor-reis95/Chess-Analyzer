@@ -40,10 +40,11 @@ def save_processed_game_data(conn, df, table='games_processed_data'):
                 return
 
             # Prepare data for insertion
+            df = df.astype(object).where(pd.notnull(df), None)
             values = [tuple(row) for row in df.to_numpy()]
             columns = ', '.join(df.columns)
             insert_sql = f"INSERT INTO {table} ({columns}) VALUES %s"
-
+            
             execute_values(cur, insert_sql, values)
             conn.commit()
             print(f"Inserted {len(values)} rows into {table}.")
@@ -51,7 +52,8 @@ def save_processed_game_data(conn, df, table='games_processed_data'):
     except psycopg2.OperationalError as oe:
         print(f"Database connection error: {oe}")
     except psycopg2.DatabaseError as de:
-        print(f"Database error: {de}")
+        conn.rollback()
+        print(f"Database error: {de} at save_processed_game_data")
     except Exception as e:
         print(f"Unexpected error: {e}")
 
@@ -72,7 +74,8 @@ def save_processed_user_data(conn, df):
             conn.commit()
 
     except Exception as e:
-        raise RuntimeError(f"psycopg2 insert error: {e}")
+        conn.rollback()
+        raise RuntimeError(f"psycopg2 insert error: {e} at save_processed_user_data")
 
 def get_user_data(conn, username) -> dict:
     query = """
@@ -95,7 +98,8 @@ def get_user_data(conn, username) -> dict:
             return dict(zip(colnames, row))
 
     except Exception as e:
-        raise RuntimeError(f"Database error: {e}")
+        conn.rollback()
+        raise RuntimeError(f"Database error: {e} at get_user_data")
     
 def save_report_data(conn, username, number_of_games, time_control, slug) -> dict:
     try:
@@ -110,7 +114,8 @@ def save_report_data(conn, username, number_of_games, time_control, slug) -> dic
             return report_id
 
     except Exception as e:
-        raise RuntimeError(f"Database error: {e}")
+        conn.rollback()
+        raise RuntimeError(f"Database error: {e} at save_report_data")
     
 def get_report_by_slug(conn, slug: str) -> dict | None:
     with conn.cursor() as cur:
