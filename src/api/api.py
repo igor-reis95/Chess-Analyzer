@@ -69,7 +69,7 @@ def get_games(username, max_games, perf_type):
             headers=headers,
             params=params,
             stream=True,
-            timeout=30
+            timeout=40
         )
         response.raise_for_status()
         logger.info("Received response from Lichess API with status code %s", response.status_code)
