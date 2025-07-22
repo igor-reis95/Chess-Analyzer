@@ -13,7 +13,7 @@ import time
 import uuid
 import psycopg2
 from functools import wraps
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, g
 from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
 import src.services.data_viz as viz
 import src.services.data_io as io
@@ -23,7 +23,7 @@ from src.services.user_processor import UserProcessor
 from ..webapp import app
 
 # Constant values and logger creation
-MAX_GAMES_LIMIT = 900
+MAX_GAMES_LIMIT = 1000
 GAMES_TABLE_PREVIEW = 30
 DATABASE_URL = os.getenv("database_url")
 REPORT_CONTEXT_CACHE = {} # Used to not reconnected to the database when data is in memory
@@ -55,6 +55,17 @@ def log_execution_time(func):
 
     return wrapper
 
+# How much time it takes to execute the code
+@app.before_request
+def before_request():
+    request.start_time = time.time()
+
+@app.after_request
+def after_request(response):
+    execution_time = time.time() - request.start_time
+    app.logger.info(f"Request took {execution_time:.2f} seconds")
+    return response
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     """Handle root route with minimal logic."""
@@ -67,32 +78,29 @@ def report_view(slug):
     # If accessing from form.html, use data in memory
     if slug in REPORT_CONTEXT_CACHE:
         context = REPORT_CONTEXT_CACHE.pop(slug)  # Use once and clear
-        return render_template("result.html", **context)
-    
-    # If accessing report directly through URL, use data from DB
-    conn = psycopg2.connect(DATABASE_URL)
-    try:
-        report = io.get_report_by_slug(conn, slug)
-        if report is None:
-            return _render_error("Report not found", status_code=404)
+    else:
+        # If accessing report directly through URL, use data from DB
+        conn = psycopg2.connect(DATABASE_URL)
+        try:
+            report = io.get_report_by_slug(conn, slug)
+            if report is None:
+                return _render_error("Report not found", status_code=404)
 
-        report_id = report["id"]
-        params = {
-            "username": report["username"],
-            "max_games": report["number_of_games"],
-            "perf_type": report["time_control"]
-        }
-        games_data = io.get_games_by_report_id(conn, report_id)
-        user_data = io.get_user_by_report_id(conn, report_id)
+            report_id = report["id"]
+            params = {
+                "username": report["username"],
+                "max_games": report["number_of_games"],
+                "perf_type": report["time_control"]
+            }
+            games_data = io.get_games_by_report_id(conn, report_id)
+            user_data = io.get_user_by_report_id(conn, report_id)
 
-        context = _generate_template_context(params, games_data, user_data)
+            context = _generate_template_context(params, games_data, user_data)
 
-        return render_template(
-            "result.html",
-            **context
-        )
-    finally:
-        conn.close()
+        finally:
+            conn.close()
+
+    return render_template("result.html", **context)
 
 # ----------------------
 # Helper Functions
@@ -138,7 +146,6 @@ def _validate_inputs(form_data: dict) -> dict:
         "perf_type": form_data.get("perf_type", "blitz")
     }
 
-@log_execution_time
 def _fetch_and_prepare_data(params: dict) -> tuple:
     """Fetch and process data. No DB actions."""
     timings = {}
@@ -169,16 +176,30 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
 
     return game_processor, user_processor
 
+@log_execution_time
 def create_and_store_report(params: dict) -> str:
-
+    """Create report with detailed step timing"""
+    step_timings = {}
+    logger = logging.getLogger(__name__)
+    
+    # Start total timer
+    total_start = time.perf_counter()
+    
+    # 1. Database connection
+    step_start = time.perf_counter()
     conn = psycopg2.connect(DATABASE_URL)
-
+    step_timings["db_connection"] = time.perf_counter() - step_start
+    
+    # Generate slug
     slug = uuid.uuid4().hex[:8]
-
-    # Process data
+    
+    # 2. Data processing
+    step_start = time.perf_counter()
     game_processor, user_processor = _fetch_and_prepare_data(params)
-
-    # Insert report and get ID
+    step_timings["data_processing"] = time.perf_counter() - step_start
+    
+    # 3. Save report metadata
+    step_start = time.perf_counter()
     report_id = io.save_report_data(
         conn,
         username=params["username"],
@@ -186,26 +207,46 @@ def create_and_store_report(params: dict) -> str:
         time_control=params["perf_type"],
         slug=slug
     )
-
-    # Add report_id to the DataFrames
+    step_timings["save_report_metadata"] = time.perf_counter() - step_start
+    
+    # 4. Prepare DataFrames
+    step_start = time.perf_counter()
     game_df = game_processor.get_dataframe()
     game_df["reports_id"] = report_id
-
     user_df = user_processor.get_dataframe()
     user_df["reports_id"] = report_id
-
-    # Store data
+    step_timings["prepare_dataframes"] = time.perf_counter() - step_start
+    
+    # 5. Store data
+    step_start = time.perf_counter()
     io.save_processed_game_data(conn, game_df)
     io.save_df_to_csv(game_df, params["username"])
     io.save_processed_user_data(conn, user_df)
-
-    # Create the context in memory and save it in cache
+    step_timings["data_storage"] = time.perf_counter() - step_start
+    
+    # 6. Create context
+    step_start = time.perf_counter()
     user_data = user_df.iloc[0].to_dict()
     context = _generate_template_context(params, game_df, user_data)
     REPORT_CONTEXT_CACHE[slug] = context
-    user_df.to_excel("data/user_df.xlsx", index = False)
-
-    return slug  # Used to redirect to /report/{slug}
+    step_timings["context_creation"] = time.perf_counter() - step_start
+    
+    # Calculate total time
+    total_time = time.perf_counter() - total_start
+    
+    # Log detailed breakdown
+    logger.info(
+        f"Report creation breakdown for {params['username']}:\n"
+        f"1. DB Connection: {step_timings['db_connection']:.3f}s\n"
+        f"2. Data Processing: {step_timings['data_processing']:.3f}s\n"
+        f"3. Save Metadata: {step_timings['save_report_metadata']:.3f}s\n"
+        f"4. Prepare DataFrames: {step_timings['prepare_dataframes']:.3f}s\n"
+        f"5. Data Storage: {step_timings['data_storage']:.3f}s\n"
+        f"6. Context Creation: {step_timings['context_creation']:.3f}s\n"
+        f"Total Execution: {total_time:.3f}s"
+    )
+    
+    return slug
 
 
 # ----------------------
@@ -214,7 +255,6 @@ def create_and_store_report(params: dict) -> str:
 def _redirect_to_report(slug: str):
     """Redirect user to their report page."""
     return redirect(url_for("report_view", slug=slug))
-
 
 def _generate_template_context(params: dict, df, user_data) -> dict:
     """Prepare all data needed for the results template."""
@@ -234,7 +274,6 @@ def _generate_template_context(params: dict, df, user_data) -> dict:
         "user_data": user_data
     }
 
-@log_execution_time
 def _get_visualizations(df, player_data, lichess_data) -> dict:
     """Generate all visualization outputs."""
     return {
