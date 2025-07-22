@@ -297,16 +297,25 @@ def get_avg_time_per_move(df: pd.DataFrame) -> pd.DataFrame:
             else:  # Black's moves are at odd indices (1, 3, 5...)
                 black_times.append(time)
 
-        # Calculate time differences and averages
-        if len(white_times) > 1:
-            white_total = white_times[0] - white_times[-1]
-            white_avg = white_total / (len(white_times) - 1)
-            white_avg = round(white_avg / 100, 2)
+        # Initialize defaults
+        white_avg = None
+        black_avg = None
 
-        if len(black_times) > 1:
-            black_total = black_times[0] - black_times[-1]
-            black_avg = black_total / (len(black_times) - 1)
-            black_avg = round(black_avg / 100, 2)
+        # Calculate white average (need at least 2 moves)
+        if len(white_times) >= 2:
+            try:
+                white_total = white_times[0] - white_times[-1]
+                white_avg = round((white_total / (len(white_times) - 1)) / 100, 2)
+            except (IndexError, ZeroDivisionError):
+                pass
+
+        # Calculate black average (need at least 2 moves)
+        if len(black_times) >= 2:
+            try:
+                black_total = black_times[0] - black_times[-1]
+                black_avg = round((black_total / (len(black_times) - 1)) / 100, 2)
+            except (IndexError, ZeroDivisionError):
+                pass
 
         return white_avg, black_avg
 
