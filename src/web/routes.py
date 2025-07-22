@@ -26,6 +26,7 @@ from ..webapp import app
 MAX_GAMES_LIMIT = 900
 GAMES_TABLE_PREVIEW = 30
 DATABASE_URL = os.getenv("database_url")
+REPORT_CONTEXT_CACHE = {} # Used to not reconnected to the database when data is in memory
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +64,12 @@ def index():
 
 @app.route("/report/<slug>")
 def report_view(slug):
+    # If accessing from form.html, use data in memory
+    if slug in REPORT_CONTEXT_CACHE:
+        context = REPORT_CONTEXT_CACHE.pop(slug)  # Use once and clear
+        return render_template("result.html", **context)
+    
+    # If accessing report directly through URL, use data from DB
     conn = psycopg2.connect(DATABASE_URL)
     try:
         report = io.get_report_by_slug(conn, slug)
@@ -75,10 +82,10 @@ def report_view(slug):
             "max_games": report["number_of_games"],
             "perf_type": report["time_control"]
         }
-        games_df = io.get_games_by_report_id(conn, report_id)
+        games_data = io.get_games_by_report_id(conn, report_id)
         user_data = io.get_user_by_report_id(conn, report_id)
 
-        context = _generate_template_context(params, games_df, user_data)
+        context = _generate_template_context(params, games_data, user_data)
 
         return render_template(
             "result.html",
@@ -158,7 +165,6 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
         f"Performance Breakdown:\n"
         f"Game Processing: {timings['game_processing']:.2f}s\n"
         f"User Processing: {timings['user_processing']:.2f}s\n"
-        f"Game/User Ratio: {timings['game_processing']/timings['user_processing']:.1f}x"
     )
 
     return game_processor, user_processor
@@ -192,6 +198,12 @@ def create_and_store_report(params: dict) -> str:
     io.save_processed_game_data(conn, game_df)
     io.save_df_to_csv(game_df, params["username"])
     io.save_processed_user_data(conn, user_df)
+
+    # Create the context in memory and save it in cache
+    user_data = user_df.iloc[0].to_dict()
+    context = _generate_template_context(params, game_df, user_data)
+    REPORT_CONTEXT_CACHE[slug] = context
+    user_df.to_excel("data/user_df.xlsx", index = False)
 
     return slug  # Used to redirect to /report/{slug}
 
