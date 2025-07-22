@@ -44,7 +44,7 @@ def save_processed_game_data(conn, df, table='games_processed_data'):
             values = [tuple(row) for row in df.to_numpy()]
             columns = ', '.join(df.columns)
             insert_sql = f"INSERT INTO {table} ({columns}) VALUES %s"
-            
+
             execute_values(cur, insert_sql, values)
             conn.commit()
             print(f"Inserted {len(values)} rows into {table}.")
@@ -138,13 +138,18 @@ def get_report_by_slug(conn, slug: str) -> dict | None:
 
 def get_games_by_report_id(conn, report_id: int):
     query = "SELECT * FROM games_processed_data WHERE reports_id = %s"
-    return pd.read_sql(query, conn, params=(report_id,))
+    with conn.cursor() as cur:
+        cur.execute(query, (report_id,))
+        rows = cur.fetchall()
+        colnames = [desc[0] for desc in cur.description]
+    return pd.DataFrame(rows, columns=colnames)
 
 def get_user_by_report_id(conn, report_id: int) -> dict:
     query = "SELECT * FROM users_processed_data WHERE reports_id = %s"
-    df = pd.read_sql(query, conn, params=(report_id,))
-    
-    if df.empty:
-        return {}
-
-    return df.iloc[0].to_dict()
+    with conn.cursor() as cur:
+        cur.execute(query, (report_id,))
+        row = cur.fetchone()
+        if not row:
+            return {}
+        colnames = [desc[0] for desc in cur.description]
+    return dict(zip(colnames, row))
