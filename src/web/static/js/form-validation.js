@@ -18,31 +18,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 input.classList.remove('is-invalid');
                 return;
             }
+
+            const username = input.value.trim().toLowerCase();
             
             try {
-                const response = await fetch(`https://lichess.org/api/users/status?ids=${encodeURIComponent(input.value)}`);
+                const response = await fetch(`https://lichess.org/api/user/${encodeURIComponent(username)}`);
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    window.location.href = `/error?message=${encodeURIComponent('Lichess API unavailable - try again later')}`;
+                    if (response.status === 404) {
+                        input.classList.add('is-invalid');
+                        invalidFeedback.textContent = '✗ Username not found on Lichess';
+                        input.setCustomValidity('Invalid username');
+                    } else {
+                        window.location.href = `/error?message=${encodeURIComponent('Lichess API error - try again later')}`;
+                    }
                     return;
                 }
-                
-                const data = await response.json();
-                const exists = data.length > 0 && data[0].online !== undefined;
-                
-                if (!exists) {
-                    input.classList.add('is-invalid');
-                    invalidFeedback.textContent = '✗ Username not found on Lichess'; // Plain ✗ symbol
-                    input.setCustomValidity('Invalid username');
-                } else {
-                    input.classList.remove('is-invalid');
-                }
+
+                // User exists
+                input.classList.remove('is-invalid');
+                input.setCustomValidity('');
             } catch (error) {
                 window.location.href = `/error?message=${encodeURIComponent('Network error - please check your connection')}`;
                 console.error('Lichess validation error:', error);
             }
         });
+
 
         input.addEventListener('input', () => {
             input.classList.remove('is-invalid');
