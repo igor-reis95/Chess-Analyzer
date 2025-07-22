@@ -146,8 +146,8 @@ def plot_opening_stats(df, color="overall"):
     if len(df) == 0 or df['avg_eval'].isna().all():
         # Create an empty plot with a message
         plt.figure(figsize=(10, 7))
-        plt.text(0.5, 0.5, 
-                f"No opening data available for {color}\n(Need at least 3 games per opening)",
+        plt.text(0.5, 0.5,
+                f"No opening data available for {color}\n(Need at least one opening being played thrice)",
                 ha='center', va='center')
         plt.axis('off')
     else:
