@@ -53,7 +53,19 @@
           <img src="{{ url_for('static', filename='chess-data-coach-icon.png') }}" alt="Logo" style="height: 50px;">
         </div>
         <form method="POST" action="/" class="lichess-form p-4">
-          <!-- Your existing form content remains the same -->
+          
+           <div class="mb-3">
+            <label class="form-label">Platform</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="platform" id="lichess" value="lichess" checked>
+              <label class="form-check-label" for="lichess">Lichess</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="platform" id="chesscom" value="chesscom">
+              <label class="form-check-label" for="chesscom">Chess.com</label>
+            </div>
+          </div>
+
           <div class="mb-3">
               <label for="username" class="form-label">Chess Username</label>
               <input 
