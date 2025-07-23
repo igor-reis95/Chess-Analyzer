@@ -44,9 +44,9 @@ def extract_perspective(df: pd.DataFrame, username: str, color: str) -> pd.DataF
     perspective['player_color'] = color
 
     # Ratings
-    perspective['player_rating'] = perspective[f'{color}_rating']
+    perspective['player_rating'] = perspective[f'{color}_rating'].astype(int)
     perspective['player_rating_diff'] = perspective[f'{color}_ratingDiff']
-    perspective['opponent_rating'] = perspective[f'{opp_color}_rating']
+    perspective['opponent_rating'] = perspective[f'{opp_color}_rating'].astype(int)
     perspective['opponent_rating_diff'] = perspective[f'{opp_color}_ratingDiff']
 
     # Accuracy and errors
@@ -126,6 +126,8 @@ def calculate_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
             return f'¼+{increment}'
         return f'{time_control // 60}+{increment}'
 
+    df['clock_time_control'] = pd.to_numeric(df['clock_time_control'], errors='coerce')
+    df['clock_increment'] = pd.to_numeric(df['clock_increment'], errors='coerce')
     df['time_control_with_increment'] = df.apply(
         lambda row: format_time_control(row['clock_time_control'], row['clock_increment']),
         axis=1
@@ -374,7 +376,15 @@ def process_user_data(data, perfs_to_include=None):
     user_df["last_seen"] = user_df["last_seen_datetime"].dt.strftime("%d/%m/%y")
 
     # Format play time as 'X hours and Y minutes'
-    user_df['play_time'] = pd.to_timedelta(user_df['play_time'], unit='s').apply(format_play_time)
+    def safe_format_play_time(seconds): # Needed because chesscom doesn't have play_time
+        if pd.isna(seconds):
+            return None
+        try:
+            return format_play_time(pd.to_timedelta(seconds, unit='s'))
+        except:
+            return None
+
+    user_df['play_time'] = user_df['play_time'].apply(safe_format_play_time)
 
     return user_df
 
