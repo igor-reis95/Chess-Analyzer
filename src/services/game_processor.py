@@ -32,7 +32,7 @@ class GameProcessor:
         df_processed (Optional[DataFrame]): Post-processed game DataFrame.
     """
 
-    def __init__(self, username: str, max_games: int, perf_type: str) -> None:
+    def __init__(self, username: str, max_games: int, perf_type: str, platform: str) -> None:
         """
         Initialize the GameProcessor with user parameters.
 
@@ -44,6 +44,7 @@ class GameProcessor:
         self.username = username
         self.max_games = max_games
         self.perf_type = perf_type
+        self.platform = platform
         self.games: Optional[list] = None
         self.df_flat: Optional[DataFrame] = None
         self.df_processed: Optional[DataFrame] = None
@@ -57,7 +58,7 @@ class GameProcessor:
         """
         logger.info("Fetching up to %d games for user '%s', perf_type='%s'",
                     self.max_games, self.username, self.perf_type)
-        self.games = get_games(self.username, self.max_games, self.perf_type)
+        self.games = get_games(self.username, self.max_games, self.perf_type, self.platform)
         logger.info("Fetched %d games for user '%s'", len(self.games), self.username)
 
     def flatten_games(self) -> None:
