@@ -101,15 +101,15 @@ def get_user_data(conn, username) -> dict:
         conn.rollback()
         raise RuntimeError(f"Database error: {e} at get_user_data")
     
-def save_report_data(conn, username, number_of_games, time_control, slug) -> dict:
+def save_report_data(conn, username, number_of_games, time_control, platform, slug) -> dict:
     try:
         with conn.cursor() as cur:
             insert_sql = """
-                INSERT INTO reports (username, number_of_games, time_control, public_id)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO reports (username, number_of_games, time_control, public_id, platform)
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;
             """
-            cur.execute(insert_sql, (username, number_of_games, time_control, slug))
+            cur.execute(insert_sql, (username, number_of_games, time_control, platform, slug))
             report_id = cur.fetchone()[0]
             return report_id
 
