@@ -90,7 +90,8 @@ def report_view(slug):
             params = {
                 "username": report["username"],
                 "max_games": report["number_of_games"],
-                "perf_type": report["time_control"]
+                "perf_type": report["time_control"],
+                "platform": report["platform"]
             }
             games_data = io.get_games_by_report_id(conn, report_id)
             user_data = io.get_user_by_report_id(conn, report_id)
@@ -128,13 +129,16 @@ def _handle_form_submission(form_data: dict) -> str:
 # Data Layer
 # ----------------------
 def _validate_inputs(form_data: dict) -> dict:
-    """Strict server-side validation."""
     username = form_data.get("username", "").strip()
     max_games = int(form_data.get("max_games", 0))
+    platform = form_data.get("platform", "lichess").lower()
 
     # Format checks
     if not re.match(r"^[\w-]{3,20}$", username):
         raise ValueError("Username: 3-20 chars (letters, numbers, _-)")
+
+    if platform not in ["lichess", "chesscom"]:
+        raise ValueError("Platform must be 'lichess' or 'chesscom'")
 
     # Business logic
     if max_games > MAX_GAMES_LIMIT:
@@ -142,8 +146,9 @@ def _validate_inputs(form_data: dict) -> dict:
 
     return {
         "username": username,
-        "max_games": min(max_games, MAX_GAMES_LIMIT),  # Force compliance
-        "perf_type": form_data.get("perf_type", "blitz")
+        "max_games": min(max_games, MAX_GAMES_LIMIT),
+        "perf_type": form_data.get("perf_type", "blitz"),
+        "platform": platform
     }
 
 def _fetch_and_prepare_data(params: dict) -> tuple:
@@ -155,14 +160,15 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
     game_processor = GameProcessor(
         username=params["username"],
         max_games=params["max_games"],
-        perf_type=params["perf_type"]
+        perf_type=params["perf_type"],
+        platform=params["platform"]
     )
     game_processor.run_all()
     timings["game_processing"] = time.perf_counter() - game_start
 
     # UserProcessor
     user_start = time.perf_counter()
-    user_processor = UserProcessor(username=params["username"])
+    user_processor = UserProcessor(username=params["username"], platform=params["platform"])
     user_processor.fetch_user_data()
     user_processor.process_user_data()
     timings["user_processing"] = time.perf_counter() - user_start
@@ -205,6 +211,7 @@ def create_and_store_report(params: dict) -> str:
         username=params["username"],
         number_of_games=params["max_games"],
         time_control=params["perf_type"],
+        platform=params["platform"],
         slug=slug
     )
     step_timings["save_report_metadata"] = time.perf_counter() - step_start
