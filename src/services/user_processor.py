@@ -11,13 +11,9 @@ import logging
 from typing import Optional
 import pandas as pd
 from src.api.api import collect_user_data
-from src.services.data_io import get_user_data
 import src.services.post_process as post_process
 
 logger = logging.getLogger(__name__)
-
-import time
-
 
 class UserProcessor:
     """
@@ -29,7 +25,7 @@ class UserProcessor:
         df_processed (Optional[DataFrame]): Post-processed user data.
     """
 
-    def __init__(self, username: str) -> None:
+    def __init__(self, username: str, platform: str) -> None:
         """
         Initialize the UserProcessor with the target username.
 
@@ -37,6 +33,7 @@ class UserProcessor:
             username (str): Player username to fetch user data for.
         """
         self.username = username
+        self.platform = platform
         self.raw_data: Optional[dict] = None
         self.df_processed: Optional[pd.DataFrame] = None
 
@@ -45,7 +42,7 @@ class UserProcessor:
         Fetch raw user data from the Lichess API.
         """
         logger.info("Fetching user data for '%s'", self.username)
-        self.raw_data = collect_user_data(self.username)
+        self.raw_data = collect_user_data(self.username, self.platform)
         if self.raw_data:
             logger.info("Successfully fetched user data for '%s'", self.username)
         else:
