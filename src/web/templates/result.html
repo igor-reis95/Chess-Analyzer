@@ -61,10 +61,7 @@
                         <div class="p-3 border rounded text-center bg-light">
                             <div class="small text-muted">Bullet</div>
                             <div class="h4 fw-bold my-1">{{ user_data.bullet_rating }}</div>
-                            <div class="small {% if user_data.bullet_prog > 0 %}text-success{% elif user_data.bullet_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
-                                {% if user_data.bullet_prog > 0 %}+{% endif %}{{ user_data.bullet_prog }}
-                                <i class="fas fa-arrow-{% if user_data.bullet_prog > 0 %}up{% elif user_data.bullet_prog < 0 %}down{% else %}right{% endif %}"></i>
-                            </div>
+
                             <div class="small text-muted mt-1">{{ user_data.bullet_games }} games</div>
                         </div>
                     </div>
@@ -74,10 +71,6 @@
                         <div class="p-3 border rounded text-center bg-light">
                             <div class="small text-muted">Blitz</div>
                             <div class="h4 fw-bold my-1">{{ user_data.blitz_rating }}</div>
-                            <div class="small {% if user_data.blitz_prog > 0 %}text-success{% elif user_data.blitz_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
-                                {% if user_data.blitz_prog > 0 %}+{% endif %}{{ user_data.blitz_prog }}
-                                <i class="fas fa-arrow-{% if user_data.blitz_prog > 0 %}up{% elif user_data.blitz_prog < 0 %}down{% else %}right{% endif %}"></i>
-                            </div>
                             <div class="small text-muted mt-1">{{ user_data.blitz_games }} games</div>
                         </div>
                     </div>
@@ -87,10 +80,6 @@
                         <div class="p-3 border rounded text-center bg-light">
                             <div class="small text-muted">Rapid</div>
                             <div class="h4 fw-bold my-1">{{ user_data.rapid_rating }}</div>
-                            <div class="small {% if user_data.rapid_prog > 0 %}text-success{% elif user_data.rapid_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
-                                {% if user_data.rapid_prog > 0 %}+{% endif %}{{ user_data.rapid_prog }}
-                                <i class="fas fa-arrow-{% if user_data.rapid_prog > 0 %}up{% elif user_data.rapid_prog < 0 %}down{% else %}right{% endif %}"></i>
-                            </div>
                             <div class="small text-muted mt-1">{{ user_data.rapid_games }} games</div>
                         </div>
                     </div>
@@ -100,10 +89,6 @@
                         <div class="p-3 border rounded text-center bg-light">
                             <div class="small text-muted">Classical</div>
                             <div class="h4 fw-bold my-1">{{ user_data.classical_rating }}</div>
-                            <div class="small {% if user_data.classical_prog > 0 %}text-success{% elif user_data.classical_prog < 0 %}text-danger{% else %}text-muted{% endif %}">
-                                {% if user_data.classical_prog > 0 %}+{% endif %}{{ user_data.classical_prog }}
-                                <i class="fas fa-arrow-{% if user_data.classical_prog > 0 %}up{% elif user_data.classical_prog < 0 %}down{% else %}right{% endif %}"></i>
-                            </div>
                             <div class="small text-muted mt-1">{{ user_data.classical_games }} games</div>
                         </div>
                     </div>
