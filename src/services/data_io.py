@@ -109,7 +109,7 @@ def save_report_data(conn, username, number_of_games, time_control, platform, sl
                 VALUES (%s, %s, %s, %s, %s)
                 RETURNING id;
             """
-            cur.execute(insert_sql, (username, number_of_games, time_control, platform, slug))
+            cur.execute(insert_sql, (username, number_of_games, time_control, slug, platform))
             report_id = cur.fetchone()[0]
             return report_id
 
@@ -120,7 +120,7 @@ def save_report_data(conn, username, number_of_games, time_control, platform, sl
 def get_report_by_slug(conn, slug: str) -> dict | None:
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT id, username, number_of_games, time_control, public_id
+            SELECT id, username, number_of_games, time_control, public_id, platform
             FROM reports
             WHERE public_id = %s
         """, (slug,))
@@ -132,12 +132,13 @@ def get_report_by_slug(conn, slug: str) -> dict | None:
             "username": row[1],
             "number_of_games": row[2],
             "time_control": row[3],
-            "public_id": row[4]
+            "public_id": row[4],
+            "platform": row[5]
         }
     return None
 
 def get_games_by_report_id(conn, report_id: int):
-    query = "SELECT * FROM games_processed_data WHERE reports_id = %s"
+    query = "SELECT * FROM games_processed_data WHERE report_id = %s"
     with conn.cursor() as cur:
         cur.execute(query, (report_id,))
         rows = cur.fetchall()
@@ -145,7 +146,7 @@ def get_games_by_report_id(conn, report_id: int):
     return pd.DataFrame(rows, columns=colnames)
 
 def get_user_by_report_id(conn, report_id: int) -> dict:
-    query = "SELECT * FROM users_processed_data WHERE reports_id = %s"
+    query = "SELECT * FROM users_processed_data WHERE report_id = %s"
     with conn.cursor() as cur:
         cur.execute(query, (report_id,))
         row = cur.fetchone()
