@@ -55,7 +55,7 @@ class UserProcessor:
         if self.raw_data is None:
             logger.warning("No raw data to process for '%s'", self.username)
             return
-        self.df_processed = post_process.process_user_data(self.raw_data)
+        self.df_processed = post_process.process_user_data(self.raw_data, self.platform)
         logger.info("Processed user data for '%s'", self.username)
 
     def get_dataframe(self) -> Optional[pd.DataFrame]:

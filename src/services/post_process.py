@@ -331,7 +331,7 @@ def get_avg_time_per_move(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def process_user_data(data, perfs_to_include=None):
+def process_user_data(data, platform, perfs_to_include=None):
     """
     Processes raw user data from Lichess API and returns a structured DataFrame.
 
@@ -352,7 +352,8 @@ def process_user_data(data, perfs_to_include=None):
         'created_at': data.get('createdAt'),
         'last_seen': data.get('seenAt'),
         'play_time': data.get('playTime', {}).get('total'),  # in seconds
-        'url': data.get('url')
+        'url': data.get('url'),
+        'platform': platform
     }
 
     # Extract performance-related stats
