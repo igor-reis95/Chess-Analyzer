@@ -7,16 +7,18 @@ and renders visualizations of the analysis results.
 # pylint: skip-file
 import os
 import re
+import io
 import logging
 import json
 import time
 import uuid
 import psycopg2
+import pandas as pd
 from functools import wraps
-from flask import render_template, request, redirect, url_for, g
+from flask import render_template, request, redirect, url_for, make_response
 from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
 import src.services.data_viz as viz
-import src.services.data_io as io
+import src.services.data_io as data_io
 import src.services.data_insights as insights
 from src.services.game_processor import GameProcessor
 from src.services.user_processor import UserProcessor
@@ -87,7 +89,7 @@ def report_view(slug):
                 return _render_error("Database connection failed", 500)
 
             try:
-                report = io.get_report_by_slug(conn, slug)
+                report = data_io.get_report_by_slug(conn, slug)
                 if report is None:
                     return _render_error("Report not found", 404)
 
@@ -99,19 +101,60 @@ def report_view(slug):
                     "platform": report["platform"]
                 }
 
-                games_data = io.get_games_by_report_id(conn, report_id)
-                user_data = io.get_user_by_report_id(conn, report_id)
+                games_data = data_io.get_games_by_report_id(conn, report_id)
+                user_data = data_io.get_user_by_report_id(conn, report_id)
 
                 context = _generate_template_context(params, games_data, user_data)
             finally:
                 conn.close()
 
-        return render_template("result.html", **context)
+        return render_template("result.html", **context, report_slug = slug)
 
     except Exception:
         logger.exception("Unexpected error in report_view")
         return _render_error("An unexpected error occurred", 500)
+    
+@app.route("/download_csv/<slug>")
+def download_csv(slug):
+    """Handle CSV download requests for saved reports."""
+    try:
+        # Try to get report from cache first
+        if slug in REPORT_CONTEXT_CACHE:
+            context = REPORT_CONTEXT_CACHE[slug]
+            df = pd.DataFrame(context['games_data'])
+        else:
+            # Fall back to database
+            try:
+                conn = psycopg2.connect(DATABASE_URL)
+                report = data_io.get_report_by_slug(conn, slug)
+                if not report:
+                    return _render_error("Report not found", 404)
+                
+                games_data = data_io.get_games_by_report_id(conn, report["id"])
+                df = pd.DataFrame(games_data)
+                
+            except psycopg2.Error as e:
+                logger.error(f"Database error: {e}")
+                return _render_error("Database operation failed", 500)
+            finally:
+                if 'conn' in locals() and conn:
+                    conn.close()
 
+        # Create CSV in memory
+        output = io.StringIO()
+        df.drop(columns=['report_id'], inplace = True)
+        df.to_csv(output, index=False)
+        output.seek(0)
+
+        # Prepare response
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = f"attachment; filename=chess_report_{slug}.csv"
+        response.headers["Content-type"] = "text/csv"
+        return response
+
+    except Exception as e:
+        logger.exception(f"CSV generation failed for {slug}")
+        return _render_error(f"Could not generate CSV: {str(e)}", 500)
 
 # ----------------------
 # Helper Functions
@@ -216,7 +259,7 @@ def create_and_store_report(params: dict) -> str:
     
     # 3. Save report metadata
     step_start = time.perf_counter()
-    report_id = io.save_report_data(
+    report_id = data_io.save_report_data(
         conn,
         username=params["username"],
         number_of_games=params["max_games"],
@@ -236,9 +279,8 @@ def create_and_store_report(params: dict) -> str:
     
     # 5. Store data
     step_start = time.perf_counter()
-    io.save_processed_game_data(conn, game_df)
-    io.save_df_to_csv(game_df, params["username"])
-    io.save_processed_user_data(conn, user_df)
+    data_io.save_processed_game_data(conn, game_df)
+    data_io.save_processed_user_data(conn, user_df)
     step_timings["data_storage"] = time.perf_counter() - step_start
     
     # 6. Create context
@@ -264,7 +306,7 @@ def create_and_store_report(params: dict) -> str:
     )
 
     # Save execution_time in the reports table
-    io.save_report_execution_time(conn, report_id, round(total_time,3))
+    data_io.save_report_execution_time(conn, report_id, round(total_time,3))
     
     return slug
 
@@ -363,7 +405,7 @@ def _render_error(error_message: str, status_code: int = 400) -> str:
 
 # Example usage in your route:
 @app.errorhandler(404)
-def page_not_found():
+def page_not_found(error):
     return _render_error("Page not found", 404)
 
 @app.errorhandler(500)
