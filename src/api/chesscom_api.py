@@ -1,5 +1,6 @@
 import io
 from datetime import datetime
+import chess
 import chess.pgn
 import requests
 
@@ -30,6 +31,12 @@ def extract_rating_data(stats, mode):
     games = sum(record.get(key, 0) for key in ["win", "draw", "loss"])
     return {"rating": rating, "games": games, "prog": 0}
 
+def convert_to_milliseconds(df):
+    # Convert Chess.com timestamps (s → ms)
+    df['createdAt'] = df['createdAt'] * 1000
+    df['lastMoveAt'] = df['lastMoveAt'] * 1000
+    return df
+
 def build_user_data(profile, stats):
     return {
         "id": profile.get("player_id"),
@@ -41,8 +48,8 @@ def build_user_data(profile, stats):
             "classical": {"rating": 0, "games": 0, "prog": 0},
             "puzzle": {"rating": 0, "games": 0, "prog": 0},
         },
-        "createdAt": profile.get("joined"),
-        "seenAt": profile.get("last_online"),
+        "createdAt": profile.get("joined") * 1000,
+        "seenAt": profile.get("last_online") * 1000,
         "playTime": {"total": None, "tv": None},
         "url": profile.get("url")
     }
@@ -69,7 +76,7 @@ def fetch_games_chesscom(username, target_count, time_class=None):
     for url in reversed(archives):
         if len(selected) >= target_count:
             break
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, timeout=60)
         r.raise_for_status()
         for game in r.json().get("games", []):
             if time_class and game.get("time_class") != time_class:
@@ -116,9 +123,28 @@ def pgn_str_to_json(pgn_str):
 
 def datetime_str_to_unix(date_str, time_str):
     try:
-        return int(datetime.strptime(f"{date_str} {time_str}", "%Y.%m.%d %H:%M:%S").timestamp())
+        return int(datetime.strptime(f"{date_str} {time_str}", "%Y.%m.%d %H:%M:%S").timestamp()) * 1000
     except Exception:
         return None
+    
+def convert_moves(move_string):
+    """Convert chess.com UCI moves to standard algebraic notation"""
+    if not move_string:
+        return ""
+    
+    board = chess.Board()
+    san_moves = []
+    
+    for uci_move in move_string.split():
+        try:
+            move = chess.Move.from_uci(uci_move)
+            san_moves.append(board.san(move))
+            board.push(move)
+        except ValueError:
+            # Fallback for invalid moves
+            san_moves.append(uci_move)
+    
+    return " ".join(san_moves)
 
 def transform_game(game):
     try:
@@ -128,17 +154,18 @@ def transform_game(game):
         created_at = datetime_str_to_unix(pgn_data['metadata'].get('UTCDate', ''), pgn_data['metadata'].get('UTCTime', ''))
         last_move_at = datetime_str_to_unix(pgn_data['metadata'].get('EndDate', ''), pgn_data['metadata'].get('EndTime', ''))
         game_status = translate_result(pgn_data['metadata'].get('Termination', ''))
-        moves = " ".join(pgn_data['moves'])
+        raw_moves = " ".join(pgn_data['moves']) # moves in different nottation from lichess
+        moves = convert_moves(raw_moves)
         result = pgn_data['metadata'].get('Result', '')
         game_winner = 'white' if result == "1-0" else 'black' if result == "0-1" else None
         eco_url = pgn_data['metadata'].get('ECOUrl', '')
-        clock_initial = pgn_data['metadata'].get('time_control', '').split("+")[0]
-        clock_increment = pgn_data['metadata'].get('time_control', '').split("+")[0]
+        clock_initial = pgn_data['metadata'].get('TimeControl', '').split("+")[0]
+        clock_increment = pgn_data['metadata'].get('TimeControl', '').split("+")[1]
 
         return {
             'id': game_id,
             'rated': game.get('rated'),
-            'variant': game.get('rules'),
+            'variant': "standard",
             'speed': game.get('time_class'),
             'time_control_with_increment': game.get('time_control'),
             'perf': None,
