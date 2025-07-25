@@ -64,7 +64,7 @@ def collect_user_data(username):
 # Collect chess.com games data
 # ----------------------
 
-def fetch_games_chesscom(username, target_count, time_class=None):
+def fetch_games_chesscom(username, target_count, time_class):
     ARCHIVES_URL = f"https://api.chess.com/pub/player/{username}/games/archives"
     headers = {
         "User-Agent": "Mozilla/5.0"
@@ -168,7 +168,8 @@ def transform_game(game):
         opening_eco = pgn_data['metadata'].get('ECO', '')
         opening_name = eco_to_opening(opening_eco)
         clock_initial = pgn_data['metadata'].get('TimeControl', '').split("+")[0]
-        clock_increment = pgn_data['metadata'].get('TimeControl', '').split("+")[1]
+        time_control = pgn_data['metadata'].get('TimeControl', '')
+        clock_increment = time_control.split("+")[1] if "+" in time_control else None
 
         return {
             'id': game_id,
@@ -202,7 +203,7 @@ def transform_game(game):
             'fullId': None,
             'winner': game_winner,
             'opening': {
-                'eco': pgn_data['metadata'].get('ECO'),
+                'eco': opening_eco,
                 'name': opening_name,
                 'ply': None
             },
@@ -222,7 +223,7 @@ def transform_game(game):
         print(f"Error transforming game: {e}")
         return None
 
-def get_games(username, target_count, time_class=None):
+def get_games(username, target_count, time_class):
     raw_games = fetch_games_chesscom(username, target_count, time_class)
     transformed_games = []
     for game in raw_games:
