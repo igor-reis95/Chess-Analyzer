@@ -126,14 +126,16 @@ def calculate_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
             return f'¼+{increment}'
         return f'{time_control // 60}+{increment}'
 
-    if df['source'][0] == 'lichess':
+    if df['source'][0] != 'chess.com':
         df['clock_time_control'] = pd.to_numeric(df['clock_time_control'], errors='coerce')
         df['clock_increment'] = pd.to_numeric(df['clock_increment'], errors='coerce')
         df['time_control_with_increment'] = df.apply(
             lambda row: format_time_control(row['clock_time_control'], row['clock_increment']),
             axis=1
         )
-
+    else:
+        df['source'] = 'lichess.org' # Did not find where to put this
+        
     return df
 
 
