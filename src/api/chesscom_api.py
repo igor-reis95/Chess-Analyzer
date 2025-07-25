@@ -1,5 +1,6 @@
 import io
 from datetime import datetime
+import pandas as pd
 import chess
 import chess.pgn
 import requests
@@ -146,6 +147,12 @@ def convert_moves(move_string):
     
     return " ".join(san_moves)
 
+def eco_to_opening(eco_code: str) -> str:
+    """Returns the first opening name for a given ECO code."""
+    eco_df = pd.read_csv("data/opening_ecos.csv")
+    eco_mapping = eco_df.drop_duplicates("eco").set_index("eco")["name"].to_dict()
+    return eco_mapping.get(eco_code, "Unknown Opening")
+
 def transform_game(game):
     try:
         pgn_data = pgn_str_to_json(game['pgn'])
@@ -158,7 +165,8 @@ def transform_game(game):
         moves = convert_moves(raw_moves)
         result = pgn_data['metadata'].get('Result', '')
         game_winner = 'white' if result == "1-0" else 'black' if result == "0-1" else None
-        eco_url = pgn_data['metadata'].get('ECOUrl', '')
+        opening_eco = pgn_data['metadata'].get('ECO', '')
+        opening_name = eco_to_opening(opening_eco)
         clock_initial = pgn_data['metadata'].get('TimeControl', '').split("+")[0]
         clock_increment = pgn_data['metadata'].get('TimeControl', '').split("+")[1]
 
@@ -195,7 +203,7 @@ def transform_game(game):
             'winner': game_winner,
             'opening': {
                 'eco': pgn_data['metadata'].get('ECO'),
-                'name': eco_url.split("openings/")[-1] if "openings/" in eco_url else None,
+                'name': opening_name,
                 'ply': None
             },
             'moves': moves,
