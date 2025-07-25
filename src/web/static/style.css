@@ -161,6 +161,61 @@ h1, h2, h3, h4, h5, h6 {
     gap: 0.5rem;
 }
 
+.platform-toggle-group {
+  display: flex;
+  gap: 10px;
+}
+
+.platform-toggle {
+  flex: 1;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 2px solid #4a5568; /* gray border */
+  background-color: #2d3748; /* dark bg */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  color: #a0aec0; /* gray text */
+  user-select: none;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.platform-toggle img {
+  height: 20px;
+  width: 20px;
+}
+
+.platform-toggle input[type="radio"] {
+  display: none;
+}
+
+/* When selected */
+.platform-toggle input[type="radio"]:checked + .label-content {
+  background-color: #2f855a; /* green background */
+  border-color: #2f855a;
+  color: white;
+}
+
+/* Label content container to style text and image */
+.label-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+  border-radius: 6px;
+  padding: 6px 12px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Make the whole label clickable */
+.platform-toggle:hover .label-content {
+  background-color: #4a5568;
+  color: white;
+}
+
 /* Responsive Behavior */
 @media (min-width: 768px) {
     .graph-and-insights {
