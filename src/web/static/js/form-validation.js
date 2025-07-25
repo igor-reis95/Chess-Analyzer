@@ -44,10 +44,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 let apiUrl = '';
                 let errorMessage = '';
 
-                if (platform === 'lichess') {
+                if (platform === 'lichess.org') {
                     apiUrl = `https://lichess.org/api/user/${encodeURIComponent(username)}`;
                     errorMessage = '✗ Username not found on Lichess';
-                } else if (platform === 'chesscom') {
+                } else if (platform === 'chess.com') {
                     apiUrl = `https://api.chess.com/pub/player/${encodeURIComponent(username)}`;
                     errorMessage = '✗ Username not found on Chess.com';
                 }

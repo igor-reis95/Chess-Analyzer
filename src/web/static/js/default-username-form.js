@@ -4,8 +4,8 @@ const usernameInput = document.getElementById('username');
 
 // Default usernames for each platform
 const DEFAULT_USERNAMES = {
-lichess: 'guki1124',
-chesscom: 'gukeshdommaraju'
+    'lichess.org': 'IgorSReis',
+    'chess.com': 'IgorSReis'
 };
 
 // Add change event listeners to platform radios

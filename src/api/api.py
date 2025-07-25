@@ -12,17 +12,17 @@ HEADERS = {
 }
 
 def get_games(username, max_games, perf_type, platform):
-    if platform == 'chesscom':
+    if platform == 'chess.com':
         return chesscom_api.get_games(username, max_games, perf_type)
-    if platform == 'lichess':
+    if platform == 'lichess.org':
         return lichess_api.get_games(username, max_games, perf_type)
     logger.warning(f"Unsupported platform '{platform}' in get_games()")
     return None
 
 def collect_user_data(username, platform):
-    if platform == 'chesscom':
+    if platform == 'chess.com':
         return chesscom_api.collect_user_data(username)
-    if platform == 'lichess':
+    if platform == 'lichess.org':
         return lichess_api.collect_user_data(username)
     logger.warning(f"Unsupported platform '{platform}' in collect_user_data()")
     return None

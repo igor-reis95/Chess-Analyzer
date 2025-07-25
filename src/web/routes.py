@@ -147,8 +147,8 @@ def _validate_inputs(form_data: dict) -> dict:
     if not re.match(r"^[\w-]{3,20}$", username):
         raise ValueError("Username: 3-20 chars (letters, numbers, _-)")
 
-    if platform not in ["lichess", "chesscom"]:
-        raise ValueError("Platform must be 'lichess' or 'chesscom'")
+    if platform not in ["lichess.org", "chess.com"]:
+        raise ValueError("Platform must be 'lichess.org' or 'chess.com'")
 
     # Business logic
     if max_games > MAX_GAMES_LIMIT:
