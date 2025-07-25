@@ -226,16 +226,12 @@
                 
                 <!-- Moved inside the flex container -->
                 <div class="d-flex gap-2">
-                    <form method="POST" action="/download_csv">
-                        {% for key, value in form_data.items() %}
-                            <input type="hidden" name="{{ key }}" value="{{ value }}">
-                        {% endfor %}
-                        <button type="submit" class="btn btn-sm rounded-pill px-3 hover-teal" 
-                                title="Download CSV"
-                                style="background-color: #1c4e4b; color: white; border: none;">
-                            <i class="fas fa-download me-1"></i> Download CSV
-                        </button>
-                    </form>
+                    <a href="{{ url_for('download_csv', slug=report_slug) }}" 
+                    class="btn btn-sm rounded-pill px-3 hover-teal" 
+                    title="Download CSV"
+                    style="background-color: #1c4e4b; color: white; border: none;">
+                        <i class="fas fa-download me-1"></i> Download CSV
+                    </a>
                 </div>
             </div>
             <button class="btn btn-sm rounded-pill px-3 mb-3 hover-teal" type="button"
@@ -305,7 +301,7 @@
             <!-- Win Rate Chart -->
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Win Rate</h3>
+                    <h3 class="mb-3">Win Rate for {{ games_table|length }} games of {{ games_table[0]['perf'] }}</h3>
                     <div class="row">
                         <!-- Chart Column -->
                         <div class="col-md-8">
