@@ -117,6 +117,20 @@ def save_report_data(conn, username, number_of_games, time_control, platform, sl
         conn.rollback()
         raise RuntimeError(f"Database error: {e} at save_report_data")
     
+def save_report_execution_time(conn, report_id, execution_time):
+    try:
+        with conn.cursor() as cur:
+            update_sql = """
+                UPDATE reports 
+                SET execution_time = %s 
+                WHERE id = %s
+            """
+            cur.execute(update_sql, (execution_time, report_id))
+            conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise RuntimeError(f"Database error: {e} at save_report_execution_time")
+    
 def get_report_by_slug(conn, slug: str) -> dict | None:
     with conn.cursor() as cur:
         cur.execute("""
