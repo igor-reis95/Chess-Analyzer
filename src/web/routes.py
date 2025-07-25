@@ -75,33 +75,43 @@ def index():
 
 @app.route("/report/<slug>")
 def report_view(slug):
-    # If accessing from form.html, use data in memory
-    if slug in REPORT_CONTEXT_CACHE:
-        context = REPORT_CONTEXT_CACHE.pop(slug)  # Use once and clear
-    else:
-        # If accessing report directly through URL, use data from DB
-        conn = psycopg2.connect(DATABASE_URL)
-        try:
-            report = io.get_report_by_slug(conn, slug)
-            if report is None:
-                return _render_error("Report not found", status_code=404)
+    try:
+        # If accessing from form.html, use data in memory
+        if slug in REPORT_CONTEXT_CACHE:
+            context = REPORT_CONTEXT_CACHE.pop(slug)  # Use once and clear
+        else:
+            # Accessing report directly from DB
+            try:
+                conn = psycopg2.connect(DATABASE_URL)
+            except:
+                return _render_error("Database connection failed", 500)
 
-            report_id = report["id"]
-            params = {
-                "username": report["username"],
-                "max_games": report["number_of_games"],
-                "perf_type": report["time_control"],
-                "platform": report["platform"]
-            }
-            games_data = io.get_games_by_report_id(conn, report_id)
-            user_data = io.get_user_by_report_id(conn, report_id)
+            try:
+                report = io.get_report_by_slug(conn, slug)
+                if report is None:
+                    return _render_error("Report not found", 404)
 
-            context = _generate_template_context(params, games_data, user_data)
+                report_id = report["id"]
+                params = {
+                    "username": report["username"],
+                    "max_games": report["number_of_games"],
+                    "perf_type": report["time_control"],
+                    "platform": report["platform"]
+                }
 
-        finally:
-            conn.close()
+                games_data = io.get_games_by_report_id(conn, report_id)
+                user_data = io.get_user_by_report_id(conn, report_id)
 
-    return render_template("result.html", **context)
+                context = _generate_template_context(params, games_data, user_data)
+            finally:
+                conn.close()
+
+        return render_template("result.html", **context)
+
+    except Exception:
+        logger.exception("Unexpected error in report_view")
+        return _render_error("An unexpected error occurred", 500)
+
 
 # ----------------------
 # Helper Functions
@@ -219,9 +229,9 @@ def create_and_store_report(params: dict) -> str:
     # 4. Prepare DataFrames
     step_start = time.perf_counter()
     game_df = game_processor.get_dataframe()
-    game_df["reports_id"] = report_id
+    game_df["report_id"] = report_id
     user_df = user_processor.get_dataframe()
-    user_df["reports_id"] = report_id
+    user_df["report_id"] = report_id
     step_timings["prepare_dataframes"] = time.perf_counter() - step_start
     
     # 5. Store data
@@ -252,6 +262,9 @@ def create_and_store_report(params: dict) -> str:
         f"6. Context Creation: {step_timings['context_creation']:.3f}s\n"
         f"Total Execution: {total_time:.3f}s"
     )
+
+    # Save execution_time in the reports table
+    io.save_report_execution_time(conn, report_id, round(total_time,3))
     
     return slug
 
