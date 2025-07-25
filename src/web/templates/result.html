@@ -40,8 +40,19 @@
                                 <div class="fw-bold">{{ user_data.last_seen }}</div>
                             </div>
                             <div class="col-4">
-                                <div class="text-muted small">Total Play Time</div>
-                                <div class="fw-bold">{{ user_data.play_time }}</div>
+                                <div class="text-muted small d-flex align-items-center gap-2">
+                                    Total Play Time
+                                    {% if not user_data.play_time and user_data.platform == 'chess.com' %}
+                                    <span class="text-warning" 
+                                        data-bs-toggle="tooltip" 
+                                        title="Chess.com API doesn't provide total play time statistics">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="fw-bold {{ 'text-muted' if not user_data.play_time }}">
+                                    {{ user_data.play_time if user_data.play_time else 'Not available' }}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -87,9 +98,22 @@
                     <!-- Classical -->
                     <div class="col-md-3 col-6">
                         <div class="p-3 border rounded text-center bg-light">
-                            <div class="small text-muted">Classical</div>
-                            <div class="h4 fw-bold my-1">{{ user_data.classical_rating }}</div>
-                            <div class="small text-muted mt-1">{{ user_data.classical_games }} games</div>
+                            <div class="small text-muted d-flex justify-content-center align-items-center gap-1">
+                                Classical
+                                {% if not user_data.classical_rating and user_data.platform == 'chess.com' %}
+                                <span class="text-warning" 
+                                    data-bs-toggle="tooltip" 
+                                    title="Classical rating data not available from Chess.com">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="h4 fw-bold my-1 {{ 'text-muted' if not user_data.classical_rating }}">
+                                {{ user_data.classical_rating if user_data.classical_rating else 'N/A' }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                {{ user_data.classical_games if user_data.classical_games else '0' }} games
+                            </div>
                         </div>
                     </div>
 
@@ -152,14 +176,29 @@
                     <!-- Puzzle Stats -->
                     <div class="col-md-6">
                         <div class="p-3 border rounded bg-light h-100">
-                            <h6><i class="fas fa-puzzle-piece me-2"></i>Puzzle Stats</h6>
+                            <h6 class="d-flex align-items-center">
+                                <i class="fas fa-puzzle-piece me-2"></i>
+                                Puzzle Stats
+                                {% if user_data.platform == 'chess.com' %}
+                                <span class="text-warning ms-1" 
+                                    data-bs-toggle="tooltip" 
+                                    title="Limited puzzle data available from Chess.com">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                </span>
+                                {% endif %}
+                            </h6>
+                            
                             <div class="d-flex justify-content-between py-2 border-bottom">
                                 <span class="text-muted">Puzzle Rating</span>
-                                <span class="fw-bold">{{ user_data.puzzle_rating }}</span>
+                                <span class="fw-bold {{ 'text-muted' if not user_data.puzzle_rating }}">
+                                    {{ user_data.puzzle_rating if user_data.puzzle_rating else 'N/A' }}
+                                </span>
                             </div>
                             <div class="d-flex justify-content-between py-2 border-bottom">
                                 <span class="text-muted">Puzzles Solved</span>
-                                <span class="fw-bold">{{ user_data.puzzle_games }}</span>
+                                <span class="fw-bold {{ 'text-muted' if not user_data.puzzle_games }}">
+                                    {{ user_data.puzzle_games if user_data.puzzle_games else 'N/A' }}
+                                </span>
                             </div>
                         </div>
                     </div>
