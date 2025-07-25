@@ -48,7 +48,7 @@ def format_evaluation(score):
 
 def get_readable_eval(score):
     if score is None:
-        return "No evaluation"
+        return None
     if score == float('inf'):
         return "White mates"
     elif score == float('-inf'):
@@ -57,35 +57,66 @@ def get_readable_eval(score):
 
 # ---------- Core Evaluation Pipeline ----------
 
-def evaluate_position_from_stage(df, stage_name):
-    if stage_name == 'opening':
-        division_column = 'division_middle'
-    else:
-        division_column = 'division_end'
-    fen_col = f"{stage_name}_fen"
-    eval_raw_col = f"{stage_name}_eval_raw"
-    eval_col = f"{stage_name}_eval"
-
-    # Generate FENs
-    def extract_fen(row):
-        if pd.isna(row.get(division_column)) or not isinstance(row.get('moves_split'), list):
-            return None
+def evaluate_opening_position(df, fallback_cutoff=15):
+    """
+    Evaluate opening positions using either:
+    1. division_middle when available (Lichess)
+    2. Fixed move cutoff when division_middle is empty (Chess.com)
+    
+    Args:
+        df: DataFrame containing game data
+        fallback_cutoff: Move number to use when division_middle is empty
+        
+    Returns:
+        DataFrame with added evaluation columns
+    """
+    # Column names
+    fen_col = 'opening_fen'
+    eval_raw_col = 'opening_eval_raw'
+    eval_col = 'opening_eval'
+    
+    def get_opening_fen(row):
+        """Extract FEN using best available method"""
         try:
-            division = int(row[division_column])
-            moves = row['moves_split'][:division]
-            return convert_moves_to_fen(' '.join(moves))
+            if not isinstance(row.get('moves_split'), list):
+                return None
+                
+            # Try Lichess division_middle first
+            if pd.notna(row.get('division_middle')):
+                division = int(row['division_middle'])
+                moves = row['moves_split'][:division]
+                source = 'division_middle'
+            # Fallback to fixed cutoff
+            else:
+                cutoff = min(fallback_cutoff, len(row['moves_split']))
+                if cutoff < fallback_cutoff:  # Game too short
+                    return None
+                moves = row['moves_split'][:cutoff]
+                source = f'move_{fallback_cutoff}'
+                
+            fen = convert_moves_to_fen(' '.join(moves))
+            return (fen, source) if fen else None
+            
         except Exception as e:
-            logging.warning(f"Error extracting FEN for {stage_name}: {e}")
+            logging.warning(f"Error extracting opening FEN: {e}")
             return None
 
-    df[fen_col] = df.apply(extract_fen, axis=1)
-
-    # Evaluate with Stockfish
+    # Extract FENs and their sources
+    fen_results = df.apply(get_opening_fen, axis=1)
+    df[fen_col] = fen_results.apply(lambda x: x[0] if x else None)
+    df['opening_eval_source'] = fen_results.apply(lambda x: x[1] if x else None)
+    
+    # Batch evaluate with Stockfish
     df[eval_raw_col] = get_stockfish_eval_batch(df[fen_col].tolist())
-
-    # Format evaluation
-    df[eval_col] = df[eval_raw_col].apply(format_evaluation).apply(get_readable_eval)
-
+    
+    # Format evaluations
+    df[eval_col] = (
+        df[eval_raw_col]
+        .dropna()
+        .apply(format_evaluation)
+        .apply(get_readable_eval)
+    )
+    
     return df
 
 # ---------- Apply to DataFrame ----------
@@ -95,7 +126,7 @@ def run_evaluation_pipeline(df):
     df['moves_split'] = df['moves'].apply(lambda x: x.split() if isinstance(x, str) else [])
 
     # Evaluate opening and middlegame stages
-    df = evaluate_position_from_stage(df, stage_name="opening")
-    df = evaluate_position_from_stage(df, stage_name="middlegame")
+    df = evaluate_opening_position(df)
+    df = evaluate_opening_position(df)
 
     return df
