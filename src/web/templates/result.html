@@ -284,7 +284,13 @@
                                     <td>{{ game['status'] }}</td>
                                     <td>{{ game['time_control_with_increment'] }}</td>
                                     <td>
-                                        <a href="https://lichess.org/{{game['match_id']}}" target="_blank" class="opening-link">
+                                        <a href="
+                                            {% if platform == 'lichess.org' %}
+                                                https://lichess.org/{{game['match_id']}}
+                                            {% else %}
+                                                https://chess.com/game/live/{{game['match_id']}}
+                                            {% endif %}
+                                        " target="_blank" class="opening-link">
                                             View game
                                         </a>
                                     </td>
