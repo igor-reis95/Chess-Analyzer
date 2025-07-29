@@ -177,7 +177,7 @@ def transform_game(game):
             'variant': "standard",
             'speed': game.get('time_class'),
             'time_control_with_increment': game.get('time_control'),
-            'perf': None,
+            'perf': game.get('time_class'),
             'createdAt': created_at,
             'lastMoveAt': last_move_at,
             'status': game_status,
