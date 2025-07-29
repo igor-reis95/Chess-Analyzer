@@ -3,6 +3,9 @@ body {
     background-color: #ecebe9;
     font-family: 'Roboto', sans-serif;
     color: #2a2a2a;
+    position: relative;
+    padding-bottom: 60px;
+    min-height: 100vh;
 }
 
 .lichess-card {
@@ -12,19 +15,23 @@ body {
     border: none;
 }
 
+.lichess-form {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Lichess-like subtle shadow */
+}
+
 .card-header {
     background-color: #f8f9fa !important;
     border-bottom: 1px solid #e9ecef;
 }
 
 .btn-lichess {
-    background-color: #3288d1;
-    color: white;
-    border: none;
-}
-
+      background-color: #2fa4b8; /* Lichess blue */
+      color: white;
+    }
 .btn-lichess:hover {
-    background-color: #2a7abf; /* Slightly darker on hover */
+    background-color: #2a8f9e; /* Slightly darker on hover */
 }
 
 .table {
@@ -62,20 +69,19 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .footer {
-    margin-top: auto;
+    margin-top: auto; /* Pushes footer to bottom */
     padding: 1.5rem 0;
     text-align: center;
 }
 
 .social-icon {
-    color: #2fa4b8;
+    color: #2fa4b8; /* Match Lichess blue */
     font-size: 1.5rem;
     margin: 0 10px;
-    transition: all 0.2s ease;
+    transition: transform 0.2s;
 }
-
 .social-icon:hover {
-    color: #2a8f9e;
+    color: #2a8f9e; /* Darker on hover */
     transform: scale(1.1);
 }
 
