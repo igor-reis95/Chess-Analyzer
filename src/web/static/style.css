@@ -197,6 +197,27 @@ h1, h2, h3, h4, h5, h6 {
   display: none;
 }
 
+.platform-btn {
+  border: 2px solid transparent !important;
+  position: relative;
+}
+
+.selected-indicator {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-check:checked + .platform-btn .selected-indicator {
+  opacity: 1;
+}
+
 /* When selected */
 .platform-toggle input[type="radio"]:checked + .label-content {
   background-color: #2f855a; /* green background */
