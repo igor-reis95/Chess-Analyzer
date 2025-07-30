@@ -297,7 +297,7 @@
             <!-- Win Rate Chart -->
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Win Rate for {{ games_table|length }} games of {{ games_table[0]['perf'] }}</h3>
+                    <h3 class="mb-3">Win Rate for {{ count }} games of {{ games_table[0]['perf'] }}</h3>
                     <div class="row">
                         <!-- Chart Column -->
                         <div class="col-md-8">
@@ -525,7 +525,7 @@
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
                         <h3>Lichess Opening Analysis</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="Made with the analysis of 2 million games from may/2025 from the Lichess public database">
+                        <span class="ms-2" data-bs-toggle="tooltip" title="Made with the analysis of 2 million games from may/2025 from the Lichess public database. This is mostly for curiosity sake.">
                             <i class="bi bi-info-circle"></i>
                         </span>
                     </div>
