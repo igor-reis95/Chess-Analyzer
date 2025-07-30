@@ -194,6 +194,46 @@ def plot_opening_stats(df, color="overall"):
     img.seek(0)
     return base64.b64encode(img.getvalue()).decode()
 
+def plot_conversion_comparison(player_stats, lichess_stats, 
+                             stat_key, title):
+    """
+    Plot comparison between player and Lichess playerbase for any conversion stat
+    
+    Parameters:
+        player_stats: dict with player's statistics
+        lichess_stats: dict with Lichess reference stats
+        stat_key: key to extract from both stats dictionaries
+        title: plot title
+        colors: tuple of two colors for the bars
+    """
+    player_value = player_stats[stat_key]
+    lichess_value = lichess_stats['conversion_stats'][stat_key]
+    
+    plt.figure(figsize=(10, 5))
+    metrics = ['You', 'Lichess Playerbase']
+    values = [player_value, lichess_value]
+    
+    bars = plt.bar(metrics, values, color=('#93b674', '#d49b54'))
+    plt.title(title)
+    plt.ylabel('Percentage (%)')
+    plt.ylim(0, 100)
+    
+    # Add value labels
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                f'{height:.1f}%',
+                ha='center', va='bottom')
+    
+    plt.grid(axis='y', linestyle='--', alpha=0.7)
+    
+    # Save plot to base64 string
+    img = io.BytesIO()
+    plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    img.seek(0)
+    return base64.b64encode(img.getvalue()).decode()
+
 def lichess_popular_openings(lichess_analysis_data):
     # Retrieve popular openings data, turn it into a dataframe and return the top 5
     popular_openings_df = pd.DataFrame(lichess_analysis_data["popular_openings"]).head()
@@ -275,46 +315,6 @@ def lichess_successful_openings(lichess_analysis_data, color):
 
     plt.tight_layout()
 
-    # Save plot to base64 string
-    img = io.BytesIO()
-    plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
-    plt.close()
-    img.seek(0)
-    return base64.b64encode(img.getvalue()).decode()
-
-def plot_conversion_comparison(player_stats, lichess_stats, 
-                             stat_key, title):
-    """
-    Plot comparison between player and Lichess playerbase for any conversion stat
-    
-    Parameters:
-        player_stats: dict with player's statistics
-        lichess_stats: dict with Lichess reference stats
-        stat_key: key to extract from both stats dictionaries
-        title: plot title
-        colors: tuple of two colors for the bars
-    """
-    player_value = player_stats[stat_key]
-    lichess_value = lichess_stats['conversion_stats'][stat_key]
-    
-    plt.figure(figsize=(10, 5))
-    metrics = ['You', 'Lichess Playerbase']
-    values = [player_value, lichess_value]
-    
-    bars = plt.bar(metrics, values, color=('#93b674', '#d49b54'))
-    plt.title(title)
-    plt.ylabel('Percentage (%)')
-    plt.ylim(0, 100)
-    
-    # Add value labels
-    for bar in bars:
-        height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width()/2., height,
-                f'{height:.1f}%',
-                ha='center', va='bottom')
-    
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    
     # Save plot to base64 string
     img = io.BytesIO()
     plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
