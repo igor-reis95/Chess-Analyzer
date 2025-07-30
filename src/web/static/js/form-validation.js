@@ -3,10 +3,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = document.getElementById('username');
         const form = document.querySelector('form');
         const spinner = document.getElementById('loading-spinner');
+        const submitBtn = form.querySelector('button[type="submit"]');
         const invalidFeedback = input.nextElementSibling;
         const platformRadios = document.querySelectorAll('input[name="platform"]');
+        
+        let isValidating = false;
+        let lastValidation = {
+            username: '',
+            platform: '',
+            valid: false
+        };
 
-        if (!input || !form || !spinner) {
+        if (!input || !form || !spinner || !submitBtn) {
             console.warn('Required elements not found');
             return;
         }
@@ -18,28 +26,50 @@ document.addEventListener('DOMContentLoaded', function () {
             return selected ? selected.value : 'lichess';
         }
 
+        function setFormState(validating, valid = false) {
+            isValidating = validating;
+            submitBtn.disabled = validating || !valid;
+            
+            if (validating) {
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating username...';
+            } else {
+                submitBtn.textContent = 'Analyze Games';
+            }
+        }
+
         platformRadios.forEach(radio => {
             radio.addEventListener('change', () => {
-                // Clear previous errors
                 input.classList.remove('is-invalid');
                 input.setCustomValidity('');
-
-                // Optionally re-validate username if not empty
+                lastValidation.valid = false;
+                setFormState(false, false);
+                
                 if (input.value.trim()) {
-                    input.dispatchEvent(new Event('blur'));
+                    validateUsername();
                 }
             });
         });
 
-        input.addEventListener('blur', async () => {
+        async function validateUsername() {
             const username = input.value.trim().toLowerCase();
+            const platform = getSelectedPlatform();
+            
             if (!username) {
                 input.classList.remove('is-invalid');
+                lastValidation.valid = false;
+                setFormState(false, false);
                 return;
             }
 
-            const platform = getSelectedPlatform();
+            // Skip if we already validated this username/platform combo
+            if (lastValidation.username === username && 
+                lastValidation.platform === platform && 
+                lastValidation.valid) {
+                return;
+            }
 
+            setFormState(true);
+            
             try {
                 let apiUrl = '';
                 let errorMessage = '';
@@ -59,32 +89,53 @@ document.addEventListener('DOMContentLoaded', function () {
                         input.classList.add('is-invalid');
                         invalidFeedback.textContent = errorMessage;
                         input.setCustomValidity('Invalid username');
-                    } else {
-                        window.location.href = `/error?message=${encodeURIComponent(platform + ' API error - try again later')}`;
+                        lastValidation.valid = false;
                     }
+                    setFormState(false, false);
                     return;
                 }
 
                 // User exists
                 input.classList.remove('is-invalid');
                 input.setCustomValidity('');
+                lastValidation = {
+                    username: username,
+                    platform: platform,
+                    valid: true
+                };
+                setFormState(false, true);
+                
             } catch (error) {
-                window.location.href = `/error?message=${encodeURIComponent('Network error - please check your connection')}`;
                 console.error('Validation error:', error);
+                setFormState(false, false);
+            }
+        }
+
+        // Debounced validation
+        let debounceTimer;
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            input.classList.remove('is-invalid');
+            input.setCustomValidity('');
+            lastValidation.valid = false;
+            setFormState(false, false);
+        });
+
+        input.addEventListener('blur', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(validateUsername, 300);
+        });
+
+        form.addEventListener('submit', (e) => {
+            if (isValidating || !lastValidation.valid) {
+                e.preventDefault();
+                validateUsername();
+            } else {
+                spinner.style.display = 'block';
             }
         });
 
-        input.addEventListener('input', () => {
-            input.classList.remove('is-invalid');
-            input.setCustomValidity('');
-        });
-
-        form.addEventListener('submit', () => {
-            spinner.style.display = 'block';
-        });
-
     } catch (error) {
-        window.location.href = `/error?message=${encodeURIComponent('Unexpected error - please try again')}`;
         console.error('Form validation error:', error);
     }
 });
