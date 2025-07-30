@@ -7,19 +7,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const invalidFeedback = input.nextElementSibling;
         const platformRadios = document.querySelectorAll('input[name="platform"]');
         
+        const DEFAULT_USERNAME = "IgorSReis";
         let isValidating = false;
-        let lastValidation = {
-            username: '',
-            platform: '',
-            valid: false
-        };
 
         if (!input || !form || !spinner || !submitBtn) {
             console.warn('Required elements not found');
             return;
         }
-
-        input.setCustomValidity('');
 
         function getSelectedPlatform() {
             const selected = Array.from(platformRadios).find(r => r.checked);
@@ -31,40 +25,28 @@ document.addEventListener('DOMContentLoaded', function () {
             submitBtn.disabled = validating || !valid;
             
             if (validating) {
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating username...';
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating...';
             } else {
                 submitBtn.textContent = 'Analyze Games';
             }
         }
 
-        platformRadios.forEach(radio => {
-            radio.addEventListener('change', () => {
-                input.classList.remove('is-invalid');
-                input.setCustomValidity('');
-                lastValidation.valid = false;
-                setFormState(false, false);
-                
-                if (input.value.trim()) {
-                    validateUsername();
-                }
-            });
-        });
+        // Skip validation for default username
+        function shouldSkipValidation() {
+            return input.value.trim() === DEFAULT_USERNAME;
+        }
 
         async function validateUsername() {
+            if (shouldSkipValidation()) {
+                setFormState(false, true);
+                return;
+            }
+
             const username = input.value.trim().toLowerCase();
             const platform = getSelectedPlatform();
             
             if (!username) {
-                input.classList.remove('is-invalid');
-                lastValidation.valid = false;
                 setFormState(false, false);
-                return;
-            }
-
-            // Skip if we already validated this username/platform combo
-            if (lastValidation.username === username && 
-                lastValidation.platform === platform && 
-                lastValidation.valid) {
                 return;
             }
 
@@ -89,7 +71,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         input.classList.add('is-invalid');
                         invalidFeedback.textContent = errorMessage;
                         input.setCustomValidity('Invalid username');
-                        lastValidation.valid = false;
                     }
                     setFormState(false, false);
                     return;
@@ -98,11 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 // User exists
                 input.classList.remove('is-invalid');
                 input.setCustomValidity('');
-                lastValidation = {
-                    username: username,
-                    platform: platform,
-                    valid: true
-                };
                 setFormState(false, true);
                 
             } catch (error) {
@@ -111,23 +87,31 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // Debounced validation
-        let debounceTimer;
-        input.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            input.classList.remove('is-invalid');
-            input.setCustomValidity('');
-            lastValidation.valid = false;
-            setFormState(false, false);
+        // Clear validation when platform changes
+        platformRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                input.classList.remove('is-invalid');
+                input.setCustomValidity('');
+                if (!shouldSkipValidation() && input.value.trim()) {
+                    validateUsername();
+                }
+            });
         });
 
+        // Validate on blur (except for default username)
         input.addEventListener('blur', () => {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(validateUsername, 300);
+            if (!shouldSkipValidation()) {
+                validateUsername();
+            }
         });
 
         form.addEventListener('submit', (e) => {
-            if (isValidating || !lastValidation.valid) {
+            if (shouldSkipValidation()) {
+                spinner.style.display = 'block';
+                return;
+            }
+            
+            if (isValidating || input.classList.contains('is-invalid')) {
                 e.preventDefault();
                 validateUsername();
             } else {
