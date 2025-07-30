@@ -74,7 +74,7 @@ def eval_per_opening_insights(df, color):
 
     opening_insights = []
 
-    for i, row in df.iterrows():
+    for _, row in df.iterrows():
         opening_name = row['normalized_opening_name']
         avg_eval = round(row['avg_eval'], 2)
 
@@ -117,8 +117,8 @@ def eval_per_opening_insights(df, color):
 def lichess_popular_openings_insights():
     insight = (
         "Among the most popular openings, we see several unorthodox lines, especially A00, "
-        "which includes many offbeat first moves commonly played by beginners. B00 and A40 also appear — "
-        "they represent generic starts with 1.e4 and 1.d4 before transposing into known openings. "
+        "which includes many offbeat first moves commonly played by beginners. A40, B00, D00 also appear — "
+        "they represent generic starts with 1.d4 and 1.e4 before transposing into known openings. "
         "Interestingly, the Scandinavian Defense (B01) stands out among these as a defined and respectable response to 1.e4, "
         "suggesting it's a frequent choice even at early levels."
     )
