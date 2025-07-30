@@ -116,7 +116,7 @@ def evaluate_opening_position(df, fallback_cutoff=15):
         .apply(format_evaluation)
         .apply(get_readable_eval)
     )
-    
+    df[eval_col] = pd.to_numeric(df[eval_col], errors='coerce')
     return df
 
 # ---------- Apply to DataFrame ----------
