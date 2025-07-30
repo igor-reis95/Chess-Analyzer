@@ -1,4 +1,4 @@
-"""Entry point for the Chess Data Coach web application.
+"""Entry point for the Chess Data Analyzer web application.
 
 This script starts the Flask development server when run directly.
 It imports the Flask `app` instance from the web application module
