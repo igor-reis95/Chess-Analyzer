@@ -1,10 +1,16 @@
 """Chess Game Analysis Web Application.
 
-This module provides the main Flask route for analyzing chess game data.
+This module provides the main Flask application for analyzing chess game data.
 It handles user submissions, processes game data through various services,
 and renders visualizations of the analysis results.
+
+Key Components:
+- Routes for form submission, report viewing, and CSV downloads
+- Data processing pipeline for chess games and user stats
+- Visualization and insight generation
+- Error handling and logging
 """
-# pylint: skip-file
+
 import os
 import re
 import io
@@ -12,113 +18,162 @@ import logging
 import json
 import time
 import uuid
-import psycopg2
-import pandas as pd
 from functools import wraps
-from flask import render_template, request, redirect, url_for, make_response
-from src.services.analysis import prepare_winrate_data, calculate_advantage_stats
-import src.services.data_viz as viz
-import src.services.data_io as data_io
+from typing import Any, Dict, Tuple, Union
+
+import pandas as pd
+import psycopg2
+from flask import make_response, redirect, render_template, request, url_for
+
+from src.services.analysis import calculate_advantage_stats, prepare_winrate_data
 import src.services.data_insights as insights
+import src.services.data_io as data_io
+import src.services.data_viz as viz
 from src.services.game_processor import GameProcessor
 from src.services.user_processor import UserProcessor
 from ..webapp import app
 
-# Constant values and logger creation
+# Constants
 MAX_GAMES_LIMIT = 1000
 GAMES_TABLE_PREVIEW = 30
 DATABASE_URL = os.getenv("database_url")
-REPORT_CONTEXT_CACHE = {} # Used to not reconnected to the database when data is in memory
+REPORT_CONTEXT_CACHE = {}  # Used to cache report data in memory
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
+
 
 def log_execution_time(func):
-    """Decorator to log function execution time"""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        logger = logging.getLogger(func.__module__)
-        start_time = time.perf_counter()
+    """Decorator to log function execution time with arguments and result status.
+    
+    Args:
+        func: The function to be decorated
         
+    Returns:
+        The wrapped function with logging capability
+    """
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        start_time = time.perf_counter()
+
         try:
             result = func(*args, **kwargs)
             elapsed = time.perf_counter() - start_time
             logger.info(
-                f"{func.__name__} executed in {elapsed:.4f}s | "
-                f"Args: {str(args)[:100]}... | "
-                f"Kwargs: {str(kwargs)[:100]}..."
+                "%s executed in %.4fs | Args: %s... | Kwargs: %s...",
+                func.__name__,
+                elapsed,
+                str(args)[:100],
+                str(kwargs)[:100]
             )
             return result
         except Exception as e:
             logger.error(
-                f"Error in {func.__name__} after {time.perf_counter()-start_time:.4f}s: {str(e)}",
+                "Error in %s after %.4fs: %s",
+                func.__name__,
+                time.perf_counter()-start_time,
+                str(e),
                 exc_info=True
             )
             raise
 
     return wrapper
 
-# How much time it takes to execute the code
+
 @app.before_request
-def before_request():
+def before_request() -> None:
+    """Start timer before each request to measure processing time."""
     request.start_time = time.time()
 
+
 @app.after_request
-def after_request(response):
+def after_request(response) -> Any:
+    """Log request processing time after each request completes.
+    
+    Args:
+        response: The Flask response object
+        
+    Returns:
+        The original response with timing header
+    """
     execution_time = time.time() - request.start_time
-    app.logger.info(f"Request took {execution_time:.2f} seconds")
+    app.logger.info("Request took %.2f seconds", execution_time)
+    response.headers["X-Execution-Time"] = f"{execution_time:.2f}s"
     return response
 
+
 @app.route("/", methods=["GET", "POST"])
-def index():
-    """Handle root route with minimal logic."""
+def index() -> Union[str, Any]:
+    """Handle root route with form submission and display.
+    
+    Returns:
+        Rendered template or redirect response
+    """
     if request.method == "GET":
         return _show_form()
     return _handle_form_submission(request.form)
 
+
 @app.route("/report/<slug>")
-def report_view(slug):
+def report_view(slug: str) -> Union[str, Any]:
+    """Display analysis report for a given slug.
+    
+    Args:
+        slug: Unique identifier for the report
+        
+    Returns:
+        Rendered report template or error page
+    """
     try:
-        # If accessing from form.html, use data in memory
+        # Try to get cached data first
         if slug in REPORT_CONTEXT_CACHE:
             context = REPORT_CONTEXT_CACHE.pop(slug)  # Use once and clear
-        else:
-            # Accessing report directly from DB
-            try:
-                conn = psycopg2.connect(DATABASE_URL)
-            except:
-                return _render_error("Database connection failed", 500)
+            return render_template("result.html", **context, report_slug=slug)
 
-            try:
-                report = data_io.get_report_by_slug(conn, slug)
-                if report is None:
-                    return _render_error("Report not found", 404)
+        # Fall back to database lookup
+        try:
+            conn = psycopg2.connect(DATABASE_URL)
+            report = data_io.get_report_by_slug(conn, slug)
 
-                report_id = report["id"]
-                params = {
-                    "username": report["username"],
-                    "max_games": report["number_of_games"],
-                    "perf_type": report["time_control"],
-                    "platform": report["platform"]
-                }
+            if report is None:
+                return _render_error("Report not found", 404)
 
-                games_data = data_io.get_games_by_report_id(conn, report_id)
-                user_data = data_io.get_user_by_report_id(conn, report_id)
+            games_data = data_io.get_games_by_report_id(conn, report["id"])
+            user_data = data_io.get_user_by_report_id(conn, report["id"])
 
-                context = _generate_template_context(params, games_data, user_data)
-            finally:
+            params = {
+                "username": report["username"],
+                "max_games": report["number_of_games"],
+                "perf_type": report["time_control"],
+                "platform": report["platform"]
+            }
+
+            context = _generate_template_context(params, games_data, user_data)
+            return render_template("result.html", **context, report_slug=slug)
+
+        except psycopg2.Error as e:
+            logger.error("Database error: %s", str(e))
+            return _render_error("Database connection failed", 500)
+        finally:
+            if 'conn' in locals() and conn:
                 conn.close()
 
-        return render_template("result.html", **context, report_slug = slug)
+    except Exception as e: # pylint: disable=broad-exception-caught
+        logger.exception("Unexpected error in report_view for slug %s", slug)
+        return _render_error(f"An unexpected error occurred: {e}", 500)
 
-    except Exception:
-        logger.exception("Unexpected error in report_view")
-        return _render_error("An unexpected error occurred", 500)
-    
+
 @app.route("/download_csv/<slug>")
-def download_csv(slug):
-    """Handle CSV download requests for saved reports."""
+def download_csv(slug: str) -> Union[Any, str]:
+    """Generate CSV download for a report.
+    
+    Args:
+        slug: Unique identifier for the report
+        
+    Returns:
+        CSV file response or error page
+    """
     try:
-        # Try to get report from cache first
+        # Try cache first
         if slug in REPORT_CONTEXT_CACHE:
             context = REPORT_CONTEXT_CACHE[slug]
             df = pd.DataFrame(context['games_data'])
@@ -127,75 +182,91 @@ def download_csv(slug):
             try:
                 conn = psycopg2.connect(DATABASE_URL)
                 report = data_io.get_report_by_slug(conn, slug)
+
                 if not report:
                     return _render_error("Report not found", 404)
-                
+
                 games_data = data_io.get_games_by_report_id(conn, report["id"])
                 df = pd.DataFrame(games_data)
-                
+
             except psycopg2.Error as e:
-                logger.error(f"Database error: {e}")
+                logger.error("Database error: %s", str(e))
                 return _render_error("Database operation failed", 500)
             finally:
                 if 'conn' in locals() and conn:
                     conn.close()
 
-        # Create CSV in memory
+        # Prepare CSV response
         output = io.StringIO()
-        df.drop(columns=['report_id'], inplace = True)
+        df.drop(columns=['report_id'], inplace=True, errors='ignore')
         df.to_csv(output, index=False)
         output.seek(0)
 
-        # Prepare response
         response = make_response(output.getvalue())
         response.headers["Content-Disposition"] = f"attachment; filename=chess_report_{slug}.csv"
         response.headers["Content-type"] = "text/csv"
         return response
 
-    except Exception as e:
-        logger.exception(f"CSV generation failed for {slug}")
+    except Exception as e: # pylint: disable=broad-exception-caught
+        logger.exception("CSV generation failed for slug %s: %s", slug, str(e))
         return _render_error(f"Could not generate CSV: {str(e)}", 500)
 
-# ----------------------
-# Helper Functions
-# ----------------------
+
 def _show_form() -> str:
-    """Render the empty input form."""
+    """Render the empty input form.
+    
+    Returns:
+        Rendered form template
+    """
     return render_template("form.html")
 
-def _handle_form_submission(form_data: dict) -> str:
-    """Process submitted form data and return results or errors."""
+
+def _handle_form_submission(form_data: Dict) -> Union[str, Any]:
+    """Process submitted form data and return results or errors.
+    
+    Args:
+        form_data: Dictionary of form submission data
+        
+    Returns:
+        Redirect to report or error page
+    """
     try:
         params = _validate_inputs(form_data)
         slug = create_and_store_report(params)
         return _redirect_to_report(slug)
 
     except ValueError as e:
-        logger.warning("Validation failed: %s", e)
-        return _render_error(f"Invalid input: {str(e)}", status_code=400)
-    # pylint: disable=broad-exception-caught
-    except Exception as e:
+        logger.warning("Validation failed: %s", str(e))
+        return _render_error(f"Invalid input: {str(e)}", 400)
+    except Exception as e: # pylint: disable=broad-exception-caught
         logger.exception("Unexpected error during form submission")
-        return _render_error(f"Processing error: {str(e)}")
+        return _render_error(f"Processing error: {str(e)}", 500)
 
-# ----------------------
-# Data Layer
-# ----------------------
-def _validate_inputs(form_data: dict) -> dict:
+
+def _validate_inputs(form_data: Dict) -> Dict:
+    """Validate and sanitize form inputs.
+    
+    Args:
+        form_data: Raw form submission data
+        
+    Returns:
+        Validated and sanitized parameters
+        
+    Raises:
+        ValueError: If any validation fails
+    """
     username = form_data.get("username", "").strip()
     max_games = int(form_data.get("max_games", 0))
     platform = form_data.get("platform", "lichess").lower()
 
-    # Format checks
     if not re.match(r"^[\w-]{3,20}$", username):
         raise ValueError("Username: 3-20 chars (letters, numbers, _-)")
 
     if platform not in ["lichess.org", "chess.com"]:
         raise ValueError("Platform must be 'lichess.org' or 'chess.com'")
 
-    # Business logic
     if max_games > MAX_GAMES_LIMIT:
-        raise ValueError("Maximum 900 games allowed")
+        raise ValueError(f"Maximum {MAX_GAMES_LIMIT} games allowed")
 
     return {
         "username": username,
@@ -204,11 +275,90 @@ def _validate_inputs(form_data: dict) -> dict:
         "platform": platform
     }
 
-def _fetch_and_prepare_data(params: dict) -> tuple:
-    """Fetch and process data. No DB actions."""
+
+@log_execution_time
+def create_and_store_report(params: Dict) -> str:
+    """Create and store a new analysis report.
+    
+    Args:
+        params: Validated report parameters
+        
+    Returns:
+        Unique report slug
+        
+    Raises:
+        RuntimeError: If any step fails
+    """
+    step_timings = {}
+    total_start = time.perf_counter()
+
+    try:
+        # Database connection
+        with psycopg2.connect(DATABASE_URL) as conn:
+            step_start = time.perf_counter()
+            slug = uuid.uuid4().hex[:8]
+
+            # Data processing
+            game_processor, user_processor = _fetch_and_prepare_data(params)
+            step_timings["data_processing"] = time.perf_counter() - step_start
+
+            # Save report metadata
+            report_id = data_io.save_report_data(
+                conn,
+                username=params["username"],
+                number_of_games=params["max_games"],
+                time_control=params["perf_type"],
+                platform=params["platform"],
+                slug=slug
+            )
+
+            # Prepare and save data
+            game_df = game_processor.get_dataframe()
+            game_df["report_id"] = report_id
+            data_io.save_processed_game_data(conn, game_df)
+
+            user_df = user_processor.get_dataframe()
+            user_df["report_id"] = report_id
+            data_io.save_processed_user_data(conn, user_df)
+
+            # Create and cache context
+            context = _generate_template_context(
+                params,
+                game_df,
+                user_df.iloc[0].to_dict()
+            )
+            REPORT_CONTEXT_CACHE[slug] = context
+
+            # Log performance
+            total_time = time.perf_counter() - total_start
+            data_io.save_report_execution_time(conn, report_id, round(total_time, 3))
+
+            logger.info(
+                "Report created for %s in %.3fs (games: %d)",
+                params["username"],
+                total_time,
+                len(game_df)
+            )
+
+            return slug
+
+    except Exception as e:
+        logger.error("Failed to create report: %s", str(e))
+        raise RuntimeError(f"Report creation failed: {str(e)}") from e
+
+
+def _fetch_and_prepare_data(params: Dict) -> Tuple[GameProcessor, UserProcessor]:
+    """Fetch and process game and user data.
+    
+    Args:
+        params: Report parameters
+        
+    Returns:
+        Tuple of (GameProcessor, UserProcessor) instances
+    """
     timings = {}
 
-    # GameProcessor
+    # Process games
     game_start = time.perf_counter()
     game_processor = GameProcessor(
         username=params["username"],
@@ -219,111 +369,56 @@ def _fetch_and_prepare_data(params: dict) -> tuple:
     game_processor.run_all()
     timings["game_processing"] = time.perf_counter() - game_start
 
-    # UserProcessor
+    # Process user
     user_start = time.perf_counter()
-    user_processor = UserProcessor(username=params["username"], platform=params["platform"])
+    user_processor = UserProcessor(
+        username=params["username"],
+        platform=params["platform"]
+    )
     user_processor.fetch_user_data()
     user_processor.process_user_data()
     timings["user_processing"] = time.perf_counter() - user_start
 
-    # Log
     logger.info(
-        f"Performance Breakdown:\n"
-        f"Game Processing: {timings['game_processing']:.2f}s\n"
-        f"User Processing: {timings['user_processing']:.2f}s\n"
+        "Data processing completed in %.2fs (games: %.2fs, user: %.2fs)",
+        sum(timings.values()),
+        timings["game_processing"],
+        timings["user_processing"]
     )
 
     return game_processor, user_processor
 
-@log_execution_time
-def create_and_store_report(params: dict) -> str:
-    """Create report with detailed step timing"""
-    step_timings = {}
-    logger = logging.getLogger(__name__)
-    
-    # Start total timer
-    total_start = time.perf_counter()
-    
-    # 1. Database connection
-    step_start = time.perf_counter()
-    conn = psycopg2.connect(DATABASE_URL)
-    step_timings["db_connection"] = time.perf_counter() - step_start
-    
-    # Generate slug
-    slug = uuid.uuid4().hex[:8]
-    
-    # 2. Data processing
-    step_start = time.perf_counter()
-    game_processor, user_processor = _fetch_and_prepare_data(params)
-    step_timings["data_processing"] = time.perf_counter() - step_start
-    
-    # 3. Save report metadata
-    step_start = time.perf_counter()
-    report_id = data_io.save_report_data(
-        conn,
-        username=params["username"],
-        number_of_games=params["max_games"],
-        time_control=params["perf_type"],
-        platform=params["platform"],
-        slug=slug
-    )
-    step_timings["save_report_metadata"] = time.perf_counter() - step_start
-    
-    # 4. Prepare DataFrames
-    step_start = time.perf_counter()
-    game_df = game_processor.get_dataframe()
-    game_df["report_id"] = report_id
-    user_df = user_processor.get_dataframe()
-    user_df["report_id"] = report_id
-    step_timings["prepare_dataframes"] = time.perf_counter() - step_start
-    
-    # 5. Store data
-    step_start = time.perf_counter()
-    data_io.save_processed_game_data(conn, game_df)
-    data_io.save_processed_user_data(conn, user_df)
-    step_timings["data_storage"] = time.perf_counter() - step_start
-    
-    # 6. Create context
-    step_start = time.perf_counter()
-    user_data = user_df.iloc[0].to_dict()
-    context = _generate_template_context(params, game_df, user_data)
-    REPORT_CONTEXT_CACHE[slug] = context
-    step_timings["context_creation"] = time.perf_counter() - step_start
-    
-    # Calculate total time
-    total_time = time.perf_counter() - total_start
-    
-    # Log detailed breakdown
-    logger.info(
-        f"Report creation breakdown for {params['username']}:\n"
-        f"1. DB Connection: {step_timings['db_connection']:.3f}s\n"
-        f"2. Data Processing: {step_timings['data_processing']:.3f}s\n"
-        f"3. Save Metadata: {step_timings['save_report_metadata']:.3f}s\n"
-        f"4. Prepare DataFrames: {step_timings['prepare_dataframes']:.3f}s\n"
-        f"5. Data Storage: {step_timings['data_storage']:.3f}s\n"
-        f"6. Context Creation: {step_timings['context_creation']:.3f}s\n"
-        f"Total Execution: {total_time:.3f}s"
-    )
 
-    # Save execution_time in the reports table
-    data_io.save_report_execution_time(conn, report_id, round(total_time,3))
+def _redirect_to_report(slug: str) -> Any:
+    """Redirect to report view page.
     
-    return slug
-
-
-# ----------------------
-# Presentation Layer
-# ----------------------
-def _redirect_to_report(slug: str):
-    """Redirect user to their report page."""
+    Args:
+        slug: Report identifier
+        
+    Returns:
+        Flask redirect response
+    """
     return redirect(url_for("report_view", slug=slug))
 
-def _generate_template_context(params: dict, df, user_data) -> dict:
-    """Prepare all data needed for the results template."""
 
-    # Retrieve player stats data and Lichess stats data
+def _generate_template_context(
+    params: Dict,
+    df: pd.DataFrame,
+    user_data: Dict
+) -> Dict:
+    """Prepare template context with all required data.
+    
+    Args:
+        params: Report parameters
+        df: Processed games DataFrame
+        user_data: Processed user data
+        
+    Returns:
+        Complete template context dictionary
+    """
     player_data = calculate_advantage_stats(df)
-    with open("data/lichess_analysis_snapshot.json", "r") as f:
+
+    with open("data/lichess_analysis_snapshot.json", "r", encoding='utf-8') as f:
         lichess_data = json.load(f)
 
     return {
@@ -336,8 +431,22 @@ def _generate_template_context(params: dict, df, user_data) -> dict:
         "user_data": user_data
     }
 
-def _get_visualizations(df, player_data, lichess_data) -> dict:
-    """Generate all visualization outputs."""
+
+def _get_visualizations(
+    df: pd.DataFrame,
+    player_data: Dict,
+    lichess_data: Dict
+) -> Dict:
+    """Generate visualization data for templates.
+    
+    Args:
+        df: Processed games DataFrame
+        player_data: Calculated player statistics
+        lichess_data: Reference statistics
+        
+    Returns:
+        Dictionary of visualization data
+    """
     return {
         "winrate_graph_viz": viz.winrate_bar_graph(prepare_winrate_data(df)),
         "eval_on_opening_viz": viz.plot_eval_on_opening(df),
@@ -365,8 +474,22 @@ def _get_visualizations(df, player_data, lichess_data) -> dict:
         }
     }
 
-def _get_insights(df, player_data, lichess_data) -> dict:
-    """Generate all visualization outputs."""
+
+def _get_insights(
+    df: pd.DataFrame,
+    player_data: Dict,
+    lichess_data: Dict
+) -> Dict:
+    """Generate insight data for templates.
+    
+    Args:
+        df: Processed games DataFrame
+        player_data: Calculated player statistics
+        lichess_data: Reference statistics
+        
+    Returns:
+        Dictionary of insight data
+    """
     winrate_data = prepare_winrate_data(df)
     return {
         "winrate_graph_insights": {
@@ -390,29 +513,60 @@ def _get_insights(df, player_data, lichess_data) -> dict:
             "successful_black": insights.lichess_successful_openings_insights("black")
         },
         "conversion_insights": {
-            "when_ahead": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_when_ahead"),
-            "when_behind": insights.insight_conversion_stat(player_data, lichess_data, "pct_won_or_drawn_when_behind"),
+            "when_ahead": insights.insight_conversion_stat(
+                player_data, lichess_data, "pct_won_when_ahead"),
+            "when_behind": insights.insight_conversion_stat(
+                player_data, lichess_data, "pct_won_or_drawn_when_behind"),
         }
     }
 
-def _render_error(error_message: str, status_code: int = 400) -> str:
-    """Render error page with consistent styling."""
-    logger.error(f"Rendering error page: {error_message}")
-    return render_template(
-        'error.html',
-        error_message=error_message
-    ), status_code
 
-# Example usage in your route:
+def _render_error(error_message: str, status_code: int = 400) -> Tuple[str, int]:
+    """Render error page with consistent styling.
+    
+    Args:
+        error_message: Description of the error
+        status_code: HTTP status code
+        
+    Returns:
+        Tuple of (rendered template, status code)
+    """
+    logger.error("Rendering error page: %s (code %d)", error_message, status_code)
+    return render_template('error.html', error_message=error_message), status_code
+
+
 @app.errorhandler(404)
-def page_not_found(error):
+def page_not_found() -> Tuple[str, int]:
+    """Handle 404 errors.
+    
+    Args:
+        error: The error object
+        
+    Returns:
+        Error page response
+    """
     return _render_error("Page not found", 404)
 
+
 @app.errorhandler(500)
-def internal_server_error():
+def internal_server_error() -> Tuple[str, int]:
+    """Handle 500 errors.
+    
+    Args:
+        error: The error object
+        
+    Returns:
+        Error page response
+    """
     return _render_error("Internal server error", 500)
 
+
 @app.route('/error')
-def show_error():
+def show_error() -> Tuple[str, int]:
+    """Display custom error message from query parameter.
+    
+    Returns:
+        Error page response
+    """
     message = request.args.get('message', 'An unknown error occurred')
     return _render_error(message)

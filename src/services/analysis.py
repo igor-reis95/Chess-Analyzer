@@ -231,8 +231,13 @@ def get_accuracy_stats(df: pd.DataFrame) -> Dict[str, float]:
     wins = round(df[df['result'] == Result.WIN]['player_accuracy'].mean(), 2)
     losses = round(df[df['result'] == Result.LOSS]['player_accuracy'].mean(), 2)
     draws = round(df[df['result'] == Result.DRAW]['player_accuracy'].mean(), 2)
-    logger.debug("Accuracy stats - overall: %.2f, wins: %.2f, losses: %.2f, draws: %.2f",
-                 overall, wins, losses, draws)
+    logger.debug(
+        "Accuracy stats - overall: %.2f, wins: %.2f, losses: %.2f, draws: %.2f",
+        overall,
+        wins,
+        losses,
+        draws
+    )
     return {
         'overall': overall,
         'wins': wins,
@@ -240,36 +245,75 @@ def get_accuracy_stats(df: pd.DataFrame) -> Dict[str, float]:
         'draws': draws
     }
 
-def result_streak(df):
+def result_streak(df: pd.DataFrame) -> int:
+    """
+    Calculate length of the current result streak at the start of the DataFrame.
+    
+    Args:
+        df (pd.DataFrame): Games DataFrame.
+        
+    Returns:
+        int: Length of streak of identical results from the first game.
+    """
     if len(df['result']) == 0:
         return 0
-    
+
     first_result = df['result'].iloc[0]
     streak = 0
-    
+
     for result in df['result']:
         if result != first_result:
             break
         streak += 1
-    
+
     return streak
 
-def adjust_evaluations(df):
-    """Adjust evaluations based on player color."""
+def adjust_evaluations(df: pd.DataFrame) -> pd.Series:
+    """
+    Adjust evaluation scores based on player color (invert for black).
+    
+    Args:
+        df (pd.DataFrame): Games DataFrame.
+        
+    Returns:
+        pd.Series: Adjusted evaluation scores.
+    """
     df["opening_eval"] = pd.to_numeric(df["opening_eval"], errors='coerce')
     return df.apply(
         lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
         axis=1
     )
 
-def calculate_conversion_rate(condition, success_condition, total_games):
-    """Calculate percentage of games meeting success_condition given initial condition."""
+def calculate_conversion_rate(
+    condition: pd.Series,
+    success_condition: pd.Series,
+    total_games: int
+) -> float:
+    """
+    Calculate percentage of games meeting success_condition given initial condition.
+    
+    Args:
+        condition (pd.Series): Boolean series where condition is met.
+        success_condition (pd.Series): Boolean series where success condition is met.
+        total_games (int): Number of games to consider.
+        
+    Returns:
+        float: Percentage of successful outcomes.
+    """
     if total_games == 0:
         return 0.0
     return (condition & success_condition).sum() / total_games * 100
 
-def calculate_advantage_stats(df):
-    """Calculate all advantage-related statistics."""
+def calculate_advantage_stats(df: pd.DataFrame) -> Dict[str, Union[int, float]]:
+    """
+    Calculate advantage-related statistics.
+    
+    Args:
+        df (pd.DataFrame): Games DataFrame.
+        
+    Returns:
+        Dict[str, Union[int, float]]: Statistics about advantage and outcomes.
+    """
     df['adjusted_eval'] = adjust_evaluations(df)
 
     advantage = df['adjusted_eval'] > 1

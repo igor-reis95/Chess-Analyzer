@@ -1,44 +1,60 @@
+"""Data processing utilities for normalizing and enriching chess game data.
+
+This module provides functions to transform raw game data from chess platforms (Lichess/Chess.com)
+into a cleaned, player-centric format with derived metrics and formatted timestamps.
+
+Functions:
+    extract_perspective: Extract data from viewpoint of given player color.
+    normalize_perspective: Combine white/black perspectives into one DataFrame.
+    post_process: Main pipeline to clean and enrich raw data.
+    calculate_derived_metrics: Compute rating difference, move counts, time control.
+    process_datetime_columns: Convert and localize timestamps.
+    format_columns: Apply final formatting and sorting.
+    select_final_columns: Reorder and filter final output columns.
+    normalize_opening_name: Simplify opening names by removing variations.
+    format_play_time: Convert timedelta to human-readable string.
+    get_final_clocks: Extract final clock times for both players.
+    get_avg_time_per_move: Calculate average move times.
+    process_user_data: Process raw user profile data from API.
 """
-Data processing utilities for normalizing and enriching chess game data.
 
-This module provides functions to transform raw game data from Lichess API into
-a cleaned, player-centric format with additional derived metrics and formatted timestamps.
-
-Key functions:
-- extract_perspective: extract data from the viewpoint of a given player color.
-- normalize_perspective: combine white and black perspectives into one DataFrame.
-- post_process: main pipeline to clean and enrich raw data.
-- calculate_derived_metrics: compute new columns like rating difference, move counts,
-time control format.
-- process_datetime_columns: convert and localize timestamps.
-- format_columns: apply final formatting and sorting.
-- select_final_columns: reorder and filter the final columns for output.
-"""
-
-from typing import Optional, Tuple
+import logging
 import math
+from typing import Any, Dict, List, Optional, Tuple
+
 import pandas as pd
 
+logger = logging.getLogger(__name__)
 
 
 def extract_perspective(df: pd.DataFrame, username: str, color: str) -> pd.DataFrame:
-    """
-    Extracts game data from the perspective of a specific player color.
+    """Extract game data from perspective of specific player color.
+
+    Transforms raw game data to show metrics from either white or black player's viewpoint,
+    including ratings, accuracy metrics, and game results.
 
     Args:
-        df: Raw game DataFrame.
-        username: The player's username.
-        color: 'white' or 'black' specifying the player color perspective.
+        df: Raw game DataFrame from Lichess/Chess.com API.
+        username: Player's username to filter by.
+        color: Either 'white' or 'black' specifying perspective.
 
     Returns:
-        A DataFrame filtered and transformed to represent the player's perspective,
-        including player/opponent names, ratings, accuracy, and result.
+        DataFrame filtered and transformed to represent player's perspective.
+
+    Raises:
+        ValueError: If invalid color is provided (not 'white' or 'black').
     """
+    if color not in ('white', 'black'):
+        logger.error('Invalid color %s provided to extract_perspective', color)
+        raise ValueError("Color must be either 'white' or 'black'")
+
+    logger.debug('Extracting %s perspective for user %s', color, username)
     opp_color = 'white' if color == 'black' else 'black'
 
     perspective = df.copy()
     perspective = perspective[df[f'{color}_name'].str.lower() == username.lower()]
 
+    # Player/opponent metadata
     perspective['player_name'] = perspective[f'{color}_name']
     perspective['opponent_name'] = perspective[f'{opp_color}_name']
     perspective['player_color'] = color
@@ -49,107 +65,119 @@ def extract_perspective(df: pd.DataFrame, username: str, color: str) -> pd.DataF
     perspective['opponent_rating'] = perspective[f'{opp_color}_rating'].astype(int)
     perspective['opponent_rating_diff'] = perspective[f'{opp_color}_ratingDiff']
 
-    # Accuracy and errors
-    perspective['player_inaccuracy'] = perspective[f'{color}_inaccuracy']
-    perspective['player_mistake'] = perspective[f'{color}_mistake']
-    perspective['player_blunder'] = perspective[f'{color}_blunder']
-    perspective['player_accuracy'] = perspective[f'{color}_accuracy']
-    perspective['opponent_inaccuracy'] = perspective[f'{opp_color}_inaccuracy']
-    perspective['opponent_mistake'] = perspective[f'{opp_color}_mistake']
-    perspective['opponent_blunder'] = perspective[f'{opp_color}_blunder']
-    perspective['opponent_accuracy'] = perspective[f'{opp_color}_accuracy']
+    # Accuracy metrics
+    accuracy_metrics = ['inaccuracy', 'mistake', 'blunder', 'accuracy']
+    for metric in accuracy_metrics:
+        perspective[f'player_{metric}'] = perspective[f'{color}_{metric}']
+        perspective[f'opponent_{metric}'] = perspective[f'{opp_color}_{metric}']
 
-    # Time related data
-    perspective['player_final_clock'] = perspective[f'{color}_final_clock']
-    perspective['opponent_final_clock'] = perspective[f'{opp_color}_final_clock']
-    perspective['player_avg_time_per_move'] = perspective[f'{color}_avg_time']
-    perspective['opponent_avg_time_per_move'] = perspective[f'{opp_color}_avg_time']
+    # Time data
+    time_cols = {
+        'player_final_clock': f'{color}_final_clock',
+        'opponent_final_clock': f'{opp_color}_final_clock',
+        'player_avg_time_per_move': f'{color}_avg_time',
+        'opponent_avg_time_per_move': f'{opp_color}_avg_time'
+    }
+    for new_col, old_col in time_cols.items():
+        perspective[new_col] = perspective[old_col]
 
-    # Result mapping: 'win', 'loss', or 'draw' from player's perspective
+    # Result from player's perspective
     perspective['result'] = perspective['winner'].map(
         lambda w: 'win' if w == color else 'loss' if w == opp_color else 'draw'
     )
 
+    logger.info('Extracted %s games from %s perspective', len(perspective), color)
     return perspective
 
 
 def normalize_perspective(df: pd.DataFrame, username: str) -> pd.DataFrame:
-    """
-    Normalize the DataFrame to have all games from the player's perspective.
+    """Normalize DataFrame to have all games from player's perspective.
+
+    Combines white and black perspective DataFrames into single unified view.
 
     Args:
-        df: Raw game DataFrame.
-        username: Player's username.
+        df: Raw game DataFrame from API.
+        username: Player's username to normalize around.
 
     Returns:
-        Concatenated DataFrame with player perspective for both white and black games.
+        Concatenated DataFrame with unified player perspective columns.
     """
+    logger.debug('Normalizing perspective for user %s', username)
     white = extract_perspective(df, username, 'white')
     black = extract_perspective(df, username, 'black')
-    return pd.concat([white, black], ignore_index=True)
+    combined = pd.concat([white, black], ignore_index=True)
+
+    logger.info('Combined %s white and %s black perspectives', len(white), len(black))
+    return combined
+
 
 def calculate_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculate derived metrics such as rating difference, move counts, time spent playing,
-    and formats the time control with increment.
+    """Calculate derived metrics from game data.
+
+    Computes:
+        - Rating difference between players
+        - Move counts (half-moves and full moves)
+        - Time spent playing
+        - Formatted time control strings
 
     Args:
-        df: DataFrame after perspective normalization and datetime processing.
+        df: DataFrame after perspective normalization.
 
     Returns:
-        DataFrame with new columns added.
+        DataFrame with additional derived metric columns.
     """
-    # Rating difference between player and opponent
+    logger.debug('Calculating derived metrics')
+    # Rating difference
     df['rating_difference'] = df['player_rating'] - df['opponent_rating']
 
-    # Count half-moves and full moves in the game
+    # Move counts
     df['half_moves'] = df['moves'].apply(lambda x: len(x.split()))
     df['full_moves'] = df['half_moves'].apply(lambda x: math.ceil(x / 2))
 
-    # Calculate total time spent playing in seconds
-    df['time_spent_playing'] = (df['last_move_at'] - df['created_at']).dt.total_seconds()
+    # Time spent playing
+    df['time_spent_playing'] = (
+        df['last_move_at'] - df['created_at']
+    ).dt.total_seconds()
 
+    # Time control formatting
     def format_time_control(time_control: int, increment: int) -> str:
-        """
-        Format the time control string with special cases for bullet variants.
-
-        Args:
-            time_control: Base time control in seconds.
-            increment: Increment in seconds per move.
-
-        Returns:
-            Formatted time control string.
-        """
+        """Format time control string with special cases for bullet variants."""
         if time_control == 30:  # ½ minute
             return f'½+{increment}'
-        elif time_control == 15:  # ¼ minute
+        if time_control == 15:  # ¼ minute
             return f'¼+{increment}'
         return f'{time_control // 60}+{increment}'
 
     if df['source'][0] != 'chess.com':
-        df['clock_time_control'] = pd.to_numeric(df['clock_time_control'], errors='coerce')
+        df['clock_time_control'] = pd.to_numeric(
+            df['clock_time_control'],
+            errors='coerce'
+        )
         df['clock_increment'] = pd.to_numeric(df['clock_increment'], errors='coerce')
         df['time_control_with_increment'] = df.apply(
-            lambda row: format_time_control(row['clock_time_control'], row['clock_increment']),
+            lambda row: format_time_control(
+                row['clock_time_control'],
+                row['clock_increment']
+            ),
             axis=1
         )
     else:
-        df['source'] = 'lichess.org' # Did not find where to put this
-        
+        df['source'] = 'lichess.org'
+
+    logger.debug('Added %s derived metrics', len(df))
     return df
 
 
 def process_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Convert millisecond timestamps to localized datetime objects.
+    """Convert millisecond timestamps to localized datetime objects.
 
     Args:
         df: DataFrame with raw timestamp columns ('createdAt', 'lastMoveAt') in ms.
 
     Returns:
-        DataFrame with new datetime columns 'created_at' and 'last_move_at' localized to 
-        America/Sao_Paulo timezone.
+        DataFrame with new datetime columns localized to America/Sao_Paulo timezone.
     """
+    logger.debug('Processing datetime columns')
     df['created_at'] = (
         pd.to_datetime(df['createdAt'], unit='ms')
         .dt.tz_localize('UTC')
@@ -161,37 +189,41 @@ def process_datetime_columns(df: pd.DataFrame) -> pd.DataFrame:
         .dt.tz_localize('UTC')
         .dt.tz_convert('America/Sao_Paulo')
     )
+    logger.debug('Converted datetime columns to datetime with timezone')
 
     return df
 
 
 def format_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Format datetime columns and sort DataFrame.
+    """Format datetime columns and sort DataFrame.
 
     Args:
         df: DataFrame with datetime columns.
 
     Returns:
-        DataFrame with formatted 'created_at' string column and sorted by creation date descending.
+        DataFrame with formatted datetime strings and sorted by creation date.
     """
+    logger.debug('Formatting columns')
     df.sort_values(by=['created_at'], ascending=False, inplace=True)
     df['created_at'] = df['created_at'].dt.strftime('%d/%m/%y %H:%M')
     return df
 
+
 def normalize_opening_name(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Normalize the names of the openings so it only shows the main opening, without variation
-    
-    - 'normalized_opening_name': the main opening name without sub-variation details.
-    
+    """Normalize opening names by removing variation details.
+
+    Creates new column 'normalized_opening_name' containing only main opening name.
+
     Args:
-        df : A DataFrame containing at least 'opening_name' and 'opening_eco' columns.
-    
+        df: DataFrame containing 'opening_name' column.
+
     Returns:
-        The original DataFrame with two new columns added.
+        DataFrame with additional normalized opening name column.
     """
-    def get_main_opening(opening_name):
+    logger.debug('Normalizing opening names')
+
+    def get_main_opening(opening_name: str) -> Optional[str]:
+        """Extract main opening name before colon."""
         if isinstance(opening_name, str):
             return opening_name.split(":")[0].strip()
         return None
@@ -199,17 +231,19 @@ def normalize_opening_name(df: pd.DataFrame) -> pd.DataFrame:
     df['normalized_opening_name'] = df['opening_name'].apply(get_main_opening)
     return df
 
+
 def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Select and order the final columns for presentation or further use.
+    """Select and order final columns for output.
 
     Args:
-        df: DataFrame with all processed columns.
+        df: Fully processed DataFrame.
 
     Returns:
-        DataFrame filtered to only the selected columns in the specified order.
+        DataFrame filtered to selected columns in specified order.
     """
-    df.rename(columns={'id': 'match_id'}, inplace = True) # Necessary for no conflict with db id
+    logger.debug('Selecting final columns')
+    df.rename(columns={'id': 'match_id'}, inplace=True)
+
     column_order = [
         'match_id', 'player_color', 'player_name', 'opponent_name', 'result', 'status',
         'player_rating', 'opponent_rating', 'rating_difference',
@@ -227,32 +261,35 @@ def select_final_columns(df: pd.DataFrame) -> pd.DataFrame:
     existing_cols = [col for col in column_order if col in df.columns]
     return df[existing_cols]
 
-def format_play_time(x):
-    """
-    Converts a timedelta to a human-readable string format.
 
-    Parameters:
-        x (pd.Timedelta): Duration to format.
+def format_play_time(x: pd.Timedelta) -> str:
+    """Convert timedelta to human-readable string.
+
+    Args:
+        x: Duration to format.
 
     Returns:
-        str: Formatted string like '12 hours and 34 minutes'.
+        Formatted string like '12 hours and 34 minutes'.
     """
     total_seconds = int(x.total_seconds())
     hours = total_seconds // 3600
     minutes = (total_seconds % 3600) // 60
     return f"{hours} hours and {minutes} minutes"
 
+
 def get_final_clocks(df: pd.DataFrame) -> pd.DataFrame:
-    """Adds white_final_clock and black_final_clock columns to the DataFrame.
-    
+    """Extract final clock times for both players.
+
     Args:
-        df: DataFrame containing a 'clocks' column with list of clock times
-        
+        df: DataFrame containing 'clocks' column with list of clock times.
+
     Returns:
-        Modified DataFrame with two new columns
+        DataFrame with added 'white_final_clock' and 'black_final_clock' columns.
     """
+    logger.debug('Extracting final clock times')
+
     def _extract_clocks(clock_array: list) -> Tuple[Optional[float], Optional[float]]:
-        """Helper function to extract the final clock times for white and black."""
+        """Helper to extract final clock times for white and black."""
         if not isinstance(clock_array, list) or len(clock_array) < 2:
             return None, None
 
@@ -265,30 +302,29 @@ def get_final_clocks(df: pd.DataFrame) -> pd.DataFrame:
         else:  # Black just moved
             white = last_two[0]
             black = last_two[1] if len(last_two) > 1 else None
-        # TODO: Transform from centiseconds to mm:ss.ms
 
         return white, black
 
-    # Apply the helper function to each row
     clocks = df['clocks'].apply(_extract_clocks)
-
-    # Assign results to new columns
     df['white_final_clock'] = clocks.str[0]
     df['black_final_clock'] = clocks.str[1]
 
     return df
 
+
 def get_avg_time_per_move(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate average time per move for white and black players.
-    
+    """Calculate average time per move for both players.
+
     Args:
-        df: DataFrame containing a 'clocks' column with list of clock times
-        
+        df: DataFrame containing 'clocks' column with move times.
+
     Returns:
-        DataFrame with two new columns: white_avg_time, black_avg_time
+        DataFrame with added 'white_avg_time' and 'black_avg_time' columns.
     """
+    logger.debug('Calculating average time per move')
+
     def _calculate_avg_times(clock_array: list) -> Tuple[Optional[float], Optional[float]]:
-        """Helper function to calculate average time per move for each player."""
+        """Helper to calculate average move times."""
         if not isinstance(clock_array, list) or len(clock_array) < 2:
             return None, None
 
@@ -333,96 +369,108 @@ def get_avg_time_per_move(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def process_user_data(data, platform, perfs_to_include=None):
-    """
-    Processes raw user data from Lichess API and returns a structured DataFrame.
 
-    Parameters:
-        data (dict): JSON-like response from the Lichess user API.
-        perfs_to_include (list, optional): List of performance types to include
-                                           (e.g., ['bullet', 'blitz']). Defaults to common types.
+def process_user_data(
+    data: Dict[str, Any],
+    platform: str,
+    perfs_to_include: Optional[List[str]] = None
+) -> pd.DataFrame:
+    """Process raw user data from chess platform API.
+
+    Args:
+        data: JSON-like response from user API.
+        platform: 'lichess' or 'chess.com'.
+        perfs_to_include: List of performance types to include.
+                         Defaults to ['bullet', 'blitz', 'rapid', 'classical', 'puzzle'].
 
     Returns:
-        pd.DataFrame: Processed data with user profile and performance stats.
+        Processed DataFrame with user profile and performance stats.
     """
-    if perfs_to_include is None:
-        perfs_to_include = ['bullet', 'blitz', 'rapid', 'classical', 'puzzle']
+    logger.debug('Processing user data for platform %s', platform)
+    perfs_to_include = perfs_to_include or ['bullet', 'blitz', 'rapid', 'classical', 'puzzle']
 
     # Basic user info
     user_data = {
         'username': data.get('username'),
         'created_at': data.get('createdAt'),
         'last_seen': data.get('seenAt'),
-        'play_time': data.get('playTime', {}).get('total'),  # in seconds
+        'play_time': data.get('playTime', {}).get('total'),
         'url': data.get('url'),
         'platform': platform
     }
 
-    # Extract performance-related stats
+    # Performance stats
     for perf in perfs_to_include:
         perf_data = data.get('perfs', {}).get(perf, {})
-        user_data[f'{perf}_games'] = perf_data.get('games')
-        user_data[f'{perf}_rating'] = perf_data.get('rating')
-        user_data[f'{perf}_prog'] = perf_data.get('prog')
+        user_data.update({
+            f'{perf}_games': perf_data.get('games'),
+            f'{perf}_rating': perf_data.get('rating'),
+            f'{perf}_prog': perf_data.get('prog')
+        })
 
-    # Convert to DataFrame (single-row)
     user_df = pd.DataFrame([user_data])
 
-    # Convert timestamps to datetime/timedelta
+    # Datetime conversions
     user_df['created_at_datetime'] = pd.to_datetime(user_df['created_at'], unit='ms')
     user_df['last_seen_datetime'] = pd.to_datetime(user_df['last_seen'], unit='ms')
-
-    # Add timestamp of report creation
     user_df['report_created_at'] = pd.Timestamp.now()
 
-    # Format datetime fields to readable strings
+    # Formatting
     user_df["created_at"] = user_df["created_at_datetime"].dt.strftime("%d/%m/%y")
     user_df["last_seen"] = user_df["last_seen_datetime"].dt.strftime("%d/%m/%y")
 
-    # Format play time as 'X hours and Y minutes'
-    def safe_format_play_time(seconds): # Needed because chesscom doesn't have play_time
+    def safe_format_play_time(seconds: Optional[float]) -> Optional[str]:
+        """Safely format play time handling None values."""
         if pd.isna(seconds):
             return None
         try:
             return format_play_time(pd.to_timedelta(seconds, unit='s'))
-        except:
+        except Exception as e: # pylint: disable=broad-exception-caught
+            logger.warning('Failed to format play time: %s', e)
             return None
 
     user_df['play_time'] = user_df['play_time'].apply(safe_format_play_time)
 
+    logger.info('Processed user data for %s', user_data['username'])
     return user_df
 
+
 def post_process(df: pd.DataFrame, username: str) -> pd.DataFrame:
-    """
-    Full post-processing pipeline to clean and enrich raw chess game data.
+    """Full post-processing pipeline for chess game data.
+
+    Processing steps:
+        1. Extract final clock times
+        2. Calculate average move times
+        3. Normalize player perspective
+        4. Process datetime columns
+        5. Calculate derived metrics
+        6. Normalize opening names
+        7. Format columns
+        8. Select final columns
 
     Args:
-        df: Raw DataFrame from Lichess API.
-        username: Player's username to normalize perspective.
+        df: Raw game DataFrame from API.
+        username: Player username to normalize perspective around.
 
     Returns:
-        Processed DataFrame with standardized columns, formatting, and derived metrics.
+        Fully processed DataFrame ready for analysis.
     """
-    # 1. Retrieve final clock time for both players
-    df = get_final_clocks(df)
+    logger.info('Starting post-processing for user %s', username)
 
-    # 2. Calculate average time per move and save it to the dataframe
-    df = get_avg_time_per_move(df)
+    processing_steps = [
+        ('Extracting final clocks', get_final_clocks),
+        ('Calculating move times', get_avg_time_per_move),
+        ('Normalizing perspective', lambda d: normalize_perspective(d, username)),
+        ('Processing datetimes', process_datetime_columns),
+        ('Calculating metrics', calculate_derived_metrics),
+        ('Normalizing openings', normalize_opening_name),
+        ('Formatting columns', format_columns),
+        ('Selecting columns', select_final_columns)
+    ]
 
-    # 3. Normalize player perspective
-    df = normalize_perspective(df, username)
+    for step_name, step_func in processing_steps:
+        logger.debug('Processing step: %s', step_name)
+        df = step_func(df)
 
-    # 4. Process datetime columns (convert and localize timestamps)
-    df = process_datetime_columns(df)
-
-    # 5. Calculate derived metrics (rating diff, moves, time control)
-    df = calculate_derived_metrics(df)
-
-    # 6. Format opening columns with a normalized name and also a link to the eco
-    df = normalize_opening_name(df)
-
-    # 7. Apply final formatting and sorting
-    df = format_columns(df)
-
-    # 8. Select and order final columns
-    return select_final_columns(df)
+    logger.info('Completed processing %s games', len(df))
+    return df
