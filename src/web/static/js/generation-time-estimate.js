@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function updateTimeEstimate() {
       const numGames = parseInt(gamesInput.value) || 0;
-      const baseTime = 6; // Base time in seconds
-      const perGameTime = 0.2; // Time per game in seconds
+      const baseTime = 9; // Base time in seconds
+      const perGameTime = 0.15; // Time per game in seconds
       
       // Calculate estimated time
       const estimatedTime = baseTime + (numGames * perGameTime);
