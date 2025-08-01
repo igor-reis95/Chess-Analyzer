@@ -1,48 +1,75 @@
-# Chess Data Coach
+<div style="text-align: center;">
+  <img src="src/web/static/chess-analyzer-icon.png" width="200"/>
+</div>
+
+# Chess Analyzer
+
+<div style="text-align: center;">
+  <img src="src/web/static/homepage-chess-analyzer.png" width="500"/>
+</div>
 
 ## Overview
-Chess Data Coach is a data science-driven web application designed to help chess players improve by analyzing their game data. Inspired by the use of analytics in sports like football, this project applies similar techniques to chess, providing players with actionable insights based on their past matches.
+Chess Analyzer is a data-driven web application that helps chess players improve their game by analyzing their match history from platforms like Lichess and Chess.com. Built for my MBA in Data Science & Analytics, this project combines practical engineering with strategic insight, using real-world chess data to generate visual reports and improvement suggestions.
+
+With an intuitive interface and a robust backend built in Flask and Python, the tool retrieves user data via public APIs, normalizes it, and produces actionable insights like:
+- Most and least effective openings
+- Performance by game type (blitz, bullet, rapid)
+- Win/loss/draw distributions
+- Strengths and weaknesses by color (white vs black)
+
+This project is inspired by the use of analytics in professional sports and seeks to bring similar capabilities to the world of online chess.
 
 ### How It Works
 - User Input (Frontend)
-- Users enter their Lichess / chess.com username.
-- They can filter by number of games, game type (e.g., blitz, rapid), and color played (white, black, or both).
+- Users enter their lichess.org / chess.com username.
+- They can filter by number of games, game type (bullet, blitz, rapid).
+- A report is generated based on these inputs and the data collected by the API
 
-### Data Collection (Backend)
-- The app fetches game data directly from the Lichess API / chess.com API.
-- It respects API rate limits (30 games per second).
-- Games are normalized to consistently show the player’s perspective.
+### Features
+- Supports Lichess and Chess.com usernames
+- Visualizes key statistics about openings, win rates, and time control performance
+- Normalizes and aggregates large sets of games for scalable analysis
+- Cleans and unifies data from two different APIs
+- Outputs charts using matplotlib and serves them via Flask
+- Extensible architecture for adding custom recommendations or coaching tips
+- Built with Sphinx-compatible docstrings, proper logging, and PyLint-compliant style
 
-### Data Processing
-- The API response is converted into a pandas DataFrame.
-- Post-processing calculates metrics such as rating differences, time spent, number of moves, openings used, results, and performance.
-- Data is formatted for readability (dates, percentages, etc.).
+## Technologies Used
+- Flask – Web framework
+- pandas – Data wrangling
+- matplotlib – Chart generation
+- requests – HTTP requests to chess platforms
+- Sphinx – Documentation generator
+- PyLint – Code linting
+- Python logging – Lazy-formatting, consistent logs
 
-### Data Visualization
-- Generates tables and charts showing insights like:
-- Most used openings
-- Win/loss rates by time control
-- Accuracy and mistake patterns
+### Project Structure
+```
+chess-analyzer/
+├── app.log
+├── docs
+├── LICENSE
+├── README.md
+├── requirements.txt
+├── src
+│   ├── api
+│   ├── services
+│   └── web
+│       ├── static
+│       └── templates
+└── stockfish
+```
 
-### Optional Reports (Planned)
-- Users will be able to generate downloadable reports in HTML or CSV format.
-- Future versions will include personalized reports with shareable links.
+### Deployment
+This app is designed to run on cloud platforms such as Render or PythonAnywhere, although you can run it locally. You'll just need to set up the server with Flask and configure the environment accordingly.
 
-### Technology Stack
-- Backend: Python, Flask
-- Data Manipulation: pandas
-- Visualization: matplotlib, seaborn
-- Frontend: HTML, Jinja2 templating, JavaScript
-- Data Source: Lichess API / chess.com API
+## Author
+**[Igor Reis](https://www.linkedin.com/in/igor-reis-167832149/)**
+MBA in Data Science & Analytics
+Project developed as part of the final capstone (TCC)
 
-### Design Considerations
-- In-memory data handling to avoid unnecessary file storage.
-- Static HTML or CSV reports generated only on demand.
+### License
 
-### Future Features
-- Retrieve data from chess.com API
-- User-friendly report generation interface
-- CSV export button
-- Enhanced frontend interactivity
-- Smart recommendation system highlighting key mistakes
-- Shareable game analysis links
+This project is licensed under the [MIT License](LICENSE).
+
+Attribution is appreciated. Created by [Igor Reis](https://www.linkedin.com/in/igor-reis-167832149/).
