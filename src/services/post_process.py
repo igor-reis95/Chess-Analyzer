@@ -144,25 +144,24 @@ def calculate_derived_metrics(df: pd.DataFrame) -> pd.DataFrame:
         """Format time control string with special cases for bullet variants."""
         if time_control == 30:  # ½ minute
             return f'½+{increment}'
+        if time_control == 20:  # ½ minute
+            return f'⅓+{increment}'
         if time_control == 15:  # ¼ minute
             return f'¼+{increment}'
         return f'{time_control // 60}+{increment}'
 
-    if df['source'][0] != 'chess.com':
-        df['clock_time_control'] = pd.to_numeric(
-            df['clock_time_control'],
-            errors='coerce'
-        )
-        df['clock_increment'] = pd.to_numeric(df['clock_increment'], errors='coerce')
-        df['time_control_with_increment'] = df.apply(
-            lambda row: format_time_control(
-                row['clock_time_control'],
-                row['clock_increment']
-            ),
-            axis=1
-        )
-    else:
-        df['source'] = 'lichess.org'
+    df['clock_time_control'] = pd.to_numeric(
+        df['clock_time_control'],
+        errors='coerce'
+    )
+    df['clock_increment'] = pd.to_numeric(df['clock_increment'], errors='coerce').astype(int)
+    df['time_control_with_increment'] = df.apply(
+        lambda row: format_time_control(
+            row['clock_time_control'],
+            row['clock_increment']
+        ),
+        axis=1
+    )
 
     logger.debug('Added %s derived metrics', len(df))
     return df
@@ -456,6 +455,9 @@ def post_process(df: pd.DataFrame, username: str) -> pd.DataFrame:
         Fully processed DataFrame ready for analysis.
     """
     logger.info('Starting post-processing for user %s', username)
+
+    if df['source'][0] != 'chess.com':
+        df['source'] = 'lichess.org'
 
     processing_steps = [
         ('Extracting final clocks', get_final_clocks),
