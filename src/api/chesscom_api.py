@@ -284,7 +284,7 @@ def transform_game(game: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 
         time_control = pgn_data["metadata"].get("TimeControl", "")
         clock_initial = time_control.split("+")[0] if "+" in time_control else time_control
-        clock_increment = time_control.split("+")[1] if "+" in time_control else None
+        clock_increment = time_control.split("+")[1] if "+" in time_control else 0
 
         return {
             "id": game_id,
