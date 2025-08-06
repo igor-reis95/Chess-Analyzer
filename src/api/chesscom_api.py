@@ -20,6 +20,8 @@ import chess.pgn
 import pandas as pd
 import requests
 
+from src.api.chesscom_opening_resolver import get_opening_name
+
 logger = logging.getLogger(__name__)
 
 HEADERS = {
@@ -280,7 +282,7 @@ def transform_game(game: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         game_winner = "white" if result == "1-0" else "black" if result == "0-1" else None
 
         opening_eco = pgn_data["metadata"].get("ECO", "")
-        opening_name = eco_to_opening(opening_eco)
+        opening_name = get_opening_name(opening_eco, moves)
 
         time_control = pgn_data["metadata"].get("TimeControl", "")
         clock_initial = time_control.split("+")[0] if "+" in time_control else time_control
