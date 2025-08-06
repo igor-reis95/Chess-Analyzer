@@ -69,9 +69,8 @@ def san_to_uci_list(san_moves: str) -> List[str]:
             move = board.parse_san(san)
             uci_moves.append(move.uci())
             board.push(move)
-        logger.info("Converted SAN moves to UCI: %s", uci_moves)
     except Exception:
-        logger.exception("Failed to convert SAN to UCI: %s", san_moves)
+        logger.exception("Failed to convert SAN to UCI")
         raise
     return uci_moves
 
@@ -87,7 +86,6 @@ def find_opening_from_moves(moves: List[str], opening_dict: Dict[str, str]) -> s
     for i in reversed(range(1, len(moves) + 1)):
         prefix = ' '.join(moves[:i])
         if prefix in opening_dict:
-            logger.info("Found opening from moves: %s", opening_dict[prefix])
             return opening_dict[prefix]
     logger.info("No opening found from moves.")
     return "Unknown Opening"
