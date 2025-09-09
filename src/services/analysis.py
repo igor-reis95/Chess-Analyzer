@@ -21,7 +21,6 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
-
 logger = logging.getLogger(__name__)
 
 # Module-level constants/enums
@@ -365,6 +364,36 @@ def prepare_winrate_data(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
         'Overall': total
     }
 
+def get_opening_stats(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute summary statistics (count, mean evaluation) grouped by normalized opening name.
+
+    Filters out groups with 2 or fewer samples and sorts by count descending.
+
+    Args:
+        df (pd.DataFrame): DataFrame with columns 'opening_eval', 'player_color',
+                           and 'normalized_opening_name'.
+
+    Returns:
+        pd.DataFrame: Aggregated DataFrame with columns: normalized_opening_name,
+                      count, avg_eval, and opening_label (name + count).
+    """
+    df.loc[:, 'opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
+    df.loc[:, "adjusted_eval"] = df.apply(
+        lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
+        axis=1
+    )
+    df = df.groupby("normalized_opening_name").agg(
+        count=("adjusted_eval", "size"),
+        avg_eval=("adjusted_eval", "mean")
+    ).reset_index()
+    df = df[df["count"] > 2].sort_values("count", ascending=False)
+    df["opening_label"] = df.apply(
+        lambda x: f"{x['normalized_opening_name']} ({x['count']})",
+        axis=1
+    )
+    return df.head()  # Limit to top results to avoid huge graphs
+
 def get_player_rating_bracket_evaluation(
     perf_type: str,
     lichess_stats: Dict,
@@ -478,15 +507,16 @@ def prepare_logistic_regression(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Seri
         )
 
         # Group openings to avoid high cardinality
-        top_openings = df_model['normalized_opening_name'].value_counts().nlargest(5).index
+        top_openings_df = get_opening_stats(df_model)
+        top_openings = top_openings_df['normalized_opening_name'].tolist()
         df_model['opening_group'] = df_model['normalized_opening_name'].apply(
             lambda x: x if x in top_openings else 'Other'
         )
 
         # One-hot encode categorical features
         df_encoded = pd.get_dummies(
-            df_model[['speed', 'opening_group']],
-            drop_first=True
+            df_model[['opening_group']],
+            drop_first=False
         )
 
         # Select numerical features
@@ -555,7 +585,7 @@ def train_logistic_regression_model(df: pd.DataFrame) -> pd.DataFrame:
             'feature': feature_names,
             'coefficient': coefficients,
             'abs_coeff': np.abs(coefficients)
-        }).sort_values(by='abs_coeff', ascending=False)
+        }).sort_values(by='coefficient', ascending=False)
 
         logger.debug("Generated feature importance DataFrame")
         return importance_df
