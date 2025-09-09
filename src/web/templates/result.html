@@ -297,7 +297,12 @@
             <!-- Win Rate Chart -->
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Win Rate for {{ count }} games of {{ games_table[0]['perf'] }}</h3>
+                    <div class="d-flex align-items-center">
+                        <h3>Win Rate for {{ count }} games of {{ games_table[0]['perf'] }}</h3>
+                        <span class="ms-2" data-bs-toggle="tooltip" title="In average, chess players have a 48% win rate, 4% draw rate and 48% loss rate">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
+                    </div>
                     <div class="row">
                         <!-- Chart Column -->
                         <div class="col-md-8">
@@ -340,13 +345,13 @@
                         </span>
                     </div>
                     <div class="row">
-                        <!-- Graph Column (takes 8 columns on medium screens and up) -->
+                        <!-- Graph Column -->
                         <div class="col-md-8">
                             <div class="graph-container">
                                 <img src="data:image/png;base64,{{ eval_on_opening_viz }}" alt="Score at end of opening graph" class="img-fluid">
                             </div>
                         </div>
-                        <!-- Insights Column (takes 4 columns on medium screens and up) -->
+                        <!-- Insights Columny -->
                         <div class="col-md-4">
                             <div class="insights-container">
                                 <!-- Overall Insight -->
@@ -467,6 +472,39 @@
                                             {% endif %}
                                         </ul>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logistic Regression Chart & Insights -->
+            <div class="col-12 mb-4">
+                <div class="lichess-card p-4 h-100">
+                    <h3 class="mb-3">Logistic Regression Chart</h3>
+                    <div class="row">
+                        <!-- Chart Column -->
+                        <div class="col-md-8">
+                            <div class="graph-container">
+                                <img src="data:image/png;base64,{{ logistic_regression_viz }}" alt="Logistic Regression Chart" class="img-fluid">
+                            </div>
+                        </div>
+
+                        <!-- Insights Column -->
+                        <div class="col-md-4">
+                            <div class="insights-container">
+                                <div class="insight-card">
+                                    <h5>Feature Insights</h5>
+                                    <ul class="list-unstyled">
+                                        {% if logistic_regression_insights is iterable and not logistic_regression_insights is string %}
+                                            {% for insight in logistic_regression_insights %}
+                                                <li class="mb-2">• {{ insight }}</li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>{{ logistic_regression_insights }}</li>
+                                        {% endif %}
+                                    </ul>
                                 </div>
                             </div>
                         </div>
