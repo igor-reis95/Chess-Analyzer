@@ -46,7 +46,6 @@ This project is inspired by the use of analytics in professional sports and seek
 ### Project Structure
 ```
 chess-analyzer/
-├── app.log
 ├── docs
 ├── LICENSE
 ├── README.md
