@@ -25,7 +25,7 @@ import pandas as pd
 import psycopg2
 from flask import make_response, redirect, render_template, request, url_for
 
-from src.services.analysis import calculate_advantage_stats, prepare_winrate_data
+from src.services.analysis import calculate_conversion_stats, prepare_winrate_data
 import src.services.data_insights as insights
 import src.services.data_io as data_io
 import src.services.data_viz as viz
@@ -416,7 +416,7 @@ def _generate_template_context(
     Returns:
         Complete template context dictionary
     """
-    player_data = calculate_advantage_stats(df)
+    conversion_stat = calculate_conversion_stats(df)
 
     with open("data/lichess_analysis_snapshot.json", "r", encoding='utf-8') as f:
         lichess_data = json.load(f)
@@ -426,22 +426,23 @@ def _generate_template_context(
         "count": len(df),
         "games_table": df.head(GAMES_TABLE_PREVIEW).to_dict(orient="records"),
         "form_data": params,
-        **_get_visualizations(df, player_data, lichess_data),
-        **_get_insights(df, player_data, lichess_data),
+        **_get_visualizations(df, conversion_stat, lichess_data, user_data),
+        **_get_insights(df, conversion_stat, lichess_data),
         "user_data": user_data
     }
 
 
 def _get_visualizations(
     df: pd.DataFrame,
-    player_data: Dict,
-    lichess_data: Dict
+    conversion_stat: Dict,
+    lichess_data: Dict,
+    user_data: Dict
 ) -> Dict:
     """Generate visualization data for templates.
     
     Args:
         df: Processed games DataFrame
-        player_data: Calculated player statistics
+        conversion_stat: Calculated player statistics
         lichess_data: Reference statistics
         
     Returns:
@@ -450,7 +451,7 @@ def _get_visualizations(
     return {
         "winrate_graph_viz": viz.winrate_bar_graph(prepare_winrate_data(df)),
         "logistic_regression_viz": viz.logistic_regression_graph(df),
-        "eval_on_opening_viz": viz.plot_eval_on_opening(df),
+        "eval_on_opening_viz": viz.plot_eval_on_opening(df, lichess_data, user_data),
         "openings_viz": {
             "overall": viz.plot_opening_stats(df, "Overall"),
             "white": viz.plot_opening_stats(df, "White"),
@@ -463,12 +464,12 @@ def _get_visualizations(
         },
         "conversion_viz": {
             "when_ahead": viz.plot_conversion_comparison(
-                player_data, lichess_data,
+                conversion_stat, lichess_data,
                 stat_key='pct_won_when_ahead',
                 title='% Wins when ahead after opening'
             ),
             "when_behind": viz.plot_conversion_comparison(
-                player_data, lichess_data,
+                conversion_stat, lichess_data,
                 stat_key='pct_won_or_drawn_when_behind',
                 title='% Wins/Draws when behind after opening'
             )
@@ -478,14 +479,14 @@ def _get_visualizations(
 
 def _get_insights(
     df: pd.DataFrame,
-    player_data: Dict,
+    conversion_stat: Dict,
     lichess_data: Dict
 ) -> Dict:
     """Generate insight data for templates.
     
     Args:
         df: Processed games DataFrame
-        player_data: Calculated player statistics
+        conversion_stat: Calculated player statistics
         lichess_data: Reference statistics
         
     Returns:
@@ -516,9 +517,9 @@ def _get_insights(
         },
         "conversion_insights": {
             "when_ahead": insights.insight_conversion_stat(
-                player_data, lichess_data, "pct_won_when_ahead"),
+                conversion_stat, lichess_data, "pct_won_when_ahead"),
             "when_behind": insights.insight_conversion_stat(
-                player_data, lichess_data, "pct_won_or_drawn_when_behind"),
+                conversion_stat, lichess_data, "pct_won_or_drawn_when_behind"),
         }
     }
 
