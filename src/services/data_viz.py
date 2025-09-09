@@ -16,7 +16,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt # pylint: disable=wrong-import-position
-from src.services.analysis import train_logistic_regression_model # pylint: disable=wrong-import-position
+from src.services.analysis import train_logistic_regression_model, get_player_rating_bracket_evaluation, get_opening_stats # pylint: disable=wrong-import-position
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +75,7 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
     return img_base64
 
 
-def plot_eval_on_opening(df: pd.DataFrame) -> str:
+def plot_eval_on_opening(df: pd.DataFrame, lichess_stats: Dict, user_data: Dict) -> str:
     """
     Generate a base64-encoded bar chart for average adjusted opening evaluation by player color.
 
@@ -95,15 +95,28 @@ def plot_eval_on_opening(df: pd.DataFrame) -> str:
     white_avg = df[df["player_color"] == "white"]["adjusted_eval"].mean()
     black_avg = df[df["player_color"] == "black"]["adjusted_eval"].mean()
 
+    perf_type = df['perf'].loc[0]
+    rating_avg_eval, _ = get_player_rating_bracket_evaluation(
+        perf_type, lichess_stats, user_data
+    )
     averages = {
         "White": white_avg,
         "Black": black_avg,
-        "Overall": overall_avg
+        "Overall": overall_avg,
+        "Lichess Avg": rating_avg_eval
     }
 
-    colors = ["#93b674" if val >= 0 else "#da6f73" for val in averages.values()]
+    # Create custom colors for each bar
+    colors = []
+    for key, val in averages.items():
+        if key == "Lichess Avg":
+            colors.append("#d49b54")
+        elif val >= 0:
+            colors.append("#93b674")
+        else:
+            colors.append("#da6f73")
 
-    plt.figure(figsize=(8, 5))
+    plt.figure(figsize=(8, 6))
     bars = plt.bar(averages.keys(), averages.values(), color=colors)
     plt.axhline(0, color="black", linestyle="--", alpha=0.5)
 
@@ -127,38 +140,6 @@ def plot_eval_on_opening(df: pd.DataFrame) -> str:
 
     logger.debug("Opening evaluation bar graph generated.")
     return img_base64
-
-
-def get_opening_stats(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Compute summary statistics (count, mean evaluation) grouped by normalized opening name.
-
-    Filters out groups with 2 or fewer samples and sorts by count descending.
-
-    Args:
-        df (pd.DataFrame): DataFrame with columns 'opening_eval', 'player_color',
-                           and 'normalized_opening_name'.
-
-    Returns:
-        pd.DataFrame: Aggregated DataFrame with columns: normalized_opening_name,
-                      count, avg_eval, and opening_label (name + count).
-    """
-    df.loc[:, 'opening_eval'] = pd.to_numeric(df['opening_eval'], errors='coerce')
-    df.loc[:, "adjusted_eval"] = df.apply(
-        lambda row: -row["opening_eval"] if row["player_color"] == "black" else row["opening_eval"],
-        axis=1
-    )
-    df = df.groupby("normalized_opening_name").agg(
-        count=("adjusted_eval", "size"),
-        avg_eval=("adjusted_eval", "mean")
-    ).reset_index()
-    df = df[df["count"] > 2].sort_values("count", ascending=False)
-    df["opening_label"] = df.apply(
-        lambda x: f"{x['normalized_opening_name']} ({x['count']})",
-        axis=1
-    )
-    return df.head()  # Limit to top results to avoid huge graphs
-
 
 def plot_opening_stats(df: pd.DataFrame, color: str = "Overall") -> str:
     """
@@ -289,7 +270,7 @@ def lichess_popular_openings(lichess_analysis_data: dict) -> str:
     popular_openings_df = popular_openings_df.sort_values('percentage')
 
     plt.figure(figsize=(8, 5))
-    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['percentage'], color='#d39a5a')
+    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['percentage'], color='#d49b54')
 
     plt.title('Most Popular Chess Openings by ECO Code')
     plt.xlabel('Percentage of Games')
@@ -345,7 +326,7 @@ def lichess_successful_openings(lichess_analysis_data: dict, color: str) -> str:
     color_text = color.capitalize()
 
     plt.figure(figsize=(8, 5))
-    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#d39a5a')
+    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#d49b54')
 
     plt.title(f'Most Successful Chess Openings for {color_text} by ECO Code')
     plt.xlabel('Evaluation of Games')
@@ -393,6 +374,15 @@ def logistic_regression_graph(df):
     """
     importance_df = train_logistic_regression_model(df)
 
+    # Renaming features
+    importance_df['feature'] = importance_df['feature'].replace({
+        'opening_group_': 'Opening: ',
+        'is_white': 'Is white?',
+        'rating_difference': 'Rating Difference',
+        'full_moves': 'Amount of moves'
+    }, regex=True)
+    
+
     # Set color based on coefficient sign
     colors = [
         '#94b578' if coef > 0 else '#d96f74' 
@@ -400,7 +390,7 @@ def logistic_regression_graph(df):
     ]
 
     # Plot the most influential features
-    plt.figure(figsize=(10, 6))
+    plt.figure(figsize=(10, 8))
     plt.barh(importance_df['feature'], importance_df['coefficient'], color=colors)
     plt.axvline(0, color='gray', linestyle='--')
 
