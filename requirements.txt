@@ -9,3 +9,4 @@ Requests==2.32.4
 SQLAlchemy==2.0.41
 weasyprint==65.1
 gunicorn==23.0.0
+scikit-learn==1.7.0
