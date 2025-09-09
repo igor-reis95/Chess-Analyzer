@@ -16,6 +16,10 @@ import logging
 from typing import Optional, Tuple, Dict, Union, List
 from enum import Enum
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
 logger = logging.getLogger(__name__)
 
@@ -355,7 +359,129 @@ def prepare_winrate_data(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
 
     logger.debug("Winrate data prepared for White, Black, and Both.")
     return {
-        'white': white,
-        'black': black,
-        'overall': total
+        'White': white,
+        'Black': black,
+        'Overall': total
     }
+
+def prepare_logistic_regression(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
+    """
+    Prepare features and target for logistic regression model.
+    
+    Args:
+        df: Input DataFrame containing chess game data.
+        
+    Returns:
+        Tuple containing feature matrix (X) and target vector (y).
+        
+    Raises:
+        ValueError: If required columns are missing from input DataFrame.
+    """
+    try:
+        logger.debug("Preparing data for logistic regression")
+        df_model = df.copy()
+
+        # Filter out rows with missing or invalid results
+        valid_results = ['win', 'draw', 'loss']
+        df_model = df_model[df_model['result'].isin(valid_results)]
+        logger.debug("Filtered dataset to %s valid results", len(df_model))
+
+        # Create binary target (win = 1, else = 0)
+        df_model['target'] = df_model['result'].apply(
+            lambda x: 1 if x == 'win' else 0
+        )
+
+        # Feature engineering
+        df_model['is_white'] = df_model['player_color'].apply(
+            lambda x: 1 if x == 'white' else 0
+        )
+
+        # Group openings to avoid high cardinality
+        top_openings = df_model['normalized_opening_name'].value_counts().nlargest(5).index
+        df_model['opening_group'] = df_model['normalized_opening_name'].apply(
+            lambda x: x if x in top_openings else 'Other'
+        )
+
+        # One-hot encode categorical features
+        df_encoded = pd.get_dummies(
+            df_model[['speed', 'opening_group']],
+            drop_first=True
+        )
+
+        # Select numerical features
+        features_numeric = df_model[[
+            'rating_difference',
+            'full_moves',
+            'is_white'
+        ]]
+
+        # Combine all features
+        X = pd.concat([features_numeric, df_encoded], axis=1) # pylint: disable=invalid-name
+        y = df_model['target']
+
+        logger.debug("Prepared dataset with %s features and %s samples", X.shape[1], X.shape[0])
+        return X, y
+
+    except KeyError as e:
+        logger.error("Missing required column in DataFrame: %s", e)
+        raise ValueError(f"Missing required column: {e}") from e
+    except Exception as e:
+        logger.error("Unexpected error in data preparation: %s", e)
+        raise
+
+
+def train_logistic_regression_model(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Train logistic regression model and return feature importance.
+    
+    Args:
+        df: Input DataFrame containing chess game data.
+        
+    Returns:
+        DataFrame with feature coefficients sorted by absolute value.
+        
+    Raises:
+        ValueError: If insufficient data for model training.
+    """
+    try:
+        logger.debug("Training logistic regression model")
+        X, y = prepare_logistic_regression(df) # pylint: disable=invalid-name
+
+        # Check if we have enough data
+        if len(X) < 10:
+            logger.error("Insufficient data for model training")
+            raise ValueError("Insufficient data for model training")
+
+        # Train/test split
+        X_train, X_test, y_train, y_test = train_test_split( # pylint: disable=invalid-name
+            X, y, test_size=0.2, random_state=42
+        )
+
+        # Train model
+        model = LogisticRegression(max_iter=1000)
+        model.fit(X_train, y_train)
+
+        # Evaluate model
+        y_pred = model.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        logger.debug("Model accuracy: %.3f", accuracy)
+
+        # Extract feature importance
+        feature_names = X.columns
+        coefficients = model.coef_[0]
+
+        importance_df = pd.DataFrame({
+            'feature': feature_names,
+            'coefficient': coefficients,
+            'abs_coeff': np.abs(coefficients)
+        }).sort_values(by='abs_coeff', ascending=False)
+
+        logger.debug("Generated feature importance DataFrame")
+        return importance_df
+
+    except ValueError as e:
+        logger.error("Data-related error in model training: %s", e)
+        raise
+    except Exception as e:
+        logger.error("Unexpected error in model training: %s", e)
+        raise

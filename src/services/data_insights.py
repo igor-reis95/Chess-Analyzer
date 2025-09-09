@@ -13,6 +13,7 @@ from typing import List, Optional, Dict
 
 import pandas as pd
 from src.services.data_viz import get_opening_stats
+from src.services.analysis import train_logistic_regression_model
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,7 @@ def opening_stats_insights(df: pd.DataFrame, color: str) -> Optional[str]:
     )
 
     def eval_feedback(avg: float, color_label: str) -> str:
-        if color_label == "white":
+        if color_label == "White":
             if avg > 0.4:
                 return (
                     "As White, you're getting very strong positions out of the opening — "
@@ -102,7 +103,7 @@ def opening_stats_insights(df: pd.DataFrame, color: str) -> Optional[str]:
                     "opening choices and look out for early mistakes."
                 )
 
-        if color_label == "black":
+        if color_label == "Black":
             if avg > 0.1:
                 return (
                     "As Black, you're outperforming expectations in the opening — impressive!"
@@ -123,7 +124,7 @@ def opening_stats_insights(df: pd.DataFrame, color: str) -> Optional[str]:
                     "solid repertoire or study key defenses."
                 )
 
-        if color_label == "overall":
+        if color_label == "Overall":
             if avg > 0.2:
                 return (
                     "Overall, you're getting strong positions after the opening — great "
@@ -142,13 +143,13 @@ def opening_stats_insights(df: pd.DataFrame, color: str) -> Optional[str]:
 
         return "No insights available."
 
-    if color == "overall":
+    if color == "Overall":
         opening_avg = df["adjusted_eval"].mean()
         logger.debug("Overall opening average eval: %.3f", opening_avg)
-        return eval_feedback(opening_avg, "overall")
+        return eval_feedback(opening_avg, "Overall")
 
-    if color in ("white", "black"):
-        subset = df[df["player_color"] == color]
+    if color in ("White", "Black"):
+        subset = df[df["player_color"] == color.lower()]
         opening_avg = subset["adjusted_eval"].mean()
         logger.debug("%s opening average eval: %.3f", color.capitalize(), opening_avg)
         return eval_feedback(opening_avg, color)
@@ -168,10 +169,10 @@ def eval_per_opening_insights(df: pd.DataFrame, color: str) -> List[str]:
     Returns:
         List of user-friendly strings describing performance per opening.
     """
-    if color == "overall":
+    if color == "Overall":
         df = get_opening_stats(df)
     else:
-        df = get_opening_stats(df[df["player_color"] == color])
+        df = get_opening_stats(df[df["player_color"] == color.lower()])
 
     df = df.sort_values("count", ascending=False)
     logger.debug("Sorted openings by frequency for color %s", color)
@@ -322,3 +323,104 @@ def insight_conversion_stat(
 
     logger.warning("Stat key '%s' is not recognized for insight generation.", stat_key)
     return "No insight available for this statistic."
+
+def logistic_regression_insights(df) -> list:
+    """
+    Generate textual insights based on logistic regression coefficients.
+    Prioritize 'is_white', 'rating_difference', and 'full_moves' first, then openings.
+
+    Args:
+        df: DataFrame with chess game data.
+
+    Returns:
+        List of user-friendly strings describing which factors most influence winning.
+    """
+
+    importance_df = train_logistic_regression_model(df)
+
+    # Split into numeric/gameplay features and openings
+    numeric_features = ["is_white", "rating_difference", "full_moves"]
+    importance_df_numeric = importance_df[importance_df["feature"].isin(numeric_features)]
+    importance_df_openings = importance_df[
+        importance_df["feature"].str.contains("Opening:|opening_group_")
+    ]
+
+    # Sort each by absolute coefficient
+    importance_df_numeric = importance_df_numeric.sort_values("abs_coeff", ascending=False)
+    importance_df_openings = importance_df_openings.sort_values("abs_coeff", ascending=False)
+
+    # Combine them: numeric first, then openings
+    importance_df_sorted = pd.concat([importance_df_numeric, importance_df_openings])
+
+    # Rename features
+    importance_df['feature'] = importance_df['feature'].replace({
+        'opening_group_': 'Opening: ',
+        'is_white': 'Is white?',
+        'rating_difference': 'Rating Difference',
+        'full_moves': 'Amount of moves'
+    }, regex=True)
+
+    feature_insights = []
+
+    for _, row in importance_df_sorted.iterrows():
+        feature = row["feature"]
+        coef = row["coefficient"]
+
+        # Interpret influence magnitude
+        if abs(coef) > 1:
+            influence = "strongly"
+        elif abs(coef) > 0.3:
+            influence = "moderately"
+        else:
+            influence = "slightly"
+
+        # Generate messages based on feature type and coefficient sign
+        if "Opening: " in feature or "opening_group_" in feature:
+            opening_name = feature.replace("Opening: ", "").replace("opening_group_", "")
+            if coef > 0:
+                msg = (
+                    f"Playing the opening '{opening_name}' {influence} increases your "
+                    "chance of winning according to the model."
+                )
+            else:
+                msg = (
+                    f"Playing the opening '{opening_name}' {influence} decreases your "
+                    "chance of winning. Consider reviewing or practicing it further."
+                )
+
+        elif feature in ["is_white", "Is white?"]:
+            if coef > 0:
+                msg = f"Playing as White {influence} improves your win probability."
+            else:
+                msg = f"Playing as White {influence} reduces your win probability."
+
+        elif feature in ["rating_difference", "Rating Difference"]:
+            if coef > 0:
+                msg = (
+                    f"Having a higher rating than your opponent {influence} increases "
+                    "your chances of winning."
+                )
+            else:
+                msg = (
+                    f"Unexpectedly, rating difference {influence} decreases your win "
+                    "probability — check the dataset for anomalies."
+                )
+
+        elif feature in ["full_moves", "Amount of moves"]:
+            if coef > 0:
+                msg = f"Games with more moves {influence} increase your probability of winning."
+            else:
+                msg = (
+                    f"Longer games {influence} decrease your win probability — "
+                    "focus on endgame practice."
+                )
+
+        else:
+            msg = (
+                f"The feature '{feature}' has an influence on winning probability "
+                f"(coef: {coef:+.2f})."
+            )
+
+        feature_insights.append(msg)
+
+    return feature_insights

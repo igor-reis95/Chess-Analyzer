@@ -449,16 +449,17 @@ def _get_visualizations(
     """
     return {
         "winrate_graph_viz": viz.winrate_bar_graph(prepare_winrate_data(df)),
+        "logistic_regression_viz": viz.logistic_regression_graph(df),
         "eval_on_opening_viz": viz.plot_eval_on_opening(df),
         "openings_viz": {
-            "overall": viz.plot_opening_stats(df, "overall"),
-            "white": viz.plot_opening_stats(df, "white"),
-            "black": viz.plot_opening_stats(df, "black"),
+            "overall": viz.plot_opening_stats(df, "Overall"),
+            "white": viz.plot_opening_stats(df, "White"),
+            "black": viz.plot_opening_stats(df, "Black"),
         },
         "lichess_openings_viz": {
             "popular": viz.lichess_popular_openings(lichess_data),
-            "successful_white": viz.lichess_successful_openings(lichess_data, "white"),
-            "successful_black": viz.lichess_successful_openings(lichess_data, "black"),
+            "successful_white": viz.lichess_successful_openings(lichess_data, "White"),
+            "successful_black": viz.lichess_successful_openings(lichess_data, "Black"),
         },
         "conversion_viz": {
             "when_ahead": viz.plot_conversion_comparison(
@@ -493,20 +494,21 @@ def _get_insights(
     winrate_data = prepare_winrate_data(df)
     return {
         "winrate_graph_insights": {
-            "overall": insights.winrate_graph_insights(winrate_data, "overall"),
-            "white": insights.winrate_graph_insights(winrate_data, "white"),
-            "black": insights.winrate_graph_insights(winrate_data, "black")
+            "overall": insights.winrate_graph_insights(winrate_data, "Overall"),
+            "white": insights.winrate_graph_insights(winrate_data, "White"),
+            "black": insights.winrate_graph_insights(winrate_data, "Black")
         },
         "openings_insights": {
-            "overall": insights.opening_stats_insights(df, "overall"),
-            "white": insights.opening_stats_insights(df, "white"),
-            "black": insights.opening_stats_insights(df, "black")
+            "overall": insights.opening_stats_insights(df, "Overall"),
+            "white": insights.opening_stats_insights(df, "White"),
+            "black": insights.opening_stats_insights(df, "Black")
         },
         "eval_on_opening_insights": {
-            "overall": insights.eval_per_opening_insights(df, "overall"),
-            "white": insights.eval_per_opening_insights(df, "white"),
-            "black": insights.eval_per_opening_insights(df, "black")
+            "overall": insights.eval_per_opening_insights(df, "Overall"),
+            "white": insights.eval_per_opening_insights(df, "White"),
+            "black": insights.eval_per_opening_insights(df, "Black")
         },
+        "logistic_regression_insights": insights.logistic_regression_insights(df),
         "lichess_openings_insights": {
             "popular_insights": insights.lichess_popular_openings_insights(),
             "successful_white": insights.lichess_successful_openings_insights("white"),

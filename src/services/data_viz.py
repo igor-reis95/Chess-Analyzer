@@ -15,7 +15,8 @@ import numpy as np
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt  # pylint: disable=wrong-import-position
+import matplotlib.pyplot as plt # pylint: disable=wrong-import-position
+from src.services.analysis import train_logistic_regression_model # pylint: disable=wrong-import-position
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
            color='#db6f72')
 
     ax.set_ylabel('Percentage')
-    ax.set_title('Win Rates by Color')
+    ax.set_title('Win Rates by Player Perspective')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.set_ylim(0, 100)
@@ -95,9 +96,9 @@ def plot_eval_on_opening(df: pd.DataFrame) -> str:
     black_avg = df[df["player_color"] == "black"]["adjusted_eval"].mean()
 
     averages = {
-        "Overall": overall_avg,
         "White": white_avg,
-        "Black": black_avg
+        "Black": black_avg,
+        "Overall": overall_avg
     }
 
     colors = ["#93b674" if val >= 0 else "#da6f73" for val in averages.values()]
@@ -159,7 +160,7 @@ def get_opening_stats(df: pd.DataFrame) -> pd.DataFrame:
     return df.head()  # Limit to top results to avoid huge graphs
 
 
-def plot_opening_stats(df: pd.DataFrame, color: str = "overall") -> str:
+def plot_opening_stats(df: pd.DataFrame, color: str = "Overall") -> str:
     """
     Generate a base64-encoded horizontal bar chart showing opening performance.
 
@@ -171,10 +172,10 @@ def plot_opening_stats(df: pd.DataFrame, color: str = "overall") -> str:
     Returns:
         str: Base64-encoded PNG image of the horizontal bar chart.
     """
-    if color == "overall":
+    if color == "Overall":
         df = get_opening_stats(df)
     else:
-        df = get_opening_stats(df[df['player_color'] == color])
+        df = get_opening_stats(df[df['player_color'] == color.lower()])
 
     if len(df) == 0 or df['avg_eval'].isna().all():
         plt.figure(figsize=(10, 7))
@@ -288,7 +289,7 @@ def lichess_popular_openings(lichess_analysis_data: dict) -> str:
     popular_openings_df = popular_openings_df.sort_values('percentage')
 
     plt.figure(figsize=(8, 5))
-    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['percentage'], color='#1E90FF')
+    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['percentage'], color='#d39a5a')
 
     plt.title('Most Popular Chess Openings by ECO Code')
     plt.xlabel('Percentage of Games')
@@ -334,16 +335,17 @@ def lichess_successful_openings(lichess_analysis_data: dict, color: str) -> str:
     Returns:
         str: Base64-encoded PNG image of the successful openings chart.
     """
-    if color == 'white':
+    if color == 'White':
         popular_openings_df = pd.DataFrame(lichess_analysis_data["opening_eval_per_eco"]).tail()
     else:
         popular_openings_df = pd.DataFrame(lichess_analysis_data["opening_eval_per_eco"]) \
             .head().sort_values(by='evaluation', ascending=False)
+        popular_openings_df['evaluation'] = popular_openings_df['evaluation'].abs()
 
     color_text = color.capitalize()
 
     plt.figure(figsize=(8, 5))
-    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#1E90FF')
+    bars = plt.barh(popular_openings_df['ECO'], popular_openings_df['evaluation'], color='#d39a5a')
 
     plt.title(f'Most Successful Chess Openings for {color_text} by ECO Code')
     plt.xlabel('Evaluation of Games')
@@ -377,4 +379,46 @@ def lichess_successful_openings(lichess_analysis_data: dict, color: str) -> str:
     img_base64 = base64.b64encode(img.getvalue()).decode()
 
     logger.debug("Successful openings chart generated for color: %s", color)
+    return img_base64
+
+def logistic_regression_graph(df):
+    """
+    Generate a horizontal bar chart of logistic regression feature coefficients.
+    
+    Args:
+        df: Input DataFrame containing chess game data.
+        
+    Returns:
+        Base64 encoded string of the generated chart image.
+    """
+    importance_df = train_logistic_regression_model(df)
+
+    # Set color based on coefficient sign
+    colors = [
+        '#94b578' if coef > 0 else '#d96f74' 
+        for coef in importance_df['coefficient']
+    ]
+
+    # Plot the most influential features
+    plt.figure(figsize=(10, 6))
+    plt.barh(importance_df['feature'], importance_df['coefficient'], color=colors)
+    plt.axvline(0, color='gray', linestyle='--')
+
+    plt.title(
+        'Feature Influence on Win Probability '
+        '(Logistic Regression Coefficients)'
+    )
+    plt.xlabel('Coefficient Value')
+    plt.ylabel('Feature')
+    plt.gca().invert_yaxis()
+    plt.tight_layout()
+
+    # Save to base64 for Flask
+    img = io.BytesIO()
+    plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+    plt.close()
+    img.seek(0)
+    img_base64 = base64.b64encode(img.getvalue()).decode()
+
+    logger.debug("Successfully generated logistic regression chart")
     return img_base64
