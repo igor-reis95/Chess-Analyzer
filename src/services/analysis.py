@@ -16,6 +16,7 @@ import logging
 from typing import Optional, Tuple, Dict, Union, List
 from enum import Enum
 import pandas as pd
+from pandas import Interval
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -308,7 +309,7 @@ def calculate_conversion_rate(
         return 0.0
     return (condition & success_condition).sum() / total_games * 100
 
-def calculate_advantage_stats(df: pd.DataFrame) -> Dict[str, Union[int, float]]:
+def calculate_conversion_stats(df: pd.DataFrame) -> Dict[str, Union[int, float]]:
     """
     Calculate advantage-related statistics.
     
@@ -363,6 +364,86 @@ def prepare_winrate_data(df: pd.DataFrame) -> Dict[str, Dict[str, float]]:
         'Black': black,
         'Overall': total
     }
+
+def get_player_rating_bracket_evaluation(
+    perf_type: str,
+    lichess_stats: Dict,
+    user_data: Dict
+) -> Tuple[Optional[float], Optional[Interval]]:
+    """
+    Retrieve the average opening evaluation for the player's rating bracket.
+    
+    Args:
+        perf_type: The performance type (e.g., 'blitz', 'rapid', 'classical').
+        lichess_stats: Dictionary containing Lichess statistics data.
+        user_data: Dictionary containing user information including ratings.
+        
+    Returns:
+        Tuple containing:
+            - Average opening evaluation for the rating bracket (float or None if not found)
+            - Rating bracket interval object (Interval or None if not found)
+            
+    Raises:
+        KeyError: If required keys are missing from input dictionaries.
+        ValueError: If rating bracket data is malformed or invalid.
+    """
+    logger.debug("Retrieving rating bracket opening eval for perf_type: %s", perf_type)
+
+    # Validate inputs
+    if not perf_type:
+        raise ValueError("perf_type cannot be empty")
+
+    if not user_data or f'{perf_type}_rating' not in user_data:
+        raise KeyError(f"Missing {perf_type}_rating in user_data")
+
+    if not lichess_stats or "eval_per_rating_bracket" not in lichess_stats:
+        raise KeyError("Missing eval_per_rating_bracket in lichess_stats")
+
+    # Extract player rating
+    player_rating = user_data[f'{perf_type}_rating']
+
+    # Extract and validate rating brackets data
+    rating_brackets_data = lichess_stats["eval_per_rating_bracket"]
+    if not rating_brackets_data:
+        logger.warning("Empty rating brackets data")
+        return None, None
+
+    # Convert rating brackets to pandas Series with Interval index
+    rating_brackets = {}
+    for key, value in rating_brackets_data.items():
+        try:
+            # Parse interval string format "[low, high)"
+            clean_key = key[1:].split(', ')
+            low_str = clean_key[0]
+            high_str = clean_key[1][:-1]  # Remove trailing ')'
+
+            low = int(low_str)
+            high = int(high_str)
+
+            interval = Interval(low, high, closed='left')
+            rating_brackets[interval] = float(value)
+
+        except (ValueError, IndexError, TypeError) as e:
+            logger.warning("Skipping malformed rating bracket: %s. Error: %s", key, e)
+            continue
+
+    rating_brackets_series = pd.Series(rating_brackets)
+
+    # Find the player's rating bracket
+    player_bracket = None
+    rating_avg_eval = None
+
+    for bracket, eval_value in rating_brackets_series.items():
+        if bracket.left <= player_rating < bracket.right:
+            player_bracket = bracket
+            rating_avg_eval = eval_value
+            logger.debug("Found matching bracket: %s with eval: %.3f", bracket, eval_value)
+            break
+
+    if player_bracket is None:
+        logger.warning("No rating bracket found for player rating: %s", player_rating)
+
+    return rating_avg_eval, player_bracket
 
 def prepare_logistic_regression(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     """
