@@ -298,10 +298,11 @@
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <h3>Win Rate for {{ count }} games of {{ games_table[0]['perf'] }}</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="In average, chess players have a 48% win rate, 4% draw rate and 48% loss rate">
-                            <i class="bi bi-info-circle"></i>
-                        </span>
+                        <h3>Win Rate for {{ count }} games of {{ games_table[0]['perf'] }}
+                            <span class="ms-2" data-bs-toggle="tooltip" title="For comparisson, in average, chess players have a 48% win rate, 4% draw rate and 48% loss rate">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </h3>
                     </div>
                     <div class="row">
                         <!-- Chart Column -->
@@ -339,10 +340,11 @@
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <h3>Score at the end of the opening</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="The evaluation is calculated with stockfish using the move 15 as the end of the opening.">
-                            <i class="bi bi-info-circle"></i>
-                        </span>
+                        <h3>Score at the end of the opening
+                            <span class="ms-2" data-bs-toggle="tooltip" title="The evaluation is calculated with stockfish using the move 15 as the end of the opening.">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </h3>
                     </div>
                     <div class="row">
                         <!-- Graph Column -->
@@ -369,6 +371,12 @@
                                     <h5>As Black</h5>
                                     <p>{{ openings_insights.black }}</p>
                                 </div>
+                                <!-- Lichess Avg -->
+                                <div class="insight-card mb-3 p-3">
+                                    <h5>Lichess Avg</h5>
+                                    <p>Lichess Avg represents the average opening evaluation for your rating bracket, 
+                                    calculated from 2.5 million games from the Lichess Open Database.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -379,11 +387,11 @@
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <h3>Openings Performance</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="Only openings that were played 3 or more times are shown">
-                            <i class="bi bi-info-circle"></i> <!-- Bootstrap Icons -->
-                            <!-- Alternatively, use Font Awesome: <i class="fas fa-info-circle"></i> -->
-                        </span>
+                        <h3>Openings Performance
+                            <span class="ms-2" data-bs-toggle="tooltip" title="Only openings that were played 3 or more times are shown">
+                                <i class="bi bi-info-circle"></i> <!-- Bootstrap Icons -->
+                            </span>
+                        </h3>
                     </div>
 
                     <!-- Tab navigation -->
@@ -482,7 +490,15 @@
             <!-- Logistic Regression Chart & Insights -->
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
-                    <h3 class="mb-3">Logistic Regression Chart</h3>
+                    <h3>
+                        Key Drivers of Win Probability
+                        <span class="ms-2" data-bs-toggle="tooltip" 
+                            title="This graph shows the logistic regression coefficients for each feature. 
+                                    Positive coefficients increase win probability, negative decrease it. 
+                                    Openings are grouped: top openings are shown individually, others are combined.">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
+                    </h3>
                     <div class="row">
                         <!-- Chart Column -->
                         <div class="col-md-8">
@@ -516,10 +532,11 @@
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <h3>Advantage Capitalization</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="How often you win games when you had at least +1 eval on your opponent after move 15">
-                            <i class="bi bi-info-circle"></i>
-                        </span>
+                        <h3>Advantage Capitalization
+                            <span class="ms-2" data-bs-toggle="tooltip" title="How often you win games when you had at least +1 eval on your opponent after move 15">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </h3>
                     </div>
                     <div class="graph-and-insights">
                         <div class="graph-container">
@@ -539,10 +556,11 @@
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <h3>Advantage Capitalization</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="How often you win/draw games when your opponent had at least +1 eval on you after move 15">
-                            <i class="bi bi-info-circle"></i>
-                        </span>
+                        <h3>Advantage Capitalization
+                            <span class="ms-2" data-bs-toggle="tooltip" title="How often you win/draw games when your opponent had at least +1 eval on you after move 15">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </h3>
                     </div>
                     <div class="graph-and-insights">
                         <div class="graph-container">
@@ -562,10 +580,11 @@
             <div class="col-12 mb-4">
                 <div class="lichess-card p-4 h-100">
                     <div class="d-flex align-items-center">
-                        <h3>Lichess Opening Analysis</h3>
-                        <span class="ms-2" data-bs-toggle="tooltip" title="Made with the analysis of 2 million games from may/2025 from the Lichess public database. This is mostly for curiosity sake.">
-                            <i class="bi bi-info-circle"></i>
-                        </span>
+                        <h3>Lichess Opening Analysis
+                            <span class="ms-2" data-bs-toggle="tooltip" title="Made with the analysis of 2 million games from may/2025 from the Lichess public database. This is mostly for curiosity sake.">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </h3>
                     </div>
                     
                     <!-- Tab navigation -->
