@@ -59,9 +59,9 @@ def winrate_bar_graph(data: Dict[str, Dict[str, float]]) -> str:
     ax.legend()
 
     for idx, (w, d, l) in enumerate(zip(wins, draws, losses)):
-        ax.text(idx, w / 2, f'{w:.0f}%', ha='center', va='center', color='white')
-        ax.text(idx, w + d / 2, f'{d:.0f}%', ha='center', va='center', color='black')
-        ax.text(idx, w + d + l / 2, f'{l:.0f}%', ha='center', va='center', color='white')
+        ax.text(idx, w / 2, f'{w:.0f}%', ha='center', va='center', color='white', fontweight='bold')
+        ax.text(idx, w + d / 2, f'{d:.0f}%', ha='center', va='center', color='black', fontweight='bold')
+        ax.text(idx, w + d + l / 2, f'{l:.0f}%', ha='center', va='center', color='white', fontweight='bold')
 
     plt.tight_layout()
 
