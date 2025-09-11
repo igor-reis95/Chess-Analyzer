@@ -124,7 +124,7 @@ def plot_eval_on_opening(df: pd.DataFrame, lichess_stats: Dict, user_data: Dict)
         height = b.get_height()
         plt.text(b.get_x() + b.get_width() / 2., height,
                  f'{height:.2f}',
-                 ha='center', va='bottom')
+                 ha='center', va='bottom', color='black', fontweight='bold')
 
     plt.title("Average Evaluation by Player Perspective")
     plt.ylabel("Adjusted Evaluation")
@@ -179,7 +179,7 @@ def plot_opening_stats(df: pd.DataFrame, color: str = "Overall") -> str:
             plt.text(label_x_pos, b.get_y() + b.get_height() / 2,
                      f'{width:.2f}',
                      va='center', ha=ha,
-                     color='black', fontsize=8)
+                     color='black', fontsize=8, fontweight='bold')
 
         plt.axvline(0, color="black", linestyle="--", alpha=0.5)
         plt.title(f"Opening Performance ({color})")
@@ -242,7 +242,7 @@ def plot_conversion_comparison(
         height = b.get_height()
         plt.text(b.get_x() + b.get_width() / 2., height,
                  f'{height:.1f}%',
-                 ha='center', va='bottom')
+                 ha='center', va='bottom', color='black', fontweight='bold')
 
     plt.grid(axis='y', linestyle='--', alpha=0.7)
 
@@ -391,8 +391,28 @@ def logistic_regression_graph(df):
 
     # Plot the most influential features
     plt.figure(figsize=(10, 8))
-    plt.barh(importance_df['feature'], importance_df['coefficient'], color=colors)
+    bars = plt.barh(importance_df['feature'], importance_df['coefficient'], color=colors)
     plt.axvline(0, color='gray', linestyle='--')
+
+    # Add text labels to each bar
+    for b in bars:
+        width = b.get_width()
+        if width >= 0:
+            x_pos = width - 0.05
+            ha = 'right'
+        else:
+            x_pos = width + 0.05
+            ha = 'left'
+
+        plt.text(
+            x_pos,
+            b.get_y() + b.get_height() / 2,
+            f'{width:.2f}',
+            ha=ha,
+            va='center',
+            color='black',
+            fontweight='bold'
+        )
 
     plt.title(
         'Feature Influence on Win Probability '
