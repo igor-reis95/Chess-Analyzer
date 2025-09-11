@@ -375,7 +375,9 @@
                                 <div class="insight-card mb-3 p-3">
                                     <h5>Lichess Avg</h5>
                                     <p>Lichess Avg represents the average opening evaluation for your rating bracket, 
-                                    calculated from 2.5 million games from the Lichess Open Database.</p>
+                                    calculated from 2.5 million games from the Lichess Open Database. For the black pieces
+                                    consider the negative value as being the average.
+                                </p>
                                 </div>
                             </div>
                         </div>
@@ -397,11 +399,6 @@
                     <!-- Tab navigation -->
                     <ul class="nav nav-tabs" id="graphTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="overall-tab" data-bs-toggle="tab"
-                                    data-bs-target="#overall-graph" type="button" role="tab" aria-controls="overall-graph"
-                                    aria-selected="true">Overall</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="white-tab" data-bs-toggle="tab"
                                     data-bs-target="#white-graph" type="button" role="tab" aria-controls="white-graph"
                                     aria-selected="false">White</button>
@@ -410,6 +407,11 @@
                             <button class="nav-link" id="black-tab" data-bs-toggle="tab"
                                     data-bs-target="#black-graph" type="button" role="tab" aria-controls="black-graph"
                                     aria-selected="false">Black</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overall-tab" data-bs-toggle="tab"
+                                    data-bs-target="#overall-graph" type="button" role="tab" aria-controls="overall-graph"
+                                    aria-selected="true">Overall</button>
                         </li>
                     </ul>
                     
