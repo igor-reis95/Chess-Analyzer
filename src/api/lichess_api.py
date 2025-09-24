@@ -81,6 +81,9 @@ def get_games(
             try:
                 game = json.loads(line.decode("utf-8"))
                 games_list.append(game)
+                # Ensure we don't exceed max_games
+                if len(games_list) >= max_games:
+                    break
             except json.JSONDecodeError as e:
                 logger.warning("JSON decode error on line %s: %s. Skipping line.", line_number, e)
 
